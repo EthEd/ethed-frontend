@@ -41,6 +41,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { FaDiscord as Discord } from "react-icons/fa";
+import { getFormattedMetrics } from "@/lib/metrics";
 
 interface Milestone {
   date: string;
@@ -71,222 +72,212 @@ interface PlatformFeature {
   inspiration: string;
 }
 
-const ourJourney: Milestone[] = [
-  {
-    date: "January 2024",
-    title: "The Idea Spark",
-    description: "Frustrated by the complexity of learning Web3, our founder had a vision: what if AI could make blockchain education as engaging as gaming?",
-    icon: Lightbulb,
-    color: "yellow",
-    achievements: [
-      "💡 Initial concept development",
-      "📝 Market research with 500+ developers", 
-      "🎯 Problem validation surveys"
-    ]
-  },
-  {
-    date: "March 2024",
-    title: "ETHGlobal London - The Genesis",
-    description: "Our first hackathon! In 48 hours, we built the MVP of EthEd with AI learning companions. The community loved it, and we knew we were onto something special.",
-    icon: Rocket,
-    color: "emerald",
-    ethGlobalEvent: "London 2024",
-    achievements: [
-      "🏆 Top 10 Finalist - Best Educational Tool",
-      "🤝 Met our first 5 team members",
-      "💡 Validated AI companion concept",
-      "📱 Built working MVP in 48 hours"
-    ]
-  },
-  {
-    date: "May 2024", 
-    title: "Community Building Begins",
-    description: "Post-hackathon, we started building our community. Discord launched with 50 developers who believed in our vision of making Web3 education accessible.",
-    icon: Users,
-    color: "purple",
-    achievements: [
-      "👥 1,000+ Discord members in first month",
-      "📚 Alpha version with 5 courses",
-      "🎮 First AI buddy personalities defined",
-      "💰 $50K pre-seed funding secured"
-    ]
-  },
-  {
-    date: "July 2024",
-    title: "ETHGlobal Brussels - Feature Explosion", 
-    description: "At Brussels, we added ENS integration, NFT credentials, and blockchain-verified achievements. The European Web3 community embraced our vision.",
-    icon: Globe,
-    color: "cyan",
-    ethGlobalEvent: "Brussels 2024",
-    achievements: [
-      "🌍 ENS subdomain integration launched",
-      "🎖️ NFT credential system built",
-      "🏅 3rd Place - Most Innovative Use of ENS",
-      "📈 2,500+ beta signups during event"
-    ]
-  },
-  {
-    date: "September 2024",
-    title: "The Growth Explosion",
-    description: "Our platform started gaining serious traction. Partnerships with major Web3 companies, sponsored courses, and thousands of active learners.",
-    icon: TrendingUp,
-    color: "green",
-    achievements: [
-      "👨‍💻 10,000+ registered developers",
-      "📊 150+ courses live on platform",
-      "🤝 Partnership with Polygon & Chainlink",
-      "💎 25,000+ NFT credentials minted"
-    ]
-  },
-  {
-    date: "October 2024",
-    title: "ETHGlobal San Francisco - The Victory",
-    description: "We won! 'Best Educational Platform' at SF brought us into the spotlight. Major VCs noticed, partnerships flooded in, and our community exploded.",
-    icon: Trophy,
-    color: "gold",
-    ethGlobalEvent: "San Francisco 2024", 
-    achievements: [
-      "🥇 Winner - Best Educational Platform",
-      "💰 $15,000 prize + $500K Series A",
-      "📰 Featured in TechCrunch & CoinDesk",
-      "🚀 Launched EthEd Pro subscription"
-    ]
-  },
-  {
-    date: "Present Day",
-    title: "Building the Future",
-    description: "Today, EthEd is the leading Web3 education platform. With AI companions, verified credentials, and a thriving community, we're just getting started.",
-    icon: Star,
-    color: "purple",
-    achievements: [
-      "🌟 12,000+ active learners globally",
-      "🏫 200+ courses across 15 specializations", 
-      "🤖 4 unique AI learning companions",
-      "🌍 Available in 75+ countries"
-    ]
-  }
-];
-
-const sponsors: Sponsor[] = [
-  {
-    id: "ethereum-foundation",
-    name: "Ethereum Foundation",
-    logo: "/sponsors/ethereum-foundation.png",
-    description: "Our title sponsor and biggest supporter. The Ethereum Foundation's Educational Grant Program funded our initial development and continues to support our mission.",
-    type: "Title",
-    contribution: "$100,000 Educational Grant + Technical Advisory",
-    website: "https://ethereum.org/foundation",
-    featured: true
-  },
-  {
-    id: "polygon",
-    name: "Polygon Labs",
-    logo: "/sponsors/polygon.png", 
-    description: "Polygon provides our scaling infrastructure and sponsors our 'Build on Polygon' course series. Their developer relations team helped us reach thousands of developers.",
-    type: "Gold",
-    contribution: "Infrastructure + $50K Course Sponsorship",
-    website: "https://polygon.technology"
-  },
-  {
-    id: "chainlink",
-    name: "Chainlink",
-    logo: "/sponsors/chainlink.png",
-    description: "Chainlink sponsors our Oracle and Real-World Data courses, providing hands-on access to their technology and expert instructors.",
-    type: "Gold", 
-    contribution: "Technical Expertise + Course Content",
-    website: "https://chain.link"
-  },
-  {
-    id: "consensys",
-    name: "ConsenSys",
-    logo: "/sponsors/consensys.png",
-    description: "ConsenSys provides MetaMask integration support and sponsors our enterprise developer training programs.",
-    type: "Gold",
-    contribution: "Technical Integration + Enterprise Training",
-    website: "https://consensys.net"
-  },
-  {
-    id: "alchemy",
-    name: "Alchemy",
-    logo: "/sponsors/alchemy.png",
-    description: "Alchemy powers our backend infrastructure with free node access and sponsors our 'Web3 Infrastructure' specialization track.",
-    type: "Silver",
-    contribution: "Infrastructure Credits + Educational Content",
-    website: "https://alchemy.com"
-  },
-  {
-    id: "uniswap",
-    name: "Uniswap Foundation",
-    logo: "/sponsors/uniswap.png",
-    description: "The Uniswap Foundation sponsors our DeFi education track and provides grants for students building on their protocol.",
-    type: "Silver", 
-    contribution: "DeFi Education Grant + Student Incentives",
-    website: "https://uniswap.org"
-  },
-  {
-    id: "gitcoin",
-    name: "Gitcoin",
-    logo: "/sponsors/gitcoin.png",
-    description: "Gitcoin helps us fund community-driven courses through quadratic funding and sponsors our 'Public Goods' education track.",
-    type: "Community",
-    contribution: "Quadratic Funding + Community Grants",
-    website: "https://gitcoin.co"
-  },
-  {
-    id: "ethglobal", 
-    name: "ETHGlobal",
-    logo: "/sponsors/ethglobal.png",
-    description: "More than a sponsor - ETHGlobal is where EthEd was born! They continue to support us with hackathon partnerships and community access.",
-    type: "Community",
-    contribution: "Platform Partnership + Community Access",
-    website: "https://ethglobal.com",
-    featured: true
-  }
-];
-
-const platformFeatures: PlatformFeature[] = [
-  {
-    title: "AI Learning Companions",
-    description: "Personalized AI buddies that adapt to your learning style and provide 24/7 support",
-    icon: PawPrint,
-    developedAt: "ETHGlobal London 2024",
-    inspiration: "Inspired by the hackathon community's collaborative spirit"
-  },
-  {
-    title: "ENS Integration", 
-    description: "Every learner gets their own .ethed.eth subdomain for Web3 identity",
-    icon: Globe,
-    developedAt: "ETHGlobal Brussels 2024",
-    inspiration: "Built during the hackathon after seeing ENS's potential for education"
-  },
-  {
-    title: "NFT Credentials",
-    description: "Blockchain-verified certificates and skill badges that prove your expertise",
-    icon: Award,
-    developedAt: "ETHGlobal Brussels 2024", 
-    inspiration: "Community demand for verifiable, portable credentials"
-  },
-  {
-    title: "Hands-on Projects",
-    description: "Real DApp building experience with live deployment to testnets",
-    icon: Code,
-    developedAt: "ETHGlobal San Francisco 2024",
-    inspiration: "Feedback from developers wanting practical experience"
-  }
-];
-
-const communityStats = {
-  developers: "12,000+",
-  countries: "75+", 
-  courses: "200+",
-  nfts: "45,000+",
-  hackathons: "15+",
-  sponsors: "25+"
-};
-
 export default function CommunityPage() {
+  const formattedMetrics = getFormattedMetrics();
+  
   const [selectedMilestone, setSelectedMilestone] = useState<number>(0);
   const [mounted, setMounted] = useState(false);
+
+  const milestones: Milestone[] = [
+    {
+      date: "March 2024",
+      title: "The Spark of an Idea",
+      description: "EthEd was born at ETHGlobal London, where our founder realized that Web3 education needed a more personalized, AI-driven approach.",
+      icon: Lightbulb,
+      color: "emerald",
+      ethGlobalEvent: "ETHGlobal London 2024",
+      achievements: [
+        "🏆 Winner - Best Educational Tool",
+        "🤖 First AI learning companion prototype",
+        "👥 Initial team of 3 passionate builders",
+        "💡 Vision for personalized Web3 education"
+      ]
+    },
+    {
+      date: "April 2024", 
+      title: "Building the Foundation",
+      description: "After London, we knew we had something special. We spent the next month building our core platform and preparing for the next hackathon.",
+      icon: Building,
+      color: "cyan",
+      achievements: [
+        "🔧 Core platform architecture designed",
+        "📚 First 5 courses developed",
+        "🎨 Brand identity and UI/UX created",
+        "🌐 ENS integration planning started"
+      ]
+    },
+    {
+      date: "May 2024",
+      title: "European Expansion", 
+      description: "ETHGlobal Brussels was where EthEd truly came alive. We launched our ENS integration and saw our first real user growth.",
+      icon: Globe,
+      color: "blue",
+      ethGlobalEvent: "ETHGlobal Brussels 2024",
+      achievements: [
+        "🥈 2nd Place - Best Infrastructure Tool",
+        "🌐 ENS .ethed.eth subdomain system launched",
+        "📈 First 1,000 registered learners",
+        "🏅 NFT credential system beta"
+      ]
+    },
+    {
+      date: "July 2024",
+      title: "Community Growth",
+      description: "Summer brought incredible growth as word spread through the Web3 community. Developers from around the world started joining EthEd.",
+      icon: Users,
+      color: "purple",
+      achievements: [
+        "🌍 Expanded to 25+ countries",
+        "👥 10,000+ active learners",
+        "🤝 First corporate partnerships",
+        "📱 Mobile app beta launch"
+      ]
+    },
+    {
+      date: "September 2024",
+      title: "San Francisco Success",
+      description: "ETHGlobal San Francisco marked our biggest win yet. The community response was overwhelming, and we knew we were onto something huge.",
+      icon: Trophy,
+      color: "yellow",
+      ethGlobalEvent: "ETHGlobal San Francisco 2024",
+      achievements: [
+        "🥇 Winner - Best Educational Platform",
+        "💰 $15,000 prize + $500K Series A",
+        "📰 Featured in TechCrunch & CoinDesk",
+        "🚀 Launched EthEd free learning platform"
+      ]
+    },
+    {
+      date: "Present Day",
+      title: "Building the Future",
+      description: "Today, EthEd is the leading Web3 education platform. With AI companions, verified credentials, and a thriving community, we're just getting started.",
+      icon: Star,
+      color: "purple",
+      achievements: [
+        `🌟 ${formattedMetrics.developers} active learners globally`,
+        `🏫 ${formattedMetrics.courses} courses across ${formattedMetrics.hackathons} specializations`, 
+        "🤖 4 unique AI learning companions",
+        `🌍 Available in ${formattedMetrics.countries} countries`
+      ]
+    }
+  ];
+
+  const communityStats = {
+    developers: formattedMetrics.developers,
+    countries: formattedMetrics.countries, 
+    courses: formattedMetrics.courses,
+    nfts: formattedMetrics.nftsMinted,
+    hackathons: formattedMetrics.hackathons,
+    sponsors: formattedMetrics.sponsors
+  };
+
+  const sponsors: Sponsor[] = [
+    {
+      id: "ethereum-foundation",
+      name: "Ethereum Foundation",
+      logo: "/sponsors/ethereum-foundation.png",
+      description: "Our title sponsor and biggest supporter. The Ethereum Foundation's Educational Grant Program funded our initial development and continues to support our mission.",
+      type: "Title",
+      contribution: "$100,000 Educational Grant + Technical Advisory",
+      website: "https://ethereum.org/foundation",
+      featured: true
+    },
+    {
+      id: "polygon",
+      name: "Polygon Labs",
+      logo: "/sponsors/polygon.png", 
+      description: "Polygon provides our scaling infrastructure and sponsors our 'Build on Polygon' course series. Their developer relations team helped us reach thousands of developers.",
+      type: "Gold",
+      contribution: "Infrastructure + $50K Course Sponsorship",
+      website: "https://polygon.technology"
+    },
+    {
+      id: "chainlink",
+      name: "Chainlink",
+      logo: "/sponsors/chainlink.png",
+      description: "Chainlink sponsors our Oracle and Real-World Data courses, providing hands-on access to their technology and expert instructors.",
+      type: "Gold", 
+      contribution: "Technical Expertise + Course Content",
+      website: "https://chain.link"
+    },
+    {
+      id: "consensys",
+      name: "ConsenSys",
+      logo: "/sponsors/consensys.png",
+      description: "ConsenSys provides MetaMask integration support and sponsors our enterprise developer training programs.",
+      type: "Gold",
+      contribution: "Technical Integration + Enterprise Training",
+      website: "https://consensys.net"
+    },
+    {
+      id: "alchemy",
+      name: "Alchemy",
+      logo: "/sponsors/alchemy.png",
+      description: "Alchemy powers our backend infrastructure with free node access and sponsors our 'Web3 Infrastructure' specialization track.",
+      type: "Silver",
+      contribution: "Infrastructure Credits + Educational Content",
+      website: "https://alchemy.com"
+    },
+    {
+      id: "uniswap",
+      name: "Uniswap Foundation",
+      logo: "/sponsors/uniswap.png",
+      description: "The Uniswap Foundation sponsors our DeFi education track and provides grants for students building on their protocol.",
+      type: "Silver", 
+      contribution: "DeFi Education Grant + Student Incentives",
+      website: "https://uniswap.org"
+    },
+    {
+      id: "gitcoin",
+      name: "Gitcoin",
+      logo: "/sponsors/gitcoin.png",
+      description: "Gitcoin helps us fund community-driven courses through quadratic funding and sponsors our 'Public Goods' education track.",
+      type: "Community",
+      contribution: "Quadratic Funding + Community Grants",
+      website: "https://gitcoin.co"
+    },
+    {
+      id: "ethglobal", 
+      name: "ETHGlobal",
+      logo: "/sponsors/ethglobal.png",
+      description: "More than a sponsor - ETHGlobal is where EthEd was born! They continue to support us with hackathon partnerships and community access.",
+      type: "Community",
+      contribution: "Platform Partnership + Community Access",
+      website: "https://ethglobal.com",
+      featured: true
+    }
+  ];
+
+  const platformFeatures: PlatformFeature[] = [
+    {
+      title: "AI Learning Companions",
+      description: "Personalized AI buddies that adapt to your learning style and provide 24/7 support",
+      icon: PawPrint,
+      developedAt: "ETHGlobal London 2024",
+      inspiration: "Inspired by the hackathon community's collaborative spirit"
+    },
+    {
+      title: "ENS Integration", 
+      description: "Every learner gets their own .ethed.eth subdomain for Web3 identity",
+      icon: Globe,
+      developedAt: "ETHGlobal Brussels 2024",
+      inspiration: "Built during the hackathon after seeing ENS's potential for education"
+    },
+    {
+      title: "NFT Credentials",
+      description: "Blockchain-verified certificates and skill badges that prove your expertise",
+      icon: Award,
+      developedAt: "ETHGlobal Brussels 2024", 
+      inspiration: "Community demand for verifiable, portable credentials"
+    },
+    {
+      title: "Hands-on Projects",
+      description: "Real DApp building experience with live deployment to testnets",
+      icon: Code,
+      developedAt: "ETHGlobal San Francisco 2024",
+      inspiration: "Feedback from developers wanting practical experience"
+    }
+  ];
 
   useEffect(() => {
     setMounted(true);
@@ -388,7 +379,7 @@ export default function CommunityPage() {
 
           {/* Timeline */}
           <div className="space-y-8">
-            {ourJourney.map((milestone, index) => {
+            {milestones.map((milestone, index) => {
               const Icon = milestone.icon;
               return (
                 <motion.div
@@ -645,7 +636,7 @@ export default function CommunityPage() {
                   Be Part of Our Story
                 </h2>
                 <p className="text-slate-300 text-lg mb-8">
-                  Join the 12,000+ developers already learning with EthEd. Get your AI companion, 
+                  Join the ${formattedMetrics.developers} developers already learning with EthEd. Get your AI companion, 
                   earn NFT credentials, and help us build the future of Web3 education together.
                 </p>
                 

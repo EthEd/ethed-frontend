@@ -175,23 +175,10 @@ function renderTextContent(content: string) {
   return elements;
 }
 
-interface PageProps {
-  params: Promise<{ lessonId: string }>;
-}
-
-export default function ZeroGLessonPage({ params }: PageProps) {
-  const [lessonId, setLessonId] = useState<string>('');
-  const [loading, setLoading] = useState(true);
+export default function ZeroGLessonClient({ lessonId }: { lessonId: string }) {
+  const moduleId = parseInt(lessonId);
+  const currentModule = modules.find(m => m.id === moduleId);
   const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
-
-  useEffect(() => {
-    const getParams = async () => {
-      const resolvedParams = await params;
-      setLessonId(resolvedParams.lessonId);
-      setLoading(false);
-    };
-    getParams();
-  }, [params]);
 
   useEffect(() => {
     const saved = localStorage.getItem('0g-101-completed');
@@ -201,22 +188,10 @@ export default function ZeroGLessonPage({ params }: PageProps) {
   }, []);
 
   const markAsCompleted = () => {
-    const moduleId = parseInt(lessonId);
     const newCompleted = new Set([...completedModules, moduleId]);
     setCompletedModules(newCompleted);
     localStorage.setItem('0g-101-completed', JSON.stringify([...newCompleted]));
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center text-white">
-        Loading...
-      </div>
-    );
-  }
-
-  const moduleId = parseInt(lessonId);
-  const currentModule = modules.find(m => m.id === moduleId);
 
   if (!currentModule) {
     return (

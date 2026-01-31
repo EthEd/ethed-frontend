@@ -8,8 +8,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Wallet, ExternalLink, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-import { getAddress } from "viem";
 import { useENSLookup } from "@/hooks/use-ens-lookup";
+
+// Ethereum provider type declaration
+declare global {
+  interface Window {
+    ethereum?: {
+      request: (args: { method: string; params?: any[] }) => Promise<any>;
+    };
+  }
+}
 
 interface WalletConnectionFormProps {
   onSuccess?: (wallet: any) => void;
@@ -46,7 +54,12 @@ export default function WalletConnectionForm({
         throw new Error("No accounts found");
       }
 
-      const walletAddress = getAddress(accounts[0]);
+      // Simple address validation
+      if (!/^0x[a-fA-F0-9]{40}$/.test(accounts[0])) {
+        throw new Error("Invalid address format");
+      }
+
+      const walletAddress = accounts[0].toLowerCase();
       await handleWalletConnection(walletAddress);
 
     } catch (error: any) {
@@ -70,7 +83,12 @@ export default function WalletConnectionForm({
     }
 
     try {
-      const checksummedAddress = getAddress(address.trim());
+      // Simple address validation
+      if (!/^0x[a-fA-F0-9]{40}$/.test(address.trim())) {
+        throw new Error("Invalid address format");
+      }
+      
+      const checksummedAddress = address.trim().toLowerCase();
       await handleWalletConnection(checksummedAddress);
       setAddress("");
     } catch (error: any) {

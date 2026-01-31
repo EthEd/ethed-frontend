@@ -1,9 +1,10 @@
 import ProfilePortfolio from "./_components/ProfilePortfolio";
 
 interface Props {
-  params: { handle: string };
+  params: Promise<{ handle: string }>;
 }
 
-export default function ProfilePage({ params }: Props) {
-  return <ProfilePortfolio handle={params.handle} />;
+export default async function ProfilePage({ params }: Props) {
+  const { handle } = await params;
+  return <ProfilePortfolio handle={handle} />;
 }

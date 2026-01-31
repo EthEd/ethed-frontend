@@ -7,19 +7,25 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
 import EthEdFeatures from './_components/features';
 import Link from 'next/link';
-import { Rocket, Wallet, MessageCircle, ShieldCheck, Globe, Coins } from 'lucide-react';
-import X402Banner from './_components/x402-banner';
+import { Rocket, Wallet, MessageCircle, ShieldCheck, Globe } from 'lucide-react';
 import HowItWorks from './_components/how-it-works';
 import Stats from './_components/stats';
 
 export default function EthEdHero() {
   return (
-    <div className="bg-background relative w-full overflow-hidden">
-      {/* Background gradient */}
+    <div className="bg-slate-950 relative w-full overflow-hidden min-h-screen">
+      {/* Enhanced background effects */}
       <div className="absolute inset-0 z-0">
-        {/* Eth blue/green radial gradient */}
-        <div className="from-emerald-400/20 via-background to-background absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))]"></div>
-        <div className="bg-cyan-300/10 absolute top-0 left-1/2 -z-10 h-[1000px] w-[1000px] -translate-x-1/2 rounded-full blur-3xl"></div>
+        {/* Primary gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"></div>
+        
+        {/* Animated gradient orbs */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-gradient-to-r from-emerald-400/20 via-cyan-400/15 to-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-gradient-to-l from-purple-400/10 via-pink-400/10 to-emerald-400/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-tr from-cyan-400/15 via-teal-400/10 to-emerald-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+        
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
       </div>
       {/* Global Grid is now handled at the layout level */}
 
@@ -61,7 +67,7 @@ export default function EthEdHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-slate-300 mx-auto mt-6 max-w-2xl text-center text-lg"
+            className="text-slate-300 mx-auto mt-6 max-w-2xl text-center text-lg leading-relaxed"
           >
             EthEd helps you master blockchain from scratch—guided by AI, powered by real rewards. Earn points, NFT badges, and on-chain certificates as you learn. Sign up instantly (no wallet needed) and claim your unique ENS identity!
           </motion.p>
@@ -97,21 +103,9 @@ export default function EthEdHero() {
               className="border-cyan-400/70 bg-black/30 flex items-center gap-2 rounded-full text-cyan-100 hover:bg-emerald-400/10 hover:text-white backdrop-blur-sm"
               onClick={() => window.location.href = '/courses'}
             >
-              <Link href="/admin/courses">
+              <Link href="/courses">
                 <GraduationCap className="h-4 w-4" />
                 Browse Courses
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              variant="ghost"
-              size="lg"
-              className="text-cyan-200 hover:text-white hover:bg-cyan-500/10 rounded-full"
-            >
-              <Link href="/pricing">
-                <Coins className="h-4 w-4 mr-2" />
-                Pricing & x402
               </Link>
             </Button>
           </motion.div>
@@ -128,29 +122,38 @@ export default function EthEdHero() {
             }}
             className="relative mx-auto mt-16 max-w-4xl"
           >
-            <div className="border-cyan-300/20 bg-black/50 overflow-hidden rounded-xl border shadow-xl backdrop-blur-sm">
-              <div className="border-cyan-300/20 bg-slate-900/50 flex h-10 items-center border-b px-4">
+            <div className="border-cyan-300/30 bg-slate-900/80 overflow-hidden rounded-xl border shadow-2xl backdrop-blur-sm">
+              <div className="border-cyan-300/30 bg-slate-800/90 flex h-10 items-center border-b px-4">
                 <div className="flex space-x-2">
-                  <div className="h-3 w-3 rounded-full bg-cyan-300"></div>
-                  <div className="h-3 w-3 rounded-full bg-emerald-400"></div>
-                  <div className="h-3 w-3 rounded-full bg-blue-400"></div>
+                  <div className="h-3 w-3 rounded-full bg-red-400"></div>
+                  <div className="h-3 w-3 rounded-full bg-yellow-400"></div>
+                  <div className="h-3 w-3 rounded-full bg-green-400"></div>
                 </div>
-                <div className="bg-background/50 text-cyan-200 mx-auto flex items-center rounded-md px-3 py-1 text-xs">
+                <div className="bg-slate-700/80 text-slate-300 mx-auto flex items-center rounded-md px-3 py-1 text-xs">
                   https://ethed.app
                 </div>
               </div>
-              <div className="relative">
-                <div className="from-background absolute inset-0 bg-gradient-to-t to-transparent opacity-0"></div>
+              <div className="relative h-64 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-full flex items-center justify-center">
+                      <GraduationCap className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">EthEd Learning Platform</h3>
+                    <p className="text-slate-400 text-sm">Master Web3 with AI-guided courses</p>
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent"></div>
               </div>
             </div>
 
-            {/* Visual interest extras */}
-            <div className="border-cyan-300/30 bg-slate-900/80 absolute -top-6 -right-6 h-12 w-12 rounded-lg border p-3 shadow-lg backdrop-blur-md">
-              <div className="bg-emerald-400/20 h-full w-full rounded-md"></div>
+            {/* Enhanced visual interest extras */}
+            <div className="border-emerald-400/40 bg-slate-800/90 absolute -top-6 -right-6 h-12 w-12 rounded-lg border p-3 shadow-xl backdrop-blur-md">
+              <div className="bg-emerald-400/30 h-full w-full rounded-md animate-pulse"></div>
             </div>
-            <div className="border-cyan-200/20 bg-slate-900/80 absolute -bottom-4 -left-4 h-8 w-8 rounded-full border shadow-lg backdrop-blur-md"></div>
-            <div className="border-cyan-200/20 bg-slate-900/80 absolute right-12 -bottom-6 h-10 w-10 rounded-lg border p-2 shadow-lg backdrop-blur-md">
-              <div className="h-full w-full rounded-md bg-cyan-500/20"></div>
+            <div className="border-cyan-400/40 bg-slate-800/90 absolute -bottom-4 -left-4 h-8 w-8 rounded-full border shadow-xl backdrop-blur-md animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="border-blue-400/40 bg-slate-800/90 absolute right-12 -bottom-6 h-10 w-10 rounded-lg border p-2 shadow-xl backdrop-blur-md">
+              <div className="h-full w-full rounded-md bg-blue-400/30 animate-pulse" style={{ animationDelay: '2s' }}></div>
             </div>
           </motion.div>
 
@@ -164,8 +167,6 @@ export default function EthEdHero() {
             <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-4 rounded-xl border border-cyan-300/20 bg-black/30 px-4 py-3 text-xs text-slate-400 backdrop-blur-sm">
               <span className="text-slate-300">Powered by</span>
               <span className="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-1 text-emerald-200">ENS</span>
-              <span className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1 text-cyan-200">Polygon Amoy</span>
-              <span className="rounded-full border border-blue-300/30 bg-blue-400/10 px-3 py-1 text-blue-200">x402 Agentic Payments</span>
               <span className="rounded-full border border-teal-300/30 bg-teal-400/10 px-3 py-1 text-teal-200">AI Buddy</span>
             </div>
           </motion.div>
@@ -174,8 +175,7 @@ export default function EthEdHero() {
 
       <EthEdFeatures/>
 
-      {/* x402 banner + How it works + Stats */}
-      <X402Banner />
+      {/* How it works + Stats */}
       <HowItWorks />
       <Stats />
     </div>

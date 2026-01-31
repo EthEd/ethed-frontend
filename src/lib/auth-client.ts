@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/react";
-import { emailOTPClient, siweClient, adminClient } from "better-auth/client/plugins";
+import { emailOTPClient, adminClient } from "better-auth/client/plugins";
 
 // Get the base URL for the auth client
 const getBaseURL = () => {
@@ -19,7 +19,6 @@ export const authClient = createAuthClient({
   baseURL: getBaseURL(),
   plugins: [
     emailOTPClient(),
-    siweClient(),
     adminClient(),
   ]
 });

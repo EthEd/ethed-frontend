@@ -36,20 +36,6 @@ const courses = [
     available: true
   },
   {
-    id: 'polygon-101',
-    title: 'Polygon 101: Agentic Payments & x402',
-    description: 'Master agentic payments on Polygon, learn x402 protocol, and build payment systems for AI agents.',
-    level: 'Beginner',
-    duration: '5 hours',
-    students: 450,
-    rating: 4.9,
-    price: 'Free',
-    badge: 'Polygon Developer NFT',
-    topics: ['Polygon', 'x402', 'Agentic Payments', 'ETHGlobal'],
-    href: '/courses/polygon-101',
-    available: true
-  },
-  {
     id: '0g-101',
     title: '0G 101: AI-Native Blockchain Infrastructure',
     description: 'Master 0G\'s decentralized AI stack - storage, compute, and inference for next-generation blockchain applications.',

@@ -107,9 +107,20 @@ const getRarityIcon = (rarity: string) => {
 };
 
 export default function Onboarding() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const { lookupByAddress } = useENSLookup();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status === "loading") return; // Still loading
+    
+    if (!session) {
+      toast.error("Please sign in to access onboarding");
+      router.push("/login");
+      return;
+    }
+  }, [session, status, router]);
 
   const [step, setStep] = useState(0);
   const [selectedBuddy, setSelectedBuddy] = useState<Buddy>(buddyOptions[0]);
@@ -135,15 +146,40 @@ export default function Onboarding() {
         baseName = `learner-${session.address.slice(-4)}`;
       } else if (session.user.name) {
         // For social users, use their name
-        baseName = session.user.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        baseName = session.user.name.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 15);
+      } else if (session.user.email) {
+        // Use email username
+        baseName = session.user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 15);
       } else {
         // Fallback random name
         baseName = `learner-${Math.random().toString(36).substring(2, 6)}`;
       }
       
+      // Ensure it meets validation rules
+      if (baseName.length < 3) {
+        baseName = `user-${Math.random().toString(36).substring(2, 6)}`;
+      }
+      
       setEnsName(baseName);
     }
   }, [session, ensName]);
+
+  // Validate ENS name
+  const validateEnsName = (name: string) => {
+    if (!name) return { valid: false, message: "ENS name is required" };
+    if (name.length < 3) return { valid: false, message: "ENS name must be at least 3 characters" };
+    if (name.length > 20) return { valid: false, message: "ENS name must be 20 characters or less" };
+    if (!/^[a-z0-9-]+$/.test(name)) return { valid: false, message: "Only lowercase letters, numbers, and hyphens allowed" };
+    if (name.startsWith('-') || name.endsWith('-')) return { valid: false, message: "Cannot start or end with hyphen" };
+    if (name.includes('--')) return { valid: false, message: "Cannot contain consecutive hyphens" };
+    
+    const reserved = ['admin', 'api', 'www', 'mail', 'ftp', 'localhost', 'ethed', 'test'];
+    if (reserved.includes(name)) return { valid: false, message: "This name is reserved" };
+    
+    return { valid: true, message: "Valid ENS name" };
+  };
+
+  const ensValidation = validateEnsName(ensName);
 
   // Update progress
   useEffect(() => {
@@ -257,12 +293,18 @@ export default function Onboarding() {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to create pet");
+        // Handle specific error cases
+        if (response.status === 401) {
+          toast.error("Please sign in to create your learning buddy");
+          router.push("/login");
+          return;
+        }
+        throw new Error(data.error || "Failed to create pet");
       }
 
-      const data = await response.json();
       setCreatedPet(data.pet);
       
       const petMessage: ChatMessage = {
@@ -279,22 +321,22 @@ export default function Onboarding() {
       setTimeout(() => setStep(2), 1500);
 
     } catch (error: any) {
-      toast.error(error.message || "Failed to create pet");
+      console.error("Pet creation error:", error);
+      toast.error(error.message || "Failed to create pet. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const registerENSSubdomain = async () => {
-    if (!ensAvailable) {
-      toast.error("Please choose an available ENS name");
+    if (!ensValidation.valid) {
+      toast.error(ensValidation.message);
       return;
     }
 
     try {
       setIsLoading(true);
 
-      // Check if user already has an ENS name and update it
       const response = await fetch("/api/ens", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -304,12 +346,11 @@ export default function Onboarding() {
         }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to register ENS");
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to register ENS");
+      }
 
       const ensMessage: ChatMessage = {
         id: Date.now().toString(),
@@ -326,7 +367,8 @@ export default function Onboarding() {
       setTimeout(() => setStep(3), 1500);
 
     } catch (error: any) {
-      toast.error(error.message || "Failed to register ENS");
+      console.error("ENS registration error:", error);
+      toast.error(error.message || "Failed to register ENS. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -346,12 +388,19 @@ export default function Onboarding() {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to mint NFTs");
+        // Handle specific error cases
+        if (response.status === 401) {
+          toast.error("Please sign in to mint your NFTs");
+          router.push("/login");
+          return;
+        }
+        throw new Error(data.error || "Failed to mint NFTs");
       }
 
-      const data = await response.json();
+      console.log("NFT minting successful:", data);
 
       setShowConfetti(true);
       setNftsMinted((prev) => [...prev, "genesis-scholar", "buddy-bond"]);
@@ -373,7 +422,8 @@ export default function Onboarding() {
       }, 4000);
 
     } catch (error: any) {
-      toast.error(error.message || "Failed to mint NFTs");
+      console.error("NFT minting error:", error);
+      toast.error(error.message || "Failed to mint NFTs. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -411,7 +461,7 @@ export default function Onboarding() {
         duration: 5000,
       });
       
-      router.push("/pricing");
+      router.push("/learn");
     } catch (error: any) {
       toast.error("Failed to complete onboarding. Please try again.");
     }
@@ -422,6 +472,23 @@ export default function Onboarding() {
     visible: { opacity: 1, x: 0 },
     exit: { opacity: 0, x: -300 },
   };
+
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-400 mx-auto mb-4"></div>
+          <p className="text-slate-300">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!session) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
@@ -619,23 +686,33 @@ export default function Onboarding() {
                           <Input
                             id="ens-name"
                             value={ensName}
-                            onChange={(e) =>
-                              setEnsName(
-                                e.target.value
-                                  .toLowerCase()
-                                  .replace(/[^a-z0-9-]/g, "")
-                              )
-                            }
+                            onChange={(e) => {
+                              const value = e.target.value
+                                .toLowerCase()
+                                .replace(/[^a-z0-9-]/g, "")
+                                .replace(/^-+|-+$/g, "")
+                                .replace(/--+/g, "-");
+                              setEnsName(value);
+                            }}
                             placeholder="your-name"
-                            className="flex-1 bg-slate-700/50 border-slate-600"
+                            className={`flex-1 bg-slate-700/50 border-slate-600 ${
+                              ensName && !ensValidation.valid ? 'border-red-500' : 
+                              ensName && ensValidation.valid ? 'border-green-500' : ''
+                            }`}
                             maxLength={20}
+                            minLength={3}
                           />
                           <span className="text-slate-400 font-mono">
                             .ethed.eth
                           </span>
                         </div>
+                        {ensName && (
+                          <p className={`text-xs ${ensValidation.valid ? 'text-green-400' : 'text-red-400'}`}>
+                            {ensValidation.message}
+                          </p>
+                        )}
                         <p className="text-xs text-slate-400">
-                          This will be your permanent identity in the EthEd ecosystem
+                          3-20 characters, lowercase letters, numbers, and hyphens only. Cannot start/end with hyphen.
                         </p>
                       </div>
 
@@ -657,7 +734,7 @@ export default function Onboarding() {
                         onClick={registerENSSubdomain}
                         size="lg"
                         className="w-full"
-                        disabled={!ensName.trim() || isLoading}
+                        disabled={!ensName.trim() || !ensValidation.valid || isLoading}
                       >
                         {isLoading ? (
                           <div className="flex items-center">
@@ -801,7 +878,7 @@ export default function Onboarding() {
                         className="w-full bg-gradient-to-r from-emerald-500 to-cyan-600 hover:from-emerald-600 hover:to-cyan-700"
                       >
                         <Sparkles className="w-4 h-4 mr-2" />
-                        Continue to Pricing & Subscriptions
+                        Continue to Learning Hub
                       </Button>
                     </CardContent>
                   </Card>
