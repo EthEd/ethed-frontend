@@ -27,7 +27,6 @@ const eslintConfig = [
       "@typescript-eslint/no-require-imports": "off",
       "@typescript-eslint/no-this-alias": "off",
       "@typescript-eslint/no-empty-object-type": "off",
-      "ignoreDuringBuilds": "2",
     },
   },
 ];

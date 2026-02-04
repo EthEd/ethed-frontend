@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { registerENS, validateSubdomain, checkAvailability } from "@/lib/ens-service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,83 +15,77 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { subdomain, buddyId } = body;
+    const { subdomain, buddyId, walletAddress } = body;
 
     // Validate subdomain format
-    if (!subdomain || typeof subdomain !== 'string') {
+    const validation = validateSubdomain(subdomain);
+    if (!validation.valid) {
       return NextResponse.json(
-        { error: "Subdomain is required" },
+        { error: validation.error },
         { status: 400 }
       );
     }
 
-    // Clean and validate the subdomain
     const cleanSubdomain = subdomain.trim().toLowerCase();
     
-    // ENS name validation rules
-    const ensNameRegex = /^[a-z0-9-]{3,20}$/;
-    if (!ensNameRegex.test(cleanSubdomain)) {
-      return NextResponse.json(
-        { 
-          error: "ENS name must be 3-20 characters long and contain only lowercase letters, numbers, and hyphens" 
-        },
-        { status: 400 }
-      );
-    }
+    console.log(`ENS registration for ${session.user.email}: ${cleanSubdomain}.ethed.eth`);
 
-    // Additional validation rules
-    if (cleanSubdomain.startsWith('-') || cleanSubdomain.endsWith('-')) {
-      return NextResponse.json(
-        { error: "ENS name cannot start or end with a hyphen" },
-        { status: 400 }
-      );
-    }
-
-    if (cleanSubdomain.includes('--')) {
-      return NextResponse.json(
-        { error: "ENS name cannot contain consecutive hyphens" },
-        { status: 400 }
-      );
-    }
-
-    // Reserved names
-    const reservedNames = ['admin', 'api', 'www', 'mail', 'ftp', 'localhost', 'ethed', 'test'];
-    if (reservedNames.includes(cleanSubdomain)) {
-      return NextResponse.json(
-        { error: "This ENS name is reserved" },
-        { status: 400 }
-      );
-    }
-
-    const fullEnsName = `${cleanSubdomain}.ethed.eth`;
-
-    // For demo purposes, we'll just return success
-    // In production, you would:
-    // 1. Check if the name is actually available
-    // 2. Register it with ENS
-    // 3. Store the registration in your database
-    
-    console.log(`ENS registration for ${session.user.email}: ${fullEnsName}`);
-
-    // Simulate ENS registration
-    const ensRegistration = {
-      id: `ens-${Date.now()}`,
+    // Register ENS using the service
+    const result = await registerENS({
       userId: session.user.id,
       subdomain: cleanSubdomain,
-      fullName: fullEnsName,
-      buddyId: buddyId,
-      registeredAt: new Date(),
-      status: 'active'
-    };
+      buddyId,
+      walletAddress,
+    });
 
     return NextResponse.json({
       message: "ENS name registered successfully",
-      ens: ensRegistration,
-      fullName: fullEnsName
+      ensName: result.ensName,
+      txHash: result.txHash,
+      wallet: result.wallet,
     });
 
   } catch (error) {
     console.error("ENS registration error:", error);
+    return NextResponse.json(
+      { 
+        error: error instanceof Error ? error.message : "Internal server error" 
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const subdomain = searchParams.get("subdomain");
+
+    if (!subdomain) {
+      return NextResponse.json(
+        { error: "Subdomain parameter is required" },
+        { status: 400 }
+      );
+    }
+
+    const validation = validateSubdomain(subdomain);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { available: false, error: validation.error },
+        { status: 200 }
+      );
+    }
+
+    const available = await checkAvailability(subdomain);
+
+    return NextResponse.json({
+      available,
+      subdomain: subdomain.trim().toLowerCase(),
+      fullName: `${subdomain.trim().toLowerCase()}.ethed.eth`,
+    });
+
+  } catch (error) {
+    console.error("ENS availability check error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

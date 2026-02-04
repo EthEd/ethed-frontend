@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 type Props = {
   posterSrc: string;      // "/pause.png" or "/media/poster.png"
@@ -26,6 +27,7 @@ export default function AgentHover({
   const [showDialog, setShowDialog] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const cacheBust = useRef(0);
   const timer = useRef<NodeJS.Timeout | null>(null);
   const hoveredRef = useRef(false);
@@ -178,6 +180,133 @@ export default function AgentHover({
     setSrc(posterSrc); // Back to pause1
   };
 
+  // API call handlers
+  const handleMintNFT = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/user/nfts/genesis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          buddyType: "spark-dragon", // Default buddy, can be made dynamic
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to mint NFT");
+      }
+
+      toast.success("🎯 Genesis NFTs minted successfully!", {
+        description: `Minted ${data.totalMinted} NFT${data.totalMinted > 1 ? "s" : ""}`,
+      });
+      
+      console.log("Minted NFTs:", data.nfts);
+    } catch (error) {
+      console.error("NFT minting error:", error);
+      toast.error("Failed to mint NFT", {
+        description: error instanceof Error ? error.message : "Please try again later",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLearnAbout = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "learn" }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch information");
+      }
+
+      toast.info("📚 " + data.title, {
+        description: data.description,
+      });
+      
+      console.log("Learn about EthEd:", data);
+    } catch (error) {
+      console.error("Learn error:", error);
+      toast.error("Failed to load information", {
+        description: error instanceof Error ? error.message : "Please try again later",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStartJourney = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "start" }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to start journey");
+      }
+
+      toast.success("🚀 " + data.message, {
+        description: "Your learning path is ready!",
+      });
+      
+      // Could redirect to onboarding: window.location.href = "/onboarding";
+      console.log("Start journey:", data);
+    } catch (error) {
+      console.error("Start journey error:", error);
+      toast.error("Failed to start journey", {
+        description: error instanceof Error ? error.message : "Please try again later",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAskQuestion = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "ask",
+          message: "Hello! I'd like to learn more about blockchain.",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to ask question");
+      }
+
+      toast.info("💬 Agent Response", {
+        description: data.reply,
+      });
+      
+      console.log("Agent response:", data);
+    } catch (error) {
+      console.error("Ask question error:", error);
+      toast.error("Failed to contact agent", {
+        description: error instanceof Error ? error.message : "Please try again later",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       <div
@@ -261,14 +390,12 @@ export default function AgentHover({
                 {/* Compact Action Buttons */}
                 <div className="space-y-1">
                   <button
-                    className="group w-full text-left p-2 rounded-lg transition-all duration-200 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-emerald-500/10 border border-transparent hover:border-cyan-300/20"
-                    onClick={() => {
-                      // TODO: Connect to backend
-                      console.log("Mint Founding Learner NFT clicked");
-                    }}
+                    disabled={isLoading}
+                    className="group w-full text-left p-2 rounded-lg transition-all duration-200 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-emerald-500/10 border border-transparent hover:border-cyan-300/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleMintNFT}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="text-sm">🎯</div>
+                      <div className="text-sm">{isLoading ? "⏳" : "🎯"}</div>
                       <div className="text-xs font-medium text-cyan-200 group-hover:text-cyan-100">
                         Mint Founding Learner NFT
                       </div>
@@ -276,14 +403,12 @@ export default function AgentHover({
                   </button>
                   
                   <button
-                    className="group w-full text-left p-2 rounded-lg transition-all duration-200 hover:bg-gradient-to-r hover:from-emerald-500/10 hover:to-blue-500/10 border border-transparent hover:border-emerald-300/20"
-                    onClick={() => {
-                      // TODO: Connect to backend
-                      console.log("Learn about EthEd clicked");
-                    }}
+                    disabled={isLoading}
+                    className="group w-full text-left p-2 rounded-lg transition-all duration-200 hover:bg-gradient-to-r hover:from-emerald-500/10 hover:to-blue-500/10 border border-transparent hover:border-emerald-300/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleLearnAbout}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="text-sm">📚</div>
+                      <div className="text-sm">{isLoading ? "⏳" : "📚"}</div>
                       <div className="text-xs font-medium text-emerald-200 group-hover:text-emerald-100">
                         Learn about EthEd
                       </div>
@@ -291,14 +416,12 @@ export default function AgentHover({
                   </button>
                   
                   <button
-                    className="group w-full text-left p-2 rounded-lg transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 border border-transparent hover:border-blue-300/20"
-                    onClick={() => {
-                      // TODO: Connect to backend
-                      console.log("Get started clicked");
-                    }}
+                    disabled={isLoading}
+                    className="group w-full text-left p-2 rounded-lg transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10 border border-transparent hover:border-blue-300/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleStartJourney}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="text-sm">🚀</div>
+                      <div className="text-sm">{isLoading ? "⏳" : "🚀"}</div>
                       <div className="text-xs font-medium text-blue-200 group-hover:text-blue-100">
                         Start Learning Journey
                       </div>
@@ -306,32 +429,28 @@ export default function AgentHover({
                   </button>
                   
                   <button
-                    className="group w-full text-left p-2 rounded-lg transition-all duration-200 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-pink-500/10 border border-transparent hover:border-purple-300/20"
-                    onClick={() => {
-                      // TODO: Connect to backend
-                      console.log("Ask a question clicked");
-                    }}
+                    disabled={isLoading}
+                    className="group w-full text-left p-2 rounded-lg transition-all duration-200 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-pink-500/10 border border-transparent hover:border-purple-300/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleAskQuestion}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="text-sm">💬</div>
+                      <div className="text-sm">{isLoading ? "⏳" : "💬"}</div>
                       <div className="text-xs font-medium text-purple-200 group-hover:text-purple-100">
-                        Ask me anything
+                        Ask a Question
                       </div>
                     </div>
                   </button>
                 </div>
+
+                {/* Close button */}
+                <button
+                  className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800/80 border border-cyan-300/20 flex items-center justify-center text-slate-400 hover:text-white hover:border-cyan-300/40 transition-colors"
+                  onClick={closeDialog}
+                  aria-label="Close"
+                >
+                  <span className="text-xs">✕</span>
+                </button>
               </div>
-              
-              {/* Compact Close button */}
-              <button
-                onClick={closeDialog}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-slate-700/80 to-slate-800/80 hover:from-slate-600/80 hover:to-slate-700/80 border border-slate-500/30 hover:border-slate-400/40 rounded-full flex items-center justify-center text-slate-300 hover:text-white transition-all duration-200 shadow-lg backdrop-blur-sm"
-                aria-label="Close dialog"
-              >
-                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
             </div>
           </div>
         </div>
