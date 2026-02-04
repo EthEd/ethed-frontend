@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { SiweLoginButton } from '@/components/siwe-login-button';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('demo@ethed.app');
@@ -71,7 +72,22 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleDemoLogin} className="space-y-4">
+          <div className="space-y-4">
+            {/* SIWE Login Button */}
+            <SiweLoginButton />
+            
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-600" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-slate-800/40 text-slate-400">Or</span>
+              </div>
+            </div>
+
+            {/* Demo Login Form */}
+            <form onSubmit={handleDemoLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white">Email</Label>
               <Input
@@ -108,7 +124,8 @@ export default function LoginPage() {
                 'Sign In with Demo Account'
               )}
             </Button>
-          </form>
+            </form>
+          </div>
           
           <div className="mt-6 text-center">
             <p className="text-xs text-slate-400">

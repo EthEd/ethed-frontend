@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import EmailProvider from "next-auth/providers/email";
 import { env } from "@/env";
+import { SiweProvider } from "./siwe-provider";
 
 declare module "next-auth" {
   interface Session {
@@ -34,6 +35,8 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   providers: [
+    // Sign In With Ethereum
+    SiweProvider(),
     // Demo/Test credentials provider
     CredentialsProvider({
       id: "demo",

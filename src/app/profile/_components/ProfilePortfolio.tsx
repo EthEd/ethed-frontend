@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,54 +25,13 @@ import {
   Target,
   PawPrint,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
   handle: string;
 }
-
-// Mock data - replace with real data later
-const mockProfile = {
-  ens: "dhanush.eth",
-  displayName: "Dhanush Kumar",
-  bio: "Building the future of decentralized education. Smart contracts enthusiast. Learning never stops.",
-  avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=dhanush",
-  location: "Singapore",
-  website: "https://dhanush.dev",
-  joinedDate: "2024-01-15",
-  followers: 847,
-  following: 293,
-  verified: true,
-  streak: 47,
-  totalXP: 12580,
-  coursesCompleted: 28,
-  nftsEarned: 34,
-};
-
-const mockNFTs = [
-  { id: 1, name: "Solidity Master", description: "Completed Advanced Smart Contracts", image: "https://api.dicebear.com/7.x/shapes/svg?seed=solidity", rarity: "Epic", earned: "2024-03-15" },
-  { id: 2, name: "DeFi Explorer", description: "Mastered DeFi protocols and yield farming", image: "https://api.dicebear.com/7.x/shapes/svg?seed=defi", rarity: "Rare", earned: "2024-03-10" },
-  { id: 3, name: "Web3 Pioneer", description: "First 100 learners on EthEd", image: "https://api.dicebear.com/7.x/shapes/svg?seed=pioneer", rarity: "Legendary", earned: "2024-01-20" },
-  { id: 4, name: "Gas Optimizer", description: "Reduced contract gas by 40%", image: "https://api.dicebear.com/7.x/shapes/svg?seed=gas", rarity: "Epic", earned: "2024-02-28" },
-  { id: 5, name: "Streak Champion", description: "30-day learning streak", image: "https://api.dicebear.com/7.x/shapes/svg?seed=streak", rarity: "Rare", earned: "2024-03-05" },
-  { id: 6, name: "Community Helper", description: "Helped 50+ learners", image: "https://api.dicebear.com/7.x/shapes/svg?seed=helper", rarity: "Common", earned: "2024-02-15" },
-];
-
-const mockCourses = [
-  { id: 1, title: "Advanced Smart Contracts", progress: 100, totalLessons: 24, completedAt: "2024-03-15", difficulty: "Advanced" },
-  { id: 2, title: "DeFi Development", progress: 85, totalLessons: 18, completedAt: null, difficulty: "Intermediate" },
-  { id: 3, title: "NFT Marketplace", progress: 100, totalLessons: 16, completedAt: "2024-02-28", difficulty: "Intermediate" },
-  { id: 4, title: "Web3 Security", progress: 60, totalLessons: 20, completedAt: null, difficulty: "Advanced" },
-];
-
-const mockActivity = [
-  { type: "nft", title: "Earned 'Solidity Master' NFT", date: "2024-03-15", icon: <Award className="w-4 h-4" /> },
-  { type: "course", title: "Completed 'Advanced Smart Contracts'", date: "2024-03-15", icon: <BookOpen className="w-4 h-4" /> },
-  { type: "streak", title: "Achieved 45-day learning streak", date: "2024-03-12", icon: <Zap className="w-4 h-4" /> },
-  { type: "social", title: "Helped @alice.eth with deployment", date: "2024-03-10", icon: <Users className="w-4 h-4" /> },
-  { type: "nft", title: "Earned 'DeFi Explorer' NFT", date: "2024-03-10", icon: <Award className="w-4 h-4" /> },
-];
 
 const rarityColors = {
   Common: "text-gray-400 border-gray-400/30",
@@ -84,6 +43,47 @@ const rarityColors = {
 export default function ProfilePortfolio({ handle }: Props) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Fetch profile by ENS name or user ID
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(`/api/ens/lookup?name=${handle}`);
+        const data = await response.json();
+
+        if (!data.user) {
+          setError("Profile not found");
+          setLoading(false);
+          return;
+        }
+
+        // Fetch full user profile
+        const profileResponse = await fetch("/api/user/profile");
+        const profileData = await profileResponse.json();
+
+        if (profileData.user) {
+          setProfile({
+            ...profileData.user,
+            ensName: data.ensName,
+            displayName: data.user?.name || handle,
+            avatar: data.user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${handle}`,
+            bio: `Web3 learner on EthEd`,
+            verified: !!data.ensName,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load profile:", err);
+        setError("Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [handle]);
 
   const copyProfile = async () => {
     await navigator.clipboard.writeText(`${window.location.origin}/profile/${handle}`);
@@ -91,6 +91,26 @@ export default function ProfilePortfolio({ handle }: Props) {
     toast.success("Profile link copied!");
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+      </div>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="bg-slate-800/40 backdrop-blur-xl border border-red-400/30">
+          <CardContent className="p-6">
+            <p className="text-red-300">{error || "Profile not found"}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-background">
@@ -113,9 +133,9 @@ export default function ProfilePortfolio({ handle }: Props) {
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex flex-col items-center md:items-start">
                   <Avatar className="w-24 h-24 mb-4 ring-2 ring-emerald-400/30">
-                    <AvatarImage src={mockProfile.avatar} alt={mockProfile.displayName} />
+                    <AvatarImage src={profile.avatar} alt={profile.displayName} />
                     <AvatarFallback className="bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-900">
-                      {mockProfile.displayName.split(" ").map(n => n[0]).join("")}
+                      {profile.displayName.split(" ").map((n: string) => n[0]).join("")}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex gap-2">
@@ -128,19 +148,21 @@ export default function ProfilePortfolio({ handle }: Props) {
                       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                       {copied ? "Copied!" : "Share"}
                     </Button>
-                    <Button variant="outline" size="sm" className="border-cyan-400/30 text-cyan-300">
-                      <ExternalLink className="w-4 h-4 mr-1" />
-                      ENS
-                    </Button>
+                    {profile.ensName && (
+                      <Button variant="outline" size="sm" className="border-cyan-400/30 text-cyan-300">
+                        <ExternalLink className="w-4 h-4 mr-1" />
+                        {profile.ensName}
+                      </Button>
+                    )}
                   </div>
                 </div>
 
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
-                      {mockProfile.displayName}
+                      {profile.displayName}
                     </h1>
-                    {mockProfile.verified && (
+                    {profile.verified && (
                       <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-400/30">
                         <Globe className="w-3 h-3 mr-1" />
                         Verified

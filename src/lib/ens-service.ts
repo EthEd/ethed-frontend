@@ -161,6 +161,7 @@ export async function registerENS(params: ENSRegistrationParams) {
   }
 
   const cleaned = subdomain.trim().toLowerCase();
+  const ensName = `${cleaned}.ethed.eth`;
 
   // Check availability
   const available = await checkAvailability(cleaned);
@@ -171,7 +172,7 @@ export async function registerENS(params: ENSRegistrationParams) {
   // Register on-chain (requires wallet address in production)
   const defaultAddress = walletAddress || "0x0000000000000000000000000000000000000000";
   
-  const { txHash, ensName } = await registerOnChain(cleaned, defaultAddress);
+  const { txHash } = await registerOnChain(cleaned, defaultAddress);
 
   // Save to database
   const walletRecord = await saveENSToDatabase({
@@ -179,6 +180,19 @@ export async function registerENS(params: ENSRegistrationParams) {
     ensName,
     address: walletAddress,
   });
+
+  // Ensure this wallet is marked as primary if it's the first one
+  const existingWallets = await prisma.walletAddress.findMany({
+    where: { userId }
+  });
+
+  if (existingWallets.length === 1) {
+    // This is the first wallet, make it primary
+    await prisma.walletAddress.update({
+      where: { id: walletRecord.id },
+      data: { isPrimary: true }
+    });
+  }
 
   return {
     success: true,

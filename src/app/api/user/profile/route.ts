@@ -14,29 +14,53 @@ export async function GET() {
       );
     }
 
-    // For demo purposes, return mock user data
-    // In production, you would fetch from database:
-    // const user = await prisma.user.findUnique({ ... });
-
-    const mockUser = {
-      id: session.user.id,
-      name: session.user.name,
-      email: session.user.email,
-      image: session.user.image,
-      role: 'user',
-      createdAt: new Date(),
-      wallets: [],
-      pets: [],
-      courses: [],
-      stats: {
-        coursesEnrolled: 0,
-        purchasesMade: 0,
-        nftsOwned: 0
+    // Fetch real user data from database
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        wallets: true,
+        pets: true,
+        courses: {
+          include: {
+            course: true
+          }
+        },
+        nfts: true
       }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Calculate stats
+    const stats = {
+      coursesEnrolled: user.courses.length,
+      coursesCompleted: user.courses.filter(c => c.completed).length,
+      nftsOwned: user.nfts.length,
+      petsOwned: user.pets.length,
+      walletConnected: user.wallets.length > 0,
+      ensName: user.wallets.find(w => w.ensName)?.ensName || null,
+      joinedDate: user.createdAt
     };
 
     return NextResponse.json({
-      user: mockUser
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        role: user.role,
+        createdAt: user.createdAt,
+        wallets: user.wallets,
+        pets: user.pets,
+        courses: user.courses,
+        nfts: user.nfts,
+        stats
+      }
     });
 
   } catch (error) {
