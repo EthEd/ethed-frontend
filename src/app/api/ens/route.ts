@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { subdomain, buddyId, walletAddress } = body;
+    const { subdomain, walletAddress } = body;
 
     // Validate subdomain format
     const validation = validateSubdomain(subdomain);
@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
     const result = await registerENS({
       userId: session.user.id,
       subdomain: cleanSubdomain,
-      buddyId,
       walletAddress,
     });
 

@@ -902,7 +902,8 @@ export default function Onboarding() {
                     <p className="mb-2">If you need help with onboarding, use the support link at the bottom of the page or reach out on our community channel.</p>
                     <p className="text-xs text-slate-400">Tip: You can still claim your ENS and mint your Genesis NFT during onboarding.</p>
                   </div>
-                )
+                )}
+                {BUDDY_ENABLED && (
                 <div className="flex-1 space-y-3 overflow-y-auto mb-4 pr-2">
                   {chatMessages.map((msg) => (
                     <div
@@ -920,9 +921,9 @@ export default function Onboarding() {
                       >
                         {msg.sender === "buddy" && (
                           <div className="flex items-center mb-1">
-                            <span className="text-lg mr-1">{selectedBuddy.emoji}</span>
+                            <span className="text-lg mr-1">{selectedBuddy?.emoji}</span>
                             <span className="text-xs text-slate-400">
-                              {selectedBuddy.name}
+                              {selectedBuddy?.name}
                             </span>
                           </div>
                         )}
@@ -931,6 +932,7 @@ export default function Onboarding() {
                     </div>
                   ))}
                 </div>
+                )}
 
                 {/* Input */}
                 {step >= 1 && (
@@ -939,7 +941,7 @@ export default function Onboarding() {
                       value={userInput}
                       onChange={(e) => setUserInput(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                      placeholder={`Message ${selectedBuddy.name}...`}
+                      placeholder={`Message ${selectedBuddy?.name || 'onboarding help'}...`}
                       className="flex-1 text-sm bg-slate-700/50 border-slate-600"
                       maxLength={200}
                     />
