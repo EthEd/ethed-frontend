@@ -285,6 +285,11 @@ export default function Onboarding() {
   };
 
   const createPetInBackend = async () => {
+    if (!BUDDY_ENABLED || !selectedBuddy) {
+      toast.info("Learning Buddy feature is currently disabled.");
+      return;
+    }
+
     try {
       setIsLoading(true);
 
