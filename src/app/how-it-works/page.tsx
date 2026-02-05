@@ -55,23 +55,23 @@ interface Feature {
 const learningSteps: Step[] = [
   {
     id: 1,
-    title: "Sign Up & Choose Your Buddy",
-    description: "Create your account and select a learning companion to guide your journey",
-    icon: PawPrint,
-    color: "emerald",
+    title: "Connect Your Wallet & Profile",
+    description: "Initialize your Web3 journey by connecting your wallet and setting up your decentralized profile",
+    icon: Wallet,
+    color: "cyan",
     details: [
-      "Connect with Web3 wallet or social login",
-      "Choose from 4 unique learning buddies",
-      "Each buddy has different personalities and specialties",
-      "Your buddy grows and evolves with you"
+      "Connect with MetaMask, Coinbase, or WalletConnect",
+      "Initialize your on-chain identity",
+      "Set your learning preferences and goals",
+      "Join the global community of Web3 builders"
     ]
   },
   {
     id: 2,
     title: "Claim Your ENS Identity",
-    description: "Get your unique EthEd subdomain for your blockchain identity",
+    description: "Get your unique EthEd subdomain for your permanent blockchain identity",
     icon: Globe,
-    color: "cyan",
+    color: "blue",
     details: [
       "Receive a free yourname.ethed.eth subdomain",
       "Use it across the entire Web3 ecosystem",
@@ -84,11 +84,11 @@ const learningSteps: Step[] = [
     title: "Learn Through Interactive Courses",
     description: "Engage with hands-on lessons designed for Web3 developers",
     icon: BookOpen,
-    color: "purple",
+    color: "indigo",
     details: [
       "Interactive coding challenges and quizzes",
       "Real-world project-based learning",
-      "AI-powered personalized learning paths",
+      "Self-paced curriculum from experts",
       "Community discussions and peer learning"
     ]
   },
@@ -97,7 +97,7 @@ const learningSteps: Step[] = [
     title: "Earn NFT Credentials",
     description: "Collect verifiable achievements and build your Web3 portfolio",
     icon: Award,
-    color: "yellow",
+    color: "purple",
     details: [
       "NFT certificates for completed courses",
       "Skill badges for specific competencies",
@@ -109,15 +109,15 @@ const learningSteps: Step[] = [
 
 const keyFeatures: Feature[] = [
   {
-    title: "AI Learning Companion",
-    description: "Your personal buddy adapts to your learning style and provides motivation",
-    icon: Heart,
-    color: "pink",
+    title: "Interactive Roadmap",
+    description: "Dynamic learning paths that adapt as you progress through challenges",
+    icon: Target,
+    color: "cyan",
     benefits: [
-      "Personalized learning recommendations",
-      "24/7 availability for questions and support",
-      "Emotional intelligence to keep you motivated",
-      "Gamified progression system"
+      "Progressive difficulty scaling",
+      "Automated skill gap analysis",
+      "Project-driven milestones",
+      "Curated resource recommendations"
     ]
   },
   {
@@ -136,7 +136,7 @@ const keyFeatures: Feature[] = [
     title: "Community Learning",
     description: "Connect with fellow learners and industry experts worldwide",
     icon: Users,
-    color: "green",
+    color: "indigo",
     benefits: [
       "Peer-to-peer knowledge sharing",
       "Expert-led workshops and AMAs",
@@ -148,7 +148,7 @@ const keyFeatures: Feature[] = [
     title: "Real-World Projects", 
     description: "Build actual DApps and smart contracts while learning",
     icon: Code,
-    color: "orange",
+    color: "purple",
     benefits: [
       "Hands-on coding experience",
       "Deploy to live testnets",
@@ -158,55 +158,19 @@ const keyFeatures: Feature[] = [
   }
 ];
 
-const buddyOptions = [
-  {
-    id: "spark",
-    name: "Spark",
-    emoji: "🐉",
-    personality: "Wise Mentor",
-    specialty: "Advanced concepts and deep understanding",
-    color: "from-yellow-400 to-orange-500"
-  },
-  {
-    id: "cypher",
-    name: "Cypher", 
-    emoji: "🦊",
-    personality: "Tech Genius",
-    specialty: "Coding challenges and technical skills",
-    color: "from-purple-400 to-pink-500"
-  },
-  {
-    id: "hoot",
-    name: "Professor Hoot",
-    emoji: "🦉", 
-    personality: "Academic Scholar",
-    specialty: "Theory and comprehensive learning",
-    color: "from-blue-400 to-cyan-500"
-  },
-  {
-    id: "luna",
-    name: "Luna",
-    emoji: "🐱",
-    personality: "Creative Explorer", 
-    specialty: "Creative projects and innovation",
-    color: "from-green-400 to-emerald-500"
-  }
-];
-
 export default function HowItWorksPage() {
   const [activeStep, setActiveStep] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [selectedBuddy, setSelectedBuddy] = useState(buddyOptions[0]);
   const [expandedFeature, setExpandedFeature] = useState<number | null>(null);
 
   const currentStep = learningSteps.find(step => step.id === activeStep);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-slate-950">
       {/* Background Effects */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-300/15 via-background to-background" />
-        <div className="absolute top-20 left-1/2 h-[800px] w-[800px] -translate-x-1/2 rounded-full bg-cyan-300/10 blur-3xl" />
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px]" />
       </div>
 
       <div className="container mx-auto px-4 py-16 max-w-7xl">
@@ -216,17 +180,17 @@ export default function HowItWorksPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-400/20"
+            className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-400/20"
           >
-            <Sparkles className="h-4 w-4 text-emerald-400" />
-            <span className="text-sm font-medium text-emerald-300">Learn. Build. Own.</span>
+            <Sparkles className="h-4 w-4 text-cyan-400" />
+            <span className="text-sm font-medium text-cyan-300">Learn. Build. Own.</span>
           </motion.div>
           
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-emerald-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent"
+            className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent"
           >
             How EthEd Works
           </motion.h1>
@@ -237,8 +201,8 @@ export default function HowItWorksPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed"
           >
-            Discover how EthEd revolutionizes Web3 education with AI companions, 
-            blockchain credentials, and hands-on learning experiences.
+            Discover how EthEd revolutionizes Web3 education with permanent 
+            blockchain credentials and hands-on learning experiences.
           </motion.p>
         </div>
 
@@ -260,7 +224,7 @@ export default function HowItWorksPage() {
 
           {/* Step Navigation */}
           <div className="flex justify-center mb-8">
-            <div className="flex flex-wrap gap-4 p-2 bg-slate-800/40 rounded-2xl border border-white/10 backdrop-blur-xl">
+            <div className="flex flex-wrap gap-4 p-2 bg-slate-950/60 rounded-2xl border border-cyan-400/10 backdrop-blur-md">
               {learningSteps.map((step) => {
                 const Icon = step.icon;
                 return (
@@ -269,8 +233,8 @@ export default function HowItWorksPage() {
                     onClick={() => setActiveStep(step.id)}
                     className={`flex items-center gap-3 px-6 py-3 rounded-xl transition-all duration-300 ${
                       activeStep === step.id
-                        ? `bg-${step.color}-500/20 border border-${step.color}-400/40 text-${step.color}-300`
-                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-700/40"
+                        ? `bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 shadow-glow-cyan`
+                        : "text-slate-500 hover:text-slate-300 hover:bg-slate-900"
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -291,31 +255,31 @@ export default function HowItWorksPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
                 transition={{ duration: 0.5 }}
-                className="grid md:grid-cols-2 gap-8 items-center"
+                className="grid md:grid-cols-2 gap-12 items-center"
               >
                 {/* Step Details */}
                 <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className={`p-3 rounded-xl bg-${currentStep.color}-500/20 border border-${currentStep.color}-400/40`}>
-                      <currentStep.icon className={`w-6 h-6 text-${currentStep.color}-300`} />
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-400/20 shadow-lg shadow-cyan-900/10">
+                      <currentStep.icon className="w-6 h-6 text-cyan-400" />
                     </div>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs border-cyan-400/20 text-cyan-400">
                       Step {currentStep.id}
                     </Badge>
                   </div>
                   
-                  <h3 className="text-2xl font-bold text-white mb-4">
+                  <h3 className="text-3xl font-bold text-white mb-6">
                     {currentStep.title}
                   </h3>
                   
-                  <p className="text-slate-300 text-lg mb-6 leading-relaxed">
+                  <p className="text-slate-400 text-lg mb-8 leading-relaxed">
                     {currentStep.description}
                   </p>
                   
-                  <ul className="space-y-3">
+                  <ul className="space-y-4">
                     {currentStep.details.map((detail, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <CheckCircle className={`w-5 h-5 text-${currentStep.color}-400 mt-0.5 flex-shrink-0`} />
+                      <li key={index} className="flex items-start gap-4">
+                        <CheckCircle className="w-5 h-5 text-cyan-400 mt-1 flex-shrink-0" />
                         <span className="text-slate-300">{detail}</span>
                       </li>
                     ))}
@@ -324,60 +288,63 @@ export default function HowItWorksPage() {
 
                 {/* Interactive Demo */}
                 <div className="relative">
-                  <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10 overflow-hidden">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-[2.5rem] blur-2xl opacity-50" />
+                  <Card className="bg-slate-950/60 backdrop-blur-md border border-cyan-400/10 overflow-hidden rounded-[2rem] relative">
                     <CardContent className="p-0">
                       {/* Demo content based on current step */}
                       {activeStep === 1 && (
-                        <div className="p-6">
-                          <h4 className="text-lg font-semibold text-white mb-4">Choose Your Learning Buddy</h4>
-                          <div className="grid grid-cols-2 gap-3">
-                            {buddyOptions.map((buddy) => (
-                              <motion.div
-                                key={buddy.id}
-                                whileHover={{ scale: 1.02 }}
-                                onClick={() => setSelectedBuddy(buddy)}
-                                className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                                  selectedBuddy.id === buddy.id
-                                    ? "border-emerald-400 bg-emerald-500/10"
-                                    : "border-slate-600 hover:border-slate-500"
-                                }`}
+                        <div className="p-8">
+                          <h4 className="text-xl font-semibold text-white mb-6">Web3 Authentication</h4>
+                          <div className="space-y-4">
+                            {[
+                              { name: 'MetaMask', icon: '🦊' },
+                              { name: 'Coinbase Wallet', icon: '🛡️' },
+                              { name: 'WalletConnect', icon: '🔗' }
+                            ].map((wallet) => (
+                              <div
+                                key={wallet.name}
+                                className="p-4 rounded-xl border border-cyan-400/10 bg-slate-900/40 hover:border-cyan-400/30 hover:bg-slate-900/60 transition-all cursor-pointer flex items-center justify-between group"
                               >
-                                <div className="text-center">
-                                  <div className="text-2xl mb-2">{buddy.emoji}</div>
-                                  <h5 className="font-medium text-white text-sm">{buddy.name}</h5>
-                                  <p className="text-xs text-slate-400">{buddy.personality}</p>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-2xl">{wallet.icon}</span>
+                                  <span className="font-medium text-slate-200">{wallet.name}</span>
                                 </div>
-                              </motion.div>
+                                <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors" />
+                              </div>
                             ))}
                           </div>
-                          <div className="mt-4 p-3 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 rounded-lg border border-emerald-500/20">
-                            <p className="text-emerald-300 text-sm">
-                              <span className="text-xl mr-2">{selectedBuddy.emoji}</span>
-                              {selectedBuddy.specialty}
+                          <div className="mt-8 p-4 bg-cyan-500/5 rounded-xl border border-cyan-400/10">
+                            <p className="text-cyan-300 text-sm flex items-center gap-2">
+                              <Sparkles className="w-4 h-4" />
+                              Safe and secure decentralized login
                             </p>
                           </div>
                         </div>
                       )}
 
                       {activeStep === 2 && (
-                        <div className="p-6">
-                          <h4 className="text-lg font-semibold text-white mb-4">Your ENS Identity</h4>
-                          <div className="space-y-4">
+                        <div className="p-8">
+                          <h4 className="text-xl font-semibold text-white mb-6">Your ENS Identity</h4>
+                          <div className="space-y-6">
                             <div className="flex items-center gap-2">
-                              <input
-                                type="text"
-                                placeholder="yourname"
-                                className="flex-1 px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
-                                defaultValue="alex-dev"
-                              />
-                              <span className="text-slate-400 font-mono">.ethed.eth</span>
+                              <div className="relative flex-1">
+                                <input
+                                  type="text"
+                                  placeholder="yourname"
+                                  className="w-full px-4 py-3 bg-slate-900/60 border border-cyan-400/10 rounded-xl text-white outline-none focus:border-cyan-400/30 transition-all"
+                                  defaultValue="alex-dev"
+                                />
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-sm">.ethed.eth</span>
+                              </div>
                             </div>
-                            <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg">
-                              <div className="flex items-center gap-3">
-                                <Globe className="w-6 h-6 text-cyan-400" />
+                            <div className="p-6 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-2xl shadow-inner">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-400/30">
+                                  <Globe className="w-6 h-6 text-cyan-400" />
+                                </div>
                                 <div>
-                                  <p className="text-cyan-300 font-medium">alex-dev.ethed.eth</p>
-                                  <p className="text-slate-400 text-sm">Your Web3 identity across all platforms</p>
+                                  <p className="text-cyan-100 font-bold text-lg">alex-dev.ethed.eth</p>
+                                  <p className="text-slate-400 text-sm">Global Web3 Identifier</p>
                                 </div>
                               </div>
                             </div>
@@ -386,22 +353,28 @@ export default function HowItWorksPage() {
                       )}
 
                       {activeStep === 3 && (
-                        <div className="p-6">
-                          <h4 className="text-lg font-semibold text-white mb-4">Interactive Learning</h4>
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 bg-slate-700/40 rounded-lg">
+                        <div className="p-8">
+                          <h4 className="text-xl font-semibold text-white mb-6">Interactive Learning</h4>
+                          <div className="space-y-6">
+                            <div className="flex items-center justify-between p-4 bg-slate-900/60 rounded-xl border border-cyan-400/10">
                               <span className="text-white font-medium">Smart Contract Basics</span>
-                              <Badge className="bg-emerald-500/20 text-emerald-300">In Progress</Badge>
+                              <Badge className="bg-cyan-500/10 text-cyan-400 border-none">Module 01</Badge>
                             </div>
-                            <Progress value={65} className="h-2" />
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg text-center">
-                                <BookOpen className="w-6 h-6 text-purple-400 mx-auto mb-1" />
-                                <p className="text-purple-300 text-sm font-medium">5 Lessons</p>
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm mb-2">
+                                <span className="text-slate-400 text-xs">COURSE PROGRESS</span>
+                                <span className="text-cyan-400 text-xs font-bold">65%</span>
                               </div>
-                              <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-center">
-                                <Code className="w-6 h-6 text-yellow-400 mx-auto mb-1" />
-                                <p className="text-yellow-300 text-sm font-medium">3 Projects</p>
+                              <Progress value={65} className="h-2 bg-slate-800" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-center">
+                                <BookOpen className="w-6 h-6 text-indigo-400 mx-auto mb-2" />
+                                <p className="text-indigo-200 text-sm font-bold">12 Lessons</p>
+                              </div>
+                              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-center">
+                                <Zap className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+                                <p className="text-blue-200 text-sm font-bold">8 Projects</p>
                               </div>
                             </div>
                           </div>
@@ -409,18 +382,22 @@ export default function HowItWorksPage() {
                       )}
 
                       {activeStep === 4 && (
-                        <div className="p-6">
-                          <h4 className="text-lg font-semibold text-white mb-4">NFT Achievements</h4>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg border border-purple-500/30 text-center">
-                              <Crown className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-                              <h5 className="text-white font-medium text-sm">Smart Contract Master</h5>
-                              <Badge variant="outline" className="text-xs mt-1">Legendary</Badge>
+                        <div className="p-8">
+                          <h4 className="text-xl font-semibold text-white mb-6">NFT Achievements</h4>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="p-6 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl border border-indigo-500/30 text-center shadow-lg hover:shadow-indigo-500/10 transition-shadow">
+                              <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-4 border border-yellow-400/30">
+                                <Crown className="w-8 h-8 text-yellow-400" />
+                              </div>
+                              <h5 className="text-white font-bold text-sm mb-1 line-clamp-1">Smart Contract Master</h5>
+                              <Badge variant="outline" className="text-[10px] border-yellow-400/30 text-yellow-400 h-5">Legendary</Badge>
                             </div>
-                            <div className="p-4 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 rounded-lg border border-emerald-500/30 text-center">
-                              <Star className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                              <h5 className="text-white font-medium text-sm">DApp Developer</h5>
-                              <Badge variant="outline" className="text-xs mt-1">Epic</Badge>
+                            <div className="p-6 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl border border-cyan-500/30 text-center shadow-lg hover:shadow-cyan-500/10 transition-shadow">
+                              <div className="w-16 h-16 rounded-full bg-cyan-500/20 flex items-center justify-center mx-auto mb-4 border border-cyan-400/30">
+                                <Star className="w-8 h-8 text-cyan-400" />
+                              </div>
+                              <h5 className="text-white font-bold text-sm mb-1 line-clamp-1">DApp Developer</h5>
+                              <Badge variant="outline" className="text-[10px] border-cyan-400/30 text-cyan-400 h-5">Epic</Badge>
                             </div>
                           </div>
                         </div>
@@ -433,21 +410,21 @@ export default function HowItWorksPage() {
           </AnimatePresence>
 
           {/* Step Navigation Arrows */}
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex justify-center gap-4 mt-12">
             <Button
               variant="outline"
               onClick={() => setActiveStep(Math.max(1, activeStep - 1))}
               disabled={activeStep === 1}
-              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+              className="border-cyan-400/20 text-slate-400 hover:bg-slate-900 rounded-xl px-8"
             >
-              Previous
+              Previous Step
             </Button>
             <Button
               onClick={() => setActiveStep(Math.min(4, activeStep + 1))}
               disabled={activeStep === 4}
-              className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700"
+              className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl px-8 shadow-lg shadow-cyan-900/20"
             >
-              Next
+              Next Step
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
@@ -549,7 +526,7 @@ export default function HowItWorksPage() {
                 title: "Web3 Fundamentals",
                 duration: "4-6 weeks",
                 courses: 5,
-                color: "emerald",
+                color: "cyan",
                 topics: ["Blockchain Basics", "Crypto Wallets", "Smart Contracts Intro", "DeFi Concepts", "NFT Fundamentals"]
               },
               {
@@ -557,7 +534,7 @@ export default function HowItWorksPage() {
                 title: "Smart Contract Development",
                 duration: "8-10 weeks",
                 courses: 8,
-                color: "cyan",
+                color: "blue",
                 topics: ["Solidity Programming", "Contract Testing", "Security Best Practices", "DApp Frontend", "IPFS Integration"]
               },
               {
@@ -580,7 +557,7 @@ export default function HowItWorksPage() {
                       <p className="text-slate-300 text-sm font-medium">{path.courses} courses</p>
                     </div>
                   </div>
-                  <CardTitle className="text-xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-emerald-400 group-hover:to-cyan-400 group-hover:bg-clip-text transition-all duration-300">
+                  <CardTitle className="text-xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-400 group-hover:bg-clip-text transition-all duration-300">
                     {path.title}
                   </CardTitle>
                 </CardHeader>
@@ -610,7 +587,7 @@ export default function HowItWorksPage() {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="text-center"
         >
-          <Card className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-400/20 backdrop-blur-xl">
+          <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 backdrop-blur-xl">
             <CardContent className="p-12">
               <div className="max-w-3xl mx-auto">
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
@@ -618,10 +595,10 @@ export default function HowItWorksPage() {
                 </h2>
                 <p className="text-slate-300 text-lg mb-8">
                   Join thousands of developers already learning and building on EthEd. 
-                  Get your AI buddy, claim your ENS identity, and start earning NFT credentials today.
+                  Master the Ethereum stack, claim your ENS identity, and earn NFT credentials as you learn.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button asChild size="lg" className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700">
+                  <Button asChild size="lg" className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700">
                     <Link href="/onboarding">
                       Get Started Free
                       <ArrowRight className="w-5 h-5 ml-2" />
@@ -636,15 +613,15 @@ export default function HowItWorksPage() {
                 
                 <div className="flex items-center justify-center gap-8 mt-8 text-slate-400">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle className="w-4 h-4 text-cyan-400" />
                     <span className="text-sm">Free to start</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle className="w-4 h-4 text-cyan-400" />
                     <span className="text-sm">Own your credentials</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle className="w-4 h-4 text-cyan-400" />
                     <span className="text-sm">AI-powered learning</span>
                   </div>
                 </div>

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,6 +24,7 @@ import {
   X
 } from "lucide-react";
 import { useSignOut } from "@/hooks/use-signout";
+import Logo from "@/components/logo";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -92,7 +92,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-slate-200/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 w-full border-b border-cyan-400/10 bg-slate-950/60 backdrop-blur-md">
       <div className="container mx-auto px-4">
         <div className="relative flex h-16 items-center">
           
@@ -101,25 +101,25 @@ export default function Navbar() {
             <div className="hidden md:flex items-center space-x-6">
               <Link 
                 href="/courses" 
-                className="text-sm font-medium text-muted-foreground hover:text-emerald-600 transition-all duration-200 hover:scale-105"
+                className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
               >
                 Courses
               </Link>
               <Link 
                 href="/learn" 
-                className="text-sm font-medium text-muted-foreground hover:text-cyan-600 transition-all duration-200 hover:scale-105"
+                className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
               >
                 Learn
               </Link>
               <Link 
                 href="/how-it-works" 
-                className="text-sm font-medium text-muted-foreground hover:text-emerald-600 transition-all duration-200 hover:scale-105"
+                className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
               >
                 How It Works
               </Link>
               <Link 
                 href="/community" 
-                className="text-sm font-medium text-muted-foreground hover:text-emerald-600 transition-all duration-200 hover:scale-105"
+                className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
               >
                 Community
               </Link>
@@ -129,24 +129,7 @@ export default function Navbar() {
           {/* Center Logo - Absolutely positioned for perfect centering */}
           <div className="absolute left-1/2 transform -translate-x-1/2">
             <Link href="/" className="group relative block">
-              <div className="relative overflow-hidden rounded-xl">
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 via-cyan-400/20 to-emerald-400/20 opacity-0 group-hover:opacity-100 transition-all duration-300 blur-md scale-110" />
-                
-                {/* Logo with hover effects */}
-                <Image
-                  src="/logos/logo.png"
-                  alt="EthEd Logo"
-                  height={32}
-                  width={128}
-                  className="h-8 mx-auto invert"
-                />
-                
-                {/* Animated border on hover */}
-                <div className="absolute inset-0 rounded-xl border border-transparent group-hover:border-gradient-to-r group-hover:from-emerald-400/50 group-hover:via-cyan-400/50 group-hover:to-emerald-400/50 transition-all duration-300">
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-400/10 via-cyan-400/10 to-emerald-400/10 opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                </div>
-              </div>
+              <Logo />
               
               {/* Optional: Floating particles effect */}
               <div className="absolute -top-2 -right-2 w-1 h-1 bg-emerald-400 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-all duration-300" />

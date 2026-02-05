@@ -16,45 +16,22 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { petId, buddyType, walletAddress } = body;
+    const { walletAddress } = body;
 
-    // Validate required fields
-    if (!buddyType) {
-      return NextResponse.json(
-        { error: "Buddy type is required for NFT minting" },
-        { status: 400 }
-      );
-    }
-
-    // Validate buddy type format
-    const validBuddyTypes = ['spark-dragon', 'cyber-fox', 'prof-owl', 'cosmic-cat'];
-    if (!validBuddyTypes.includes(buddyType)) {
-      return NextResponse.json(
-        { error: "Invalid buddy type provided" },
-        { status: 400 }
-      );
-    }
-
-    console.log(`Minting Genesis NFTs for user ${session.user.email}:`, {
-      petId,
-      buddyType,
-      walletAddress
-    });
+    console.log(`Minting Genesis NFT for user ${session.user.email}`);
 
     // Get user's ENS name if they have one
     const ensName = await getUserENS(session.user.id);
 
-    // Mint NFTs using the service
+    // Mint NFT using the service
     const result = await mintGenesisNFTs({
       userId: session.user.id,
-      buddyType,
       ensName: ensName || undefined,
-      petId,
       userAddress: walletAddress,
     });
 
     return NextResponse.json({
-      message: "Genesis NFTs minted successfully",
+      message: "EthEd Pioneer NFT minted successfully",
       nfts: result.nfts,
       transactions: result.transactions,
       totalMinted: result.nfts.length,

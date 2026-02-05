@@ -94,16 +94,16 @@ export default function ProfilePortfolio({ handle }: Props) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
+      <div className="flex items-center justify-center min-h-screen bg-slate-950">
+        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
       </div>
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="bg-slate-800/40 backdrop-blur-xl border border-red-400/30">
+      <div className="flex items-center justify-center min-h-screen bg-slate-950">
+        <Card className="bg-slate-900/40 backdrop-blur-xl border border-red-400/30 rounded-2xl">
           <CardContent className="p-6">
             <p className="text-red-300">{error || "Profile not found"}</p>
           </CardContent>
@@ -113,14 +113,12 @@ export default function ProfilePortfolio({ handle }: Props) {
   }
 
   return (
-    <div className="relative min-h-screen bg-background">
-      {/* EthEd radial/glow background */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-300/15 via-background to-background" />
-        <div className="absolute top-10 left-1/2 h-[900px] w-[900px] -translate-x-1/2 rounded-full bg-cyan-300/10 blur-3xl" />
-      </div>
+    <div className="relative min-h-screen bg-slate-950 overflow-hidden">
+      {/* Background Glow */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] -z-10" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] -z-10" />
 
-      <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="mx-auto max-w-6xl px-4 py-12">
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -128,29 +126,31 @@ export default function ProfilePortfolio({ handle }: Props) {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-6">
+          <Card className="bg-slate-900/60 backdrop-blur-xl border border-cyan-400/10 rounded-2xl overflow-hidden">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row gap-8">
                 <div className="flex flex-col items-center md:items-start">
-                  <Avatar className="w-24 h-24 mb-4 ring-2 ring-emerald-400/30">
-                    <AvatarImage src={profile.avatar} alt={profile.displayName} />
-                    <AvatarFallback className="bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-900">
-                      {profile.displayName.split(" ").map((n: string) => n[0]).join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex gap-2">
+                  <div className="relative group">
+                    <Avatar className="w-32 h-32 mb-6 ring-4 ring-cyan-400/20 group-hover:ring-cyan-400/40 transition-all duration-300">
+                      <AvatarImage src={profile.avatar} alt={profile.displayName} />
+                      <AvatarFallback className="bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 text-2xl font-bold">
+                        {profile.displayName.split(" ").map((n: string) => n[0]).join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="flex gap-3">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-emerald-400/30 text-emerald-300"
+                      className="border-cyan-400/20 hover:border-cyan-400/40 text-cyan-300 hover:bg-cyan-400/5 h-10 px-4 rounded-xl"
                       onClick={copyProfile}
                     >
-                      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
                       {copied ? "Copied!" : "Share"}
                     </Button>
                     {profile.ensName && (
-                      <Button variant="outline" size="sm" className="border-cyan-400/30 text-cyan-300">
-                        <ExternalLink className="w-4 h-4 mr-1" />
+                      <Button variant="outline" size="sm" className="border-purple-400/20 hover:border-purple-400/40 text-purple-300 hover:bg-purple-400/5 h-10 px-4 rounded-xl">
+                        <Globe className="w-4 h-4 mr-2" />
                         {profile.ensName}
                       </Button>
                     )}
@@ -158,60 +158,46 @@ export default function ProfilePortfolio({ handle }: Props) {
                 </div>
 
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
+                  <div className="flex items-center gap-3 mb-3">
+                    <h1 className="text-4xl font-bold text-white">
                       {profile.displayName}
                     </h1>
                     {profile.verified && (
-                      <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-400/30">
-                        <Globe className="w-3 h-3 mr-1" />
+                      <Badge className="bg-cyan-400/10 text-cyan-400 border-cyan-400/20 h-6">
+                        <Check className="w-3 h-3 mr-1" />
                         Verified
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-lg text-white font-medium">{profile.ensName || profile.handle}</span>
-                    <Badge variant="outline" className="text-purple-300 border-purple-400/30">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-xl text-slate-400 font-medium">{profile.ensName || profile.handle}</span>
+                    <Badge variant="outline" className="text-cyan-400/60 border-cyan-400/20">
                       ENS
                     </Badge>
                   </div>
-                  <p className="text-slate-300 mb-4 max-w-2xl">{profile.bio}</p>
+                  <p className="text-slate-300 text-lg mb-6 max-w-2xl leading-relaxed">{profile.bio}</p>
                   
-                  <div className="flex flex-wrap gap-4 text-sm text-slate-400">
-                    <span className="flex items-center gap-1">
+                  <div className="flex flex-wrap gap-6 text-sm text-slate-500">
+                    <span className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
                       Joined {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'Recently'}
                     </span>
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-2">
                       <Users className="w-4 h-4" />
                       {profile.followersCount || 0} followers • {profile.followingCount || 0} following
                     </span>
-                    {profile.website && (
-                      <a href={profile.website} className="flex items-center gap-1 text-cyan-300 hover:text-cyan-200">
-                        <ExternalLink className="w-4 h-4" />
-                        {profile.website.replace('https://', '')}
-                      </a>
-                    )}
                   </div>
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-1 gap-4 md:w-48">
-                  <div className="text-center p-3 rounded-lg bg-emerald-500/10 border border-emerald-400/20">
-                    <div className="text-2xl font-bold text-emerald-300">{profile.streak || 0}</div>
-                    <div className="text-xs text-slate-400">Day Streak</div>
+                <div className="grid grid-cols-2 md:grid-cols-1 gap-4 md:w-56">
+                  <div className="text-center p-4 rounded-2xl bg-slate-950/40 border border-cyan-400/10 hover:border-cyan-400/30 transition-all duration-300">
+                    <div className="text-3xl font-bold text-cyan-400">{profile.streak || 0}</div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Day Streak</div>
                   </div>
-                  <div className="text-center p-3 rounded-lg bg-cyan-500/10 border border-cyan-400/20">
-                    <div className="text-2xl font-bold text-cyan-300">{(profile.totalXP || 0).toLocaleString()}</div>
-                    <div className="text-xs text-slate-400">Total XP</div>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-purple-500/10 border border-purple-400/20">
-                    <div className="text-2xl font-bold text-purple-300">{profile.coursesCompleted || 0}</div>
-                    <div className="text-xs text-slate-400">Courses</div>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-yellow-500/10 border border-yellow-400/20">
-                    <div className="text-2xl font-bold text-yellow-300">{profile.nftsEarned || 0}</div>
-                    <div className="text-xs text-slate-400">NFTs</div>
+                  <div className="text-center p-4 rounded-2xl bg-slate-950/40 border border-purple-400/10 hover:border-purple-400/30 transition-all duration-300">
+                    <div className="text-3xl font-bold text-purple-400">{(profile.totalXP || 0).toLocaleString()}</div>
+                    <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Total XP</div>
                   </div>
                 </div>
               </div>
@@ -221,41 +207,41 @@ export default function ProfilePortfolio({ handle }: Props) {
 
         {/* Profile Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-800/40 backdrop-blur-xl border border-white/10">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-300">
+          <TabsList className="grid w-full grid-cols-4 bg-slate-900/60 backdrop-blur-xl border border-cyan-400/10 rounded-2xl p-1 mb-8">
+            <TabsTrigger value="overview" className="rounded-xl data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400 transition-all duration-300">
               Overview
             </TabsTrigger>
-            <TabsTrigger value="nfts" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300">
-              NFT Collection
+            <TabsTrigger value="nfts" className="rounded-xl data-[state=active]:bg-purple-500/10 data-[state=active]:text-purple-400 transition-all duration-300">
+              NFTs
             </TabsTrigger>
-            <TabsTrigger value="courses" className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300">
-              Learning Path
+            <TabsTrigger value="courses" className="rounded-xl data-[state=active]:bg-cyan-500/10 data-[state=active]:text-cyan-400 transition-all duration-300">
+              Courses
             </TabsTrigger>
-            <TabsTrigger value="activity" className="data-[state=active]:bg-yellow-500/20 data-[state=active]:text-yellow-300">
+            <TabsTrigger value="activity" className="rounded-xl data-[state=active]:bg-slate-800 data-[state=active]:text-white transition-all duration-300">
               Activity
             </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
-          <TabsContent value="overview" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <TabsContent value="overview" className="outline-none">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Recent NFTs */}
-              <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Award className="w-5 h-5 text-emerald-400" />
-                    Recent NFTs
+              <Card className="bg-slate-900/60 backdrop-blur-xl border border-cyan-400/10 rounded-2xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-white text-lg">
+                    <Award className="w-5 h-5 text-cyan-400" />
+                    Achievements
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   {mockNFTs.slice(0, 3).map((nft) => (
-                    <div key={nft.id} className="flex items-center gap-3 p-2 rounded-lg bg-slate-700/30 border border-white/10">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-emerald-400/20 to-cyan-400/20 flex items-center justify-center">
-                        <Award className="w-5 h-5 text-emerald-400" />
+                    <div key={nft.id} className="flex items-center gap-4 p-3 rounded-xl bg-slate-950/40 border border-white/5 group hover:border-cyan-400/20 transition-all duration-300">
+                      <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 group-hover:scale-110 transition-all duration-300">
+                        <Award className="w-6 h-6 text-cyan-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-white text-sm truncate">{nft.name}</div>
-                        <div className="text-xs text-slate-400">{nft.earned}</div>
+                        <div className="font-semibold text-white text-sm truncate">{nft.name}</div>
+                        <div className="text-xs text-slate-500">{nft.earned}</div>
                       </div>
                       <Badge variant="outline" className={rarityColors[nft.rarity as keyof typeof rarityColors]}>
                         {nft.rarity}
@@ -266,23 +252,23 @@ export default function ProfilePortfolio({ handle }: Props) {
               </Card>
 
               {/* Learning Progress */}
-              <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Target className="w-5 h-5 text-cyan-400" />
-                    Learning Progress
+              <Card className="bg-slate-900/60 backdrop-blur-xl border border-cyan-400/10 rounded-2xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-white text-lg">
+                    <Target className="w-5 h-5 text-purple-400" />
+                    Course Progress
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-6">
                   {mockCourses.slice(0, 3).map((course) => (
-                    <div key={course.id} className="space-y-2">
+                    <div key={course.id} className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-slate-300 truncate">{course.title}</span>
-                        <span className="text-xs text-slate-400">{course.progress}%</span>
+                        <span className="text-sm font-medium text-slate-300 truncate">{course.title}</span>
+                        <span className="text-xs font-bold text-cyan-400">{course.progress}%</span>
                       </div>
-                      <div className="w-full bg-slate-700 rounded-full h-2">
+                      <div className="w-full bg-slate-950 rounded-full h-2 border border-white/5">
                         <div
-                          className="bg-gradient-to-r from-emerald-400 to-cyan-400 h-2 rounded-full transition-all duration-500"
+                          className="bg-gradient-to-r from-cyan-400 to-teal-400 h-full rounded-full transition-all duration-500 shadow-cyan- glow"
                           style={{ width: `${course.progress}%` }}
                         />
                       </div>
@@ -291,18 +277,18 @@ export default function ProfilePortfolio({ handle }: Props) {
                 </CardContent>
               </Card>
 
-              {/* Skill Distribution (Replacing AI Buddy Progress) */}
-              <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Sparkles className="w-5 h-5 text-purple-400" />
-                    Skill Badges
+              {/* Skill Distribution */}
+              <Card className="bg-slate-900/60 backdrop-blur-xl border border-cyan-400/10 rounded-2xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-white text-lg">
+                    <Sparkles className="w-5 h-5 text-yellow-400" />
+                    Skills Mastered
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex flex-wrap gap-2">
-                    <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-400/30">Web3 Fundamentalist</Badge>
-                    <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-400/30">ENS Holder</Badge>
+                    <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-400/30">Web3 Fundamentalist</Badge>
+                    <Badge className="bg-blue-500/20 text-blue-300 border-blue-400/30">ENS Holder</Badge>
                     <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30">Early Adopter</Badge>
                   </div>
                   <p className="text-xs text-slate-400">Earn more badges by completing courses and contributing to the community.</p>

@@ -84,37 +84,37 @@ async function handleLearnAbout(context: string | undefined, userId: string) {
   const info = {
     title: "Welcome to EthEd!",
     description:
-      "EthEd is an interactive blockchain education platform where you learn Web3 concepts through gamified lessons, earn NFT achievements, and track your progress with your personalized learning buddy.",
+      "EthEd is a professional blockchain education platform where you master Ethereum concepts through high-fidelity lessons, earn NFT credentials, and build your Web3 identity.",
     features: [
       {
         icon: "🎓",
-        title: "Interactive Courses",
+        title: "Expert Curriculum",
         description:
-          "Learn blockchain fundamentals through hands-on lessons and real-world examples",
+          "Learn blockchain depth through structured paths from EIPs to Protocol design",
       },
       {
-        icon: "🎯",
-        title: "NFT Achievements",
+        icon: "📜",
+        title: "NFT Credentials",
         description:
-          "Earn unique NFT badges as you complete milestones and master new skills",
+          "Earn unique NFT badges that verify your mastery of specific technical concepts",
       },
       {
-        icon: "🤖",
-        title: "AI Learning Buddy",
+        icon: "⚡",
+        title: "AI-Powered Learning",
         description:
-          "Your personal guide that grows with you throughout your learning journey",
+          "Advanced AI tutoring to answer complex protocol questions in real-time",
       },
       {
         icon: "🌐",
         title: "ENS Identity",
         description:
-          "Get your own .ethed.eth name to build your Web3 identity",
+          "Claim your human-readable .eth identity to build your professional profile",
       },
     ],
     nextSteps: [
-      "Complete onboarding to get your Genesis Scholar NFT",
-      "Choose your learning buddy",
-      "Start your first course",
+      "Complete onboarding to set up your profile",
+      "Connect your wallet to track progress",
+      "Start your first course to earn your Genesis badge",
     ],
     userId,
   };
@@ -129,26 +129,26 @@ async function handleStartJourney(userId: string) {
   // Check user's progress and recommend next steps
 
   const journey = {
-    message: "Let's begin your Web3 learning adventure!",
+    message: "Let's begin your Web3 mastery journey!",
     steps: [
       {
         id: "onboarding",
-        title: "Complete Onboarding",
-        description: "Set up your profile and choose your learning buddy",
+        title: "Set Up Profile",
+        description: "Configure your Web3 identity and notification settings",
         status: "pending",
         link: "/onboarding",
       },
       {
         id: "first-course",
-        title: "Blockchain Basics",
-        description: "Start with the fundamentals of blockchain technology",
+        title: "Ethereum Fundamentals",
+        description: "Start with the EIPs 101 course to master core principles",
         status: "locked",
-        link: "/courses/blockchain-basics",
+        link: "/courses/eips-101",
       },
       {
         id: "first-nft",
-        title: "Mint Your First Achievement",
-        description: "Complete your first lesson to earn an NFT badge",
+        title: "Claim NFT Achievement",
+        description: "Complete your first module to mint a credential",
         status: "locked",
         link: "/learn",
       },
@@ -165,24 +165,19 @@ async function handleStartJourney(userId: string) {
 async function handleGetInfo(context: string | undefined) {
   const infoMap: Record<string, any> = {
     nft: {
-      title: "About NFT Achievements",
+      title: "About Credentials",
       content:
-        "NFTs (Non-Fungible Tokens) on EthEd represent your learning milestones. Each achievement is a unique digital collectible stored on the blockchain, proving your knowledge and progress.",
+        "NFT credentials on EthEd represent your learning milestones. Each achievement is a unique digital proof stored on-chain, verifying your knowledge of specific Ethereum standards.",
     },
     ens: {
       title: "About ENS Names",
       content:
-        "ENS (Ethereum Name Service) gives you a human-readable name like yourname.ethed.eth instead of a long wallet address. It's your Web3 identity!",
-    },
-    buddy: {
-      title: "About Learning Buddies",
-      content:
-        "Your Learning Buddy is an AI companion that guides you through lessons, answers questions, and celebrates your achievements. Choose from Spark Dragon, Cyber Fox, Prof Owl, or Cosmic Cat!",
+        "ENS (Ethereum Name Service) provides human-readable names for Ethereum. On EthEd, you can use your ENS to build a persistent educational track record.",
     },
     default: {
       title: "EthEd Platform",
       content:
-        "EthEd combines gamified learning, NFT achievements, and AI tutoring to make blockchain education engaging and rewarding.",
+        "EthEd combines professional curriculum, NFT credentials, and AI assistance to build the next generation of Ethereum developers.",
     },
   };
 

@@ -1002,22 +1002,22 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
                           }
                           const content = line.replace(/^\d+\. /, '');
                           const processedContent = content
-                            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-cyan-200">$1</strong>')
-                            .replace(/`([^`]+)`/g, '<code class="bg-slate-800 text-emerald-300 px-2 py-1 rounded">$1</code>');
+                            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-cyan-200 font-bold">$1</strong>')
+                            .replace(/`([^`]+)`/g, '<code class="bg-slate-900 text-cyan-400 px-2 py-1 rounded border border-white/5">$1</code>');
                           const number = line.match(/^(\d+)\./)?.[1] || '1';
-                          result.push(`<li class="flex items-start gap-3"><span class="text-lg font-bold text-emerald-400 mt-0.5 flex-shrink-0">${number}.</span><span class="text-lg text-slate-300">${processedContent}</span></li>`);
+                          result.push(`<li class="flex items-start gap-4 mb-3"><span class="text-xl font-black text-cyan-400 mt-1 flex-shrink-0 min-w-[1.5rem] tracking-tighter">${number}.</span><span class="text-lg text-slate-300 leading-relaxed">${processedContent}</span></li>`);
                         }
                         // Handle blockquotes
                         else if (line.startsWith('> ')) {
-                          result.push(`<blockquote class="border-l-4 border-purple-400 pl-6 py-4 bg-purple-500/5 italic my-6"><p class="text-lg text-purple-200">${line.slice(2)}</p></blockquote>`);
+                          result.push(`<blockquote class="border-l-4 border-cyan-400/30 pl-8 py-6 bg-cyan-400/5 italic my-10 rounded-r-2xl"><p class="text-xl text-slate-200 leading-relaxed">${line.slice(2)}</p></blockquote>`);
                         }
                         // Handle horizontal rules
                         else if (line.trim() === '---') {
-                          result.push('<hr class="border-slate-600 my-8" />');
+                          result.push('<hr class="border-slate-800/50 my-12" />');
                         }
                         // Handle empty lines
                         else if (line.trim() === '') {
-                          result.push('<div class="h-4"></div>');
+                          result.push('<div class="h-6"></div>');
                         }
                         // Handle regular paragraphs
                         else if (line.trim().length > 0) {
@@ -1025,10 +1025,10 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
                           const processedLine = line
                             .replace(/\*\*(.*?)\*\*/g, '<strong class="text-cyan-200 font-bold">$1</strong>')
                             .replace(/\*([^*]+)\*/g, '<em class="italic text-slate-200">$1</em>')
-                            .replace(/`([^`]+)`/g, '<code class="bg-slate-800 text-emerald-300 px-2 py-1 rounded text-sm">$1</code>')
-                            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-cyan-400 hover:text-cyan-300 underline">$1</a>');
+                            .replace(/`([^`]+)`/g, '<code class="bg-slate-900 text-cyan-400 px-2 py-1 rounded border border-white/5 text-sm">$1</code>')
+                            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-cyan-400 hover:text-cyan-300 underline font-medium">$1</a>');
                           
-                          result.push(`<p class="text-lg text-slate-300 leading-relaxed mb-4">${processedLine}</p>`);
+                          result.push(`<p class="text-lg text-slate-300 leading-relaxed mb-6">${processedLine}</p>`);
                         }
                       }
                       
@@ -1050,13 +1050,13 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex items-center justify-between"
+            className="flex items-center justify-between mt-8"
           >
             <Button
               variant="outline" 
               onClick={goToPreviousLesson}
               disabled={moduleNumber === 1}
-              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+              className="border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Previous Lesson
@@ -1066,7 +1066,7 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
               {!completedModules.has(moduleNumber) && (
                 <Button
                   onClick={markAsCompleted}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl"
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Mark Complete
@@ -1074,15 +1074,15 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
               )}
 
               {completedModules.has(moduleNumber) && (
-                <div className="flex items-center gap-2 text-emerald-400">
+                <div className="flex items-center gap-2 text-cyan-400 px-4 py-2 bg-cyan-400/10 rounded-xl border border-cyan-400/20">
                   <CheckCircle className="h-5 w-5" />
-                  <span>Completed</span>
+                  <span className="font-medium">Completed</span>
                 </div>
               )}
 
               <Button
                 onClick={goToNextLesson}
-                className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600"
+                className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl"
               >
                 {moduleNumber === totalModules ? 'Finish Course' : 'Next Lesson'}
                 <ArrowRight className="ml-2 h-4 w-4" />

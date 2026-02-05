@@ -27,9 +27,7 @@ export interface NFTMetadata {
 
 export interface MintNFTParams {
   userId: string;
-  buddyType: string;
   ensName?: string;
-  petId?: string;
   userAddress?: string;
 }
 
@@ -78,17 +76,16 @@ export async function uploadMetadataToIPFS(
  * Generate NFT metadata for Genesis Scholar
  */
 export function generateGenesisScholarMetadata(
-  buddyType: string,
   imageUri: string,
   ensName?: string
 ): NFTMetadata {
   return {
-    name: "Genesis Scholar NFT",
-    description: `Commemorates being an early EthEd pioneer and completing the onboarding journey with ${buddyType}`,
+    name: "EthEd Pioneer NFT",
+    description: `Commemorates being an early EthEd pioneer and completing the onboarding journey.`,
     image: imageUri,
     attributes: [
       { trait_type: "Type", value: "Genesis Scholar" },
-      { trait_type: "Buddy", value: buddyType },
+      { trait_type: "Edition", value: "Pioneer" },
       { trait_type: "Rarity", value: "Founder" },
       { trait_type: "Minted Date", value: new Date().toISOString().split("T")[0] },
       ...(ensName ? [{ trait_type: "ENS Name", value: ensName }] : []),
@@ -98,34 +95,12 @@ export function generateGenesisScholarMetadata(
 }
 
 /**
- * Generate NFT metadata for Buddy Bond
- */
-export function generateBuddyBondMetadata(
-  buddyType: string,
-  imageUri: string
-): NFTMetadata {
-  return {
-    name: "Buddy Bond NFT",
-    description: `Represents the special bond formed with your ${buddyType} learning companion`,
-    image: imageUri,
-    attributes: [
-      { trait_type: "Type", value: "Buddy Bond" },
-      { trait_type: "Buddy", value: buddyType },
-      { trait_type: "Rarity", value: "Rare" },
-      { trait_type: "Bond Date", value: new Date().toISOString().split("T")[0] },
-    ],
-    external_url: "https://ethed.app",
-  };
-}
-
-/**
  * Mint NFT on blockchain (mock implementation - replace with actual contract call)
- * In production, this would use ethers.js or viem to interact with smart contract
  */
 export async function mintOnChain(
   recipientAddress: string,
   metadataUri: string,
-  nftType: "genesis" | "buddy"
+  nftType: "pioneer"
 ): Promise<{ tokenId: string; txHash: string }> {
   // TODO: Replace with actual smart contract interaction
   // Example using ethers.js:
@@ -171,35 +146,19 @@ export async function saveNFTToDatabase(params: {
  * Full minting pipeline: upload to IPFS, mint on-chain, save to DB
  */
 export async function mintGenesisNFTs(params: MintNFTParams) {
-  const { userId, buddyType, ensName, userAddress } = params;
-
-  // In production, you would:
-  // 1. Fetch actual image files from your assets
-  // 2. Upload them to IPFS
-  // 3. Generate metadata with IPFS image URIs
-  // 4. Upload metadata to IPFS
-  // 5. Mint on-chain using metadata URI
-  // 6. Save to database with transaction hash
+  const { userId, ensName, userAddress } = params;
 
   // For now, using placeholder URIs
-  const genesisImageUri = `ipfs://QmGenesisScholar${buddyType}`;
-  const buddyImageUri = `ipfs://QmBuddyBond${buddyType}`;
+  const genesisImageUri = `ipfs://QmEthEdPioneer1`;
 
   // Generate metadata
   const genesisMetadata = generateGenesisScholarMetadata(
-    buddyType,
     genesisImageUri,
     ensName
   );
-  const buddyMetadata = generateBuddyBondMetadata(buddyType, buddyImageUri);
-
-  // Upload metadata to IPFS (in production)
-  // const genesisMetadataUri = await uploadMetadataToIPFS(genesisMetadata);
-  // const buddyMetadataUri = await uploadMetadataToIPFS(buddyMetadata);
 
   // Placeholder metadata URIs
   const genesisMetadataUri = `ipfs://QmGenesisMetadata${Date.now()}`;
-  const buddyMetadataUri = `ipfs://QmBuddyMetadata${Date.now()}`;
 
   // Mint on-chain (requires user wallet address)
   const defaultAddress = userAddress || "0x0000000000000000000000000000000000000000";
@@ -207,37 +166,22 @@ export async function mintGenesisNFTs(params: MintNFTParams) {
   const genesisResult = await mintOnChain(
     defaultAddress,
     genesisMetadataUri,
-    "genesis"
+    "pioneer"
   );
   
-  const buddyResult = await mintOnChain(
-    defaultAddress,
-    buddyMetadataUri,
-    "buddy"
-  );
-
   // Save to database
   const genesisNFT = await saveNFTToDatabase({
     userId,
     tokenId: genesisResult.tokenId,
-    name: "Genesis Scholar NFT",
+    name: "EthEd Pioneer NFT",
     image: genesisImageUri,
     metadata: genesisMetadata,
   });
 
-  const buddyNFT = await saveNFTToDatabase({
-    userId,
-    tokenId: buddyResult.tokenId,
-    name: "Buddy Bond NFT",
-    image: buddyImageUri,
-    metadata: buddyMetadata,
-  });
-
   return {
-    nfts: [genesisNFT, buddyNFT],
+    nfts: [genesisNFT],
     transactions: [
-      { type: "genesis", txHash: genesisResult.txHash, tokenId: genesisResult.tokenId },
-      { type: "buddy", txHash: buddyResult.txHash, tokenId: buddyResult.tokenId },
+      { type: "pioneer", txHash: genesisResult.txHash, tokenId: genesisResult.tokenId },
     ],
   };
 }

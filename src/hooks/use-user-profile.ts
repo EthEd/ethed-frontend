@@ -12,7 +12,6 @@ interface UserProfile {
   role?: string;
   createdAt: string;
   wallets: WalletAddress[];
-  pets?: Pet[]; // optional for MVP where buddy is disabled
   courses: UserCourse[];
   stats: {
     coursesEnrolled: number;
@@ -29,16 +28,6 @@ interface WalletAddress {
   ensName?: string;
   ensAvatar?: string;
   createdAt: string;
-}
-
-interface Pet {
-  id: string;
-  name: string;
-  level: number;
-  experience: number;
-  state: any;
-  createdAt: string;
-  updatedAt: string;
 }
 
 interface UserCourse {

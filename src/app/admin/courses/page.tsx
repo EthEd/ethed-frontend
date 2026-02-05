@@ -34,9 +34,9 @@ export default function AdminCoursesPage() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-400 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
           <p className="text-slate-300">Loading courses...</p>
         </div>
       </div>
@@ -97,27 +97,27 @@ export default function AdminCoursesPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'published': return 'bg-emerald-500/10 text-emerald-400 border-emerald-400/20';
-      case 'draft': return 'bg-yellow-500/10 text-yellow-400 border-yellow-400/20';
+      case 'published': return 'bg-cyan-500/10 text-cyan-400 border-cyan-400/20';
+      case 'draft': return 'bg-amber-500/10 text-amber-400 border-amber-400/20';
       case 'archived': return 'bg-slate-500/10 text-slate-400 border-slate-400/20';
       default: return 'bg-slate-500/10 text-slate-400 border-slate-400/20';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-slate-950">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <Button asChild variant="outline" size="sm" className="border-slate-600 text-slate-300">
+            <Button asChild variant="outline" size="sm" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
               <Link href="/admin">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Admin
               </Link>
             </Button>
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent mb-2">
             Course Management
           </h1>
           <p className="text-slate-300">
@@ -128,11 +128,11 @@ export default function AdminCoursesPage() {
         {/* Actions Bar */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex gap-4">
-            <Button className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700">
+            <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 border-none">
               <Plus className="h-4 w-4 mr-2" />
               New Course
             </Button>
-            <Button variant="outline" className="border-slate-600 text-slate-300">
+            <Button variant="outline" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
               <Settings className="h-4 w-4 mr-2" />
               Bulk Actions
             </Button>
@@ -145,7 +145,7 @@ export default function AdminCoursesPage() {
         {/* Courses Grid */}
         <div className="grid gap-6">
           {courses.map((course) => (
-            <Card key={course.id} className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
+            <Card key={course.id} className="bg-slate-900/40 backdrop-blur-xl border border-white/10">
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -154,7 +154,7 @@ export default function AdminCoursesPage() {
                       <Badge variant="outline" className={getStatusColor(course.status)}>
                         {course.status}
                       </Badge>
-                      <Badge variant="outline" className="text-slate-400 border-slate-600">
+                      <Badge variant="outline" className="text-slate-400 border-white/10">
                         {course.difficulty}
                       </Badge>
                     </div>
@@ -163,13 +163,13 @@ export default function AdminCoursesPage() {
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Button asChild size="sm" variant="outline" className="border-slate-600 text-slate-300">
+                    <Button asChild size="sm" variant="outline" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
                       <Link href={`/courses/${course.id}`}>
                         <Eye className="h-4 w-4 mr-2" />
                         View
                       </Link>
                     </Button>
-                    <Button size="sm" variant="outline" className="border-slate-600 text-slate-300">
+                    <Button size="sm" variant="outline" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </Button>
@@ -178,39 +178,39 @@ export default function AdminCoursesPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                  <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
                     <div className="flex items-center justify-center gap-1 mb-1">
-                      <Users className="h-4 w-4 text-emerald-400" />
+                      <Users className="h-4 w-4 text-cyan-400" />
                     </div>
                     <p className="text-lg font-semibold text-white">{course.students.toLocaleString()}</p>
                     <p className="text-xs text-slate-400">Students</p>
                   </div>
                   
-                  <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                  <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
                     <div className="flex items-center justify-center gap-1 mb-1">
-                      <BookOpen className="h-4 w-4 text-purple-400" />
+                      <BookOpen className="h-4 w-4 text-blue-400" />
                     </div>
                     <p className="text-lg font-semibold text-white">{course.lessons}</p>
                     <p className="text-xs text-slate-400">Lessons</p>
                   </div>
                   
-                  <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                  <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
                     <div className="flex items-center justify-center gap-1 mb-1">
-                      <Clock className="h-4 w-4 text-cyan-400" />
+                      <Clock className="h-4 w-4 text-indigo-400" />
                     </div>
                     <p className="text-lg font-semibold text-white">{course.completionRate}%</p>
                     <p className="text-xs text-slate-400">Completion</p>
                   </div>
                   
-                  <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                  <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
                     <div className="flex items-center justify-center gap-1 mb-1">
-                      <Star className="h-4 w-4 text-yellow-400" />
+                      <Star className="h-4 w-4 text-amber-400" />
                     </div>
                     <p className="text-lg font-semibold text-white">{course.rating || 'N/A'}</p>
                     <p className="text-xs text-slate-400">Rating</p>
                   </div>
                   
-                  <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                  <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
                     <div className="flex items-center justify-center gap-1 mb-1">
                       <Settings className="h-4 w-4 text-slate-400" />
                     </div>
@@ -225,27 +225,27 @@ export default function AdminCoursesPage() {
 
         {/* Course Statistics */}
         <div className="mt-8">
-          <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
+          <Card className="bg-slate-900/40 backdrop-blur-xl border border-white/10">
             <CardHeader>
               <CardTitle className="text-white">Course Statistics</CardTitle>
               <CardDescription>Overview of course performance and engagement</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-emerald-400">{courses.filter(c => c.status === 'published').length}</p>
+                <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
+                  <p className="text-2xl font-bold text-cyan-400">{courses.filter(c => c.status === 'published').length}</p>
                   <p className="text-sm text-slate-400">Published Courses</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-yellow-400">{courses.filter(c => c.status === 'draft').length}</p>
+                <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
+                  <p className="text-2xl font-bold text-amber-400">{courses.filter(c => c.status === 'draft').length}</p>
                   <p className="text-sm text-slate-400">Draft Courses</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-purple-400">{courses.reduce((sum, c) => sum + c.students, 0).toLocaleString()}</p>
+                <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
+                  <p className="text-2xl font-bold text-blue-400">{courses.reduce((sum, c) => sum + c.students, 0).toLocaleString()}</p>
                   <p className="text-sm text-slate-400">Total Enrollments</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-cyan-400">{Math.round(courses.reduce((sum, c) => sum + c.completionRate, 0) / courses.length)}%</p>
+                <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
+                  <p className="text-2xl font-bold text-indigo-400">{Math.round(courses.reduce((sum, c) => sum + c.completionRate, 0) / courses.length)}%</p>
                   <p className="text-sm text-slate-400">Avg Completion</p>
                 </div>
               </div>

@@ -11,33 +11,33 @@ import { motion } from 'motion/react';
 const features = [
   {
     icon: <Sparkles className="h-6 w-6 text-cyan-400" />,
-    title: 'AI Guidance',
-    desc: 'Personal AI tutor tracks your learning, nudges progress, and suggests the next step every time.',
+    title: 'Smart Tutoring',
+    desc: 'Personal AI guidance tracks your learning, helps you through complex topics, and suggests your next lesson.',
   },
   {
-    icon: <Database className="h-6 w-6 text-emerald-400" />,
+    icon: <Database className="h-6 w-6 text-cyan-400" />,
     title: 'Verifiable Rewards',
-    desc: 'Earn NFT badges, points, and certificates—instantly accessible and verifiable on-chain or off-chain.',
+    desc: 'Earn NFT badges, points, and certificates—instantly accessible and verifiable on-chain.',
   },
   {
     icon: <Award className="h-6 w-6 text-blue-400" />,
-    title: 'NFT Credentials',
-    desc: 'Unique NFTs and ENS profiles showcase your portfolio and track achievements for real-world credibility.',
+    title: 'Professional Profile',
+    desc: 'Your ENS identity stores your learning history and achievements as digital credentials.',
   },
   {
-    icon: <GraduationCap className="h-6 w-6 text-teal-400" />,
-    title: 'Courses & Micro-Challenges',
-    desc: 'Wide range of hands-on learning modules tailored for every skill level, beginner to expert.',
+    icon: <GraduationCap className="h-6 w-6 text-blue-400" />,
+    title: 'Focused Courses',
+    desc: 'Bite-sized modules designed for the Ethereum ecosystem, from EIPs to Protocol basics.',
   },
   {
     icon: <UserPlus className="h-6 w-6 text-cyan-500" />,
-    title: 'Easy Onboarding',
-    desc: 'Sign up with email or phone, no wallet required. Upgrade later for full Web3 ownership.',
+    title: 'Seamless Onboarding',
+    desc: 'Get started in seconds with social login. We provision your Web3 identity automatically.',
   },
   {
-    icon: <LockKeyhole className="h-6 w-6 text-emerald-500" />,
-    title: 'Secure & Private',
-    desc: 'Your ENS identity lets you verify progress across platforms without exposing private user data.',
+    icon: <LockKeyhole className="h-6 w-6 text-cyan-500" />,
+    title: 'Owned Progress',
+    desc: 'Your learning data is linked to your ENS name, putting you in control of your digital reputation.',
   },
 ];
 
@@ -87,11 +87,11 @@ export default function EthEdFeatures() {
             transition={{ type: 'spring', duration: 0.7 }}
             className="relative z-10"
           >
-            <h3 className="font-geist mt-4 text-3xl font-normal tracking-tighter sm:text-4xl md:text-5xl bg-gradient-to-r from-cyan-400 via-emerald-400 to-blue-400 bg-clip-text text-transparent">
-              Built for Web3 Learners
+            <h3 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-white">
+              Built for <span className="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">Web3 Learners</span>
             </h3>
-            <p className="font-geist text-foreground/60 mt-3">
-              EthEd combines on-chain rewards, AI support, and ENS identity to help everyone master blockchain—securely and transparently.
+            <p className="font-geist text-slate-400 mt-3 text-lg">
+              EIPSInsight combines on-chain rewards, AI support, and ENS identity to help everyone master blockchain—securely and transparently.
             </p>
           </motion.div>
           <div
@@ -117,21 +117,21 @@ export default function EthEdFeatures() {
               whileHover="hover"
               initial="hidden"
               animate="visible"
-              className="transform-gpu space-y-3 rounded-xl border border-cyan-300/20 bg-gradient-to-br from-blue-900/20 via-teal-800/10 to-emerald-900/10 p-4 [box-shadow:0_-16px_56px_-26px_#38bdf833_inset] transition-all duration-300"
+              className="relative p-6 rounded-2xl border border-cyan-400/20 bg-slate-950/60 shadow-lg shadow-cyan-500/5 hover:border-cyan-400/40 hover:shadow-cyan-glow transition-all duration-300 backdrop-blur-sm group"
               style={{ cursor: 'pointer' }}
             >
               <motion.div
                 variants={iconPulse}
                 initial="rest"
                 whileHover="hover"
-                className="w-fit rounded-full border border-emerald-200 bg-gradient-to-br from-cyan-400/20 to-blue-700/20 p-4 [box-shadow:0_-16px_56px_-24px_#38bdf85e_inset] transition-all duration-200"
+                className="w-12 h-12 mb-6 rounded-xl bg-cyan-500/10 border border-cyan-400/20 flex items-center justify-center group-hover:bg-cyan-500/20 group-hover:border-cyan-400/40 transition-colors"
               >
                 {item.icon}
               </motion.div>
-              <h4 className="font-geist text-lg font-bold tracking-tighter text-cyan-300">
+              <h4 className="text-xl font-semibold text-white mb-2">
                 {item.title}
               </h4>
-              <p className="text-slate-400">{item.desc}</p>
+              <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
             </motion.li>
           ))}
         </motion.ul>
