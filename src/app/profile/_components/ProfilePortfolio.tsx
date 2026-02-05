@@ -170,26 +170,26 @@ export default function ProfilePortfolio({ handle }: Props) {
                     )}
                   </div>
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-lg text-white font-medium">{mockProfile.ens}</span>
+                    <span className="text-lg text-white font-medium">{profile.ensName || profile.handle}</span>
                     <Badge variant="outline" className="text-purple-300 border-purple-400/30">
                       ENS
                     </Badge>
                   </div>
-                  <p className="text-slate-300 mb-4 max-w-2xl">{mockProfile.bio}</p>
+                  <p className="text-slate-300 mb-4 max-w-2xl">{profile.bio}</p>
                   
                   <div className="flex flex-wrap gap-4 text-sm text-slate-400">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
-                      Joined {new Date(mockProfile.joinedDate).toLocaleDateString()}
+                      Joined {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'Recently'}
                     </span>
                     <span className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
-                      {mockProfile.followers} followers • {mockProfile.following} following
+                      {profile.followersCount || 0} followers • {profile.followingCount || 0} following
                     </span>
-                    {mockProfile.website && (
-                      <a href={mockProfile.website} className="flex items-center gap-1 text-cyan-300 hover:text-cyan-200">
+                    {profile.website && (
+                      <a href={profile.website} className="flex items-center gap-1 text-cyan-300 hover:text-cyan-200">
                         <ExternalLink className="w-4 h-4" />
-                        {mockProfile.website.replace('https://', '')}
+                        {profile.website.replace('https://', '')}
                       </a>
                     )}
                   </div>
@@ -198,19 +198,19 @@ export default function ProfilePortfolio({ handle }: Props) {
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-1 gap-4 md:w-48">
                   <div className="text-center p-3 rounded-lg bg-emerald-500/10 border border-emerald-400/20">
-                    <div className="text-2xl font-bold text-emerald-300">{mockProfile.streak}</div>
+                    <div className="text-2xl font-bold text-emerald-300">{profile.streak || 0}</div>
                     <div className="text-xs text-slate-400">Day Streak</div>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-cyan-500/10 border border-cyan-400/20">
-                    <div className="text-2xl font-bold text-cyan-300">{mockProfile.totalXP.toLocaleString()}</div>
+                    <div className="text-2xl font-bold text-cyan-300">{(profile.totalXP || 0).toLocaleString()}</div>
                     <div className="text-xs text-slate-400">Total XP</div>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-purple-500/10 border border-purple-400/20">
-                    <div className="text-2xl font-bold text-purple-300">{mockProfile.coursesCompleted}</div>
+                    <div className="text-2xl font-bold text-purple-300">{profile.coursesCompleted || 0}</div>
                     <div className="text-xs text-slate-400">Courses</div>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-yellow-500/10 border border-yellow-400/20">
-                    <div className="text-2xl font-bold text-yellow-300">{mockProfile.nftsEarned}</div>
+                    <div className="text-2xl font-bold text-yellow-300">{profile.nftsEarned || 0}</div>
                     <div className="text-xs text-slate-400">NFTs</div>
                   </div>
                 </div>
@@ -291,33 +291,21 @@ export default function ProfilePortfolio({ handle }: Props) {
                 </CardContent>
               </Card>
 
-              {/* AI Buddy Stats */}
+              {/* Skill Distribution (Replacing AI Buddy Progress) */}
               <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-white">
-                    <PawPrint className="w-5 h-5 text-purple-400" />
-                    AI Buddy Progress
+                    <Sparkles className="w-5 h-5 text-purple-400" />
+                    Skill Badges
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-300">Buddy Level</span>
-                    <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30">
-                      Level 7
-                    </Badge>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-400/30">Web3 Fundamentalist</Badge>
+                    <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-400/30">ENS Holder</Badge>
+                    <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30">Early Adopter</Badge>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-300">Sessions</span>
-                    <span className="text-white font-medium">142</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-300">Hints Used</span>
-                    <span className="text-white font-medium">67</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-300">Success Rate</span>
-                    <span className="text-emerald-300 font-medium">94%</span>
-                  </div>
+                  <p className="text-xs text-slate-400">Earn more badges by completing courses and contributing to the community.</p>
                 </CardContent>
               </Card>
             </div>
@@ -439,3 +427,17 @@ export default function ProfilePortfolio({ handle }: Props) {
     </div>
   );
 }
+const mockNFTs = [
+  { id: 1, name: "Early Adopter", description: "Joined EthEd during alpha", rarity: "Legendary", earned: "Feb 2025" },
+  { id: 2, name: "ENS Pioneer", description: "Registered an .ethed.eth subdomain", rarity: "Epic", earned: "Feb 2025" },
+];
+
+const mockCourses = [
+  { id: 1, title: "Ethereum Basics", difficulty: "Beginner", progress: 100, totalLessons: 5, completedAt: "Feb 2025" },
+  { id: 2, title: "Smart Contract Safety", difficulty: "Intermediate", progress: 40, totalLessons: 10 },
+];
+
+const mockActivity = [
+  { title: "Completed Ethereum Basics", date: "2 hours ago", type: "course", icon: "📚" },
+  { title: "Earned Early Adopter NFT", date: "5 hours ago", type: "award", icon: "🏆" },
+];

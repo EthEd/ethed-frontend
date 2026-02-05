@@ -65,5 +65,5 @@ export const getFormattedMetrics = () => ({
   lessonsCompleted: `${formatMetric(metrics.lessonsCompleted)}+ Lessons Completed`,
   nftBadgesMinted: `${formatMetric(metrics.nftBadgesMinted)}+ NFT Badges Minted`,
   ensIdentitiesReserved: `${formatMetric(metrics.ensIdentitiesReserved)}+ ENS Identities Reserved`,
-  fasterCompletionPercent: `${metrics.fasterCompletionPercent}% Faster Completion w/ Buddy`,
+  fasterCompletionPercent: `${metrics.fasterCompletionPercent}% Faster Completion with AI`,
 });

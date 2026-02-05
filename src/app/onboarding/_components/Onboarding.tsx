@@ -196,7 +196,7 @@ export default function Onboarding() {
       const welcomeMessage: ChatMessage = {
         id: "1",
         sender: "buddy",
-        message: selectedBuddy.greeting,
+        message: selectedBuddy?.greeting || "Hello! Let's get started.",
         timestamp: new Date(),
         emotion: "happy",
       };
@@ -297,8 +297,8 @@ export default function Onboarding() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: selectedBuddy.name,
-          petType: selectedBuddy.id,
+          name: selectedBuddy?.name,
+          petType: selectedBuddy?.id,
         }),
       });
 
@@ -325,7 +325,7 @@ export default function Onboarding() {
       };
 
       setChatMessages((prev) => [...prev, petMessage]);
-      toast.success(`${selectedBuddy.name} is now your learning buddy!`);
+      toast.success(`${selectedBuddy?.name || 'Buddy'} is now your learning buddy!`);
       
       setTimeout(() => setStep(2), 1500);
 
@@ -647,11 +647,11 @@ export default function Onboarding() {
                             {isLoading ? (
                               <div className="flex items-center">
                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                Creating {selectedBuddy.name}...
+                                Creating {selectedBuddy?.name || 'Buddy'}...
                               </div>
                             ) : (
                               <>
-                                Continue with {selectedBuddy.name} <ArrowRight className="w-4 h-4 ml-2" />
+                                Continue with {selectedBuddy?.name || 'Buddy'} <ArrowRight className="w-4 h-4 ml-2" />
                               </>
                             )}
                           </Button>
@@ -862,7 +862,7 @@ export default function Onboarding() {
 
                       <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
                         <div className="p-4 bg-emerald-500/20 rounded-lg">
-                          <div className="text-2xl mb-2">{selectedBuddy.emoji}</div>
+                          <div className="text-2xl mb-2">{selectedBuddy?.emoji || '🎓'}</div>
                           <p className="text-xs text-slate-400">Learning Buddy</p>
                         </div>
                         <div className="p-4 bg-cyan-500/20 rounded-lg">

@@ -30,7 +30,7 @@ export default function RootLayout({
           <Navbar/>
           {children}
           <Toaster />
-          <AgentHover
+          {/* <AgentHover
             posterSrc="/pause.png"
             p1Src="/p1.gif"
             p2Src="/p2.gif"
@@ -38,7 +38,7 @@ export default function RootLayout({
             pause2Src="/pause 2.png"
             size={130}
             offset={{ right: -14, bottom: 0 }}
-          />
+          /> */}
           </NextAuthSessionProvider>
         </ThemeProvider>
       </body>
