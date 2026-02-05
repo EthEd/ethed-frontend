@@ -122,8 +122,10 @@ export default function Onboarding() {
     }
   }, [session, status, router]);
 
+  const BUDDY_ENABLED = false; // Temporarily disable Learning Buddy for MVP
+
   const [step, setStep] = useState(0);
-  const [selectedBuddy, setSelectedBuddy] = useState<Buddy>(buddyOptions[0]);
+  const [selectedBuddy, setSelectedBuddy] = useState<Buddy | null>(null);
   const [ensName, setEnsName] = useState("");
   const [ensAvailable, setEnsAvailable] = useState<boolean | null>(null);
   const [ensChecking, setEnsChecking] = useState(false);
@@ -342,7 +344,6 @@ export default function Onboarding() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           subdomain: ensName,
-          buddyId: selectedBuddy.id,
         }),
       });
 
@@ -382,9 +383,7 @@ export default function Onboarding() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          petId: createdPet?.id,
           ensName: `${ensName}.ethed.eth`,
-          buddyType: selectedBuddy.id,
         }),
       });
 
@@ -436,7 +435,6 @@ export default function Onboarding() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           onboardingCompleted: true,
-          selectedBuddy: selectedBuddy.id,
           ensName: `${ensName}.ethed.eth`,
         }),
       });
@@ -572,7 +570,7 @@ export default function Onboarding() {
                         </div>
                       </div>
                       
-                      <Button onClick={() => setStep(1)} size="lg" className="w-full">
+                      <Button onClick={() => setStep(BUDDY_ENABLED ? 1 : 2)} size="lg" className="w-full">
                         Start My Journey <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </CardContent>
@@ -581,7 +579,7 @@ export default function Onboarding() {
               )}
 
               {/* Step 1: Buddy Selection */}
-              {step === 1 && (
+              {BUDDY_ENABLED && step === 1 && (
                 <motion.div
                   key="buddy"
                   variants={stepVariants}
@@ -718,13 +716,13 @@ export default function Onboarding() {
 
                       <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg">
                         <div className="flex items-center space-x-3">
-                          <div className="text-3xl">{selectedBuddy.emoji}</div>
+                          <div className="text-3xl">{selectedBuddy?.emoji || '🧑‍🎓'}</div>
                           <div>
                             <p className="text-cyan-400 font-semibold">
                               {ensName}.ethed.eth
                             </p>
                             <p className="text-slate-400 text-sm">
-                              Protected by {selectedBuddy.name}
+                              Protected by {selectedBuddy?.name || 'EthEd Team'}
                             </p>
                           </div>
                         </div>
@@ -782,7 +780,7 @@ export default function Onboarding() {
                     <CardContent className="space-y-6">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg border border-purple-500/30 text-center">
-                          <div className="text-4xl mb-2">{selectedBuddy.emoji}</div>
+                          <div className="text-4xl mb-2">{selectedBuddy?.emoji || '🧑‍🎓'}</div>
                           <h3 className="font-bold text-white text-sm mb-1">
                             Genesis Scholar
                           </h3>
@@ -808,7 +806,7 @@ export default function Onboarding() {
                         <p>✨ Exclusive Genesis collection artwork</p>
                         <p>🎯 Special learning bonuses and rewards</p>
                         <p>🏆 Proof of being an early EthEd pioneer</p>
-                        <p>💝 Commemorates your bond with {selectedBuddy.name}</p>
+                        <p>💝 Commemorates your bond with {selectedBuddy?.name || 'the EthEd community'}</p>
                       </div>
 
                       <Button
@@ -852,7 +850,7 @@ export default function Onboarding() {
                       </h2>
                       <p className="text-slate-300 text-lg max-w-md mx-auto">
                         Congratulations! You've successfully set up your profile.
-                        {selectedBuddy.name} is excited to guide your learning journey!
+                        The EthEd community is excited to guide your learning journey!
                       </p>
 
                       <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
@@ -893,11 +891,18 @@ export default function Onboarding() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-bold text-white flex items-center">
                   <MessageCircle className="w-5 h-5 mr-2 text-emerald-400" />
-                  Chat with {selectedBuddy.name}
+                  {BUDDY_ENABLED ? `Chat with ${selectedBuddy?.name || 'Buddy'}` : 'Onboarding Help'}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col h-96">
                 {/* Messages */}
+                {!BUDDY_ENABLED && (
+                  <div className="text-sm text-slate-300">
+                    <p className="mb-2">Learning Buddy is temporarily disabled for the MVP.</p>
+                    <p className="mb-2">If you need help with onboarding, use the support link at the bottom of the page or reach out on our community channel.</p>
+                    <p className="text-xs text-slate-400">Tip: You can still claim your ENS and mint your Genesis NFT during onboarding.</p>
+                  </div>
+                )
                 <div className="flex-1 space-y-3 overflow-y-auto mb-4 pr-2">
                   {chatMessages.map((msg) => (
                     <div

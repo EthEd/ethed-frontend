@@ -19,7 +19,8 @@ export async function GET() {
       where: { id: session.user.id },
       include: {
         wallets: true,
-        pets: true,
+        // Keep pet data in DB for future use, but do not return to the UI
+        // pets: true,
         courses: {
           include: {
             course: true
@@ -41,7 +42,6 @@ export async function GET() {
       coursesEnrolled: user.courses.length,
       coursesCompleted: user.courses.filter(c => c.completed).length,
       nftsOwned: user.nfts.length,
-      petsOwned: user.pets.length,
       walletConnected: user.wallets.length > 0,
       ensName: user.wallets.find(w => w.ensName)?.ensName || null,
       joinedDate: user.createdAt
@@ -56,7 +56,7 @@ export async function GET() {
         role: user.role,
         createdAt: user.createdAt,
         wallets: user.wallets,
-        pets: user.pets,
+        // pet data intentionally omitted from the response for MVP
         courses: user.courses,
         nfts: user.nfts,
         stats

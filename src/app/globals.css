@@ -55,12 +55,12 @@ body {
   --card-foreground: oklch(0.14100 0.00500 285.82300);
   --popover: oklch(1.00000 0.00000 0);
   --popover-foreground: oklch(0.14100 0.00500 285.82300);
-  --primary: oklch(0.62733 0.17004 149.20045);
-  --primary-foreground: oklch(0.14100 0.00500 285.82300);
-  --secondary: oklch(0.96756 0.00133 286.37516);
-  --secondary-foreground: oklch(0.14100 0.00500 285.82300);
-  --accent: oklch(0.96756 0.00133 286.37516);
-  --accent-foreground: oklch(0.14100 0.00500 285.82300);
+  --primary: #06b6d4; /* eipsinsight primary cyan */
+  --primary-foreground: #ffffff;
+  --secondary: #0ea5a4;
+  --secondary-foreground: #ffffff;
+  --accent: #06b6d4;
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.63683 0.20776 25.32589);
   --destructive-foreground: oklch(0.98500 0.00000 0.00000);
   --muted: oklch(0.96955 0.00000 0);
