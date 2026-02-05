@@ -8,7 +8,6 @@ import { prisma } from "./prisma-client";
 export interface ENSRegistrationParams {
   userId: string;
   subdomain: string;
-  buddyId?: string;
   walletAddress?: string;
 }
 
@@ -152,7 +151,7 @@ export async function saveENSToDatabase(params: {
  * Full ENS registration pipeline
  */
 export async function registerENS(params: ENSRegistrationParams) {
-  const { userId, subdomain, buddyId, walletAddress } = params;
+  const { userId, subdomain, walletAddress } = params;
 
   // Validate subdomain
   const validation = validateSubdomain(subdomain);

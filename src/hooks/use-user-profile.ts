@@ -12,7 +12,7 @@ interface UserProfile {
   role?: string;
   createdAt: string;
   wallets: WalletAddress[];
-  pets: Pet[];
+  pets?: Pet[]; // optional for MVP where buddy is disabled
   courses: UserCourse[];
   stats: {
     coursesEnrolled: number;
