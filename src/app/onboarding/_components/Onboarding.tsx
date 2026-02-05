@@ -611,7 +611,7 @@ export default function Onboarding() {
                             whileTap={{ scale: 0.98 }}
                             onClick={() => handleBuddySelect(buddy)}
                             className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                              selectedBuddy.id === buddy.id
+                              selectedBuddy?.id === buddy.id
                                 ? "border-emerald-400 bg-emerald-500/10"
                                 : "border-slate-600 hover:border-slate-500"
                             }`}
