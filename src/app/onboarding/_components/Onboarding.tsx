@@ -190,7 +190,9 @@ export default function Onboarding() {
 
   // Initialize chat when buddy is selected
   useEffect(() => {
-    if (step === 1 && chatMessages.length === 0) {
+    if (!BUDDY_ENABLED) return;
+
+    if (step === 1 && chatMessages.length === 0 && selectedBuddy) {
       const welcomeMessage: ChatMessage = {
         id: "1",
         sender: "buddy",
