@@ -44,7 +44,7 @@ export default function LoginPage() {
         console.error('Login error:', result.error);
         toast.error('Login failed: ' + result.error);
       } else if (result?.ok) {
-        toast.success('Welcome to EthEd!');
+        toast.success('Welcome to eth.ed!');
         // Wait a moment for the session to be established
         setTimeout(() => {
           router.push('/onboarding');
@@ -65,7 +65,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md bg-slate-800/40 backdrop-blur-xl border border-white/10">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
-            Welcome to EthEd
+            Welcome to eth.ed
           </CardTitle>
           <CardDescription className="text-slate-300">
             Sign in to start your Web3 learning journey

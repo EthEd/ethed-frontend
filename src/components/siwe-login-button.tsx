@@ -45,7 +45,7 @@ export function SiweLoginButton() {
       const message = new SiweMessage({
         domain: window.location.host,
         address: address,
-        statement: "Sign in with Ethereum to ETHed",
+        statement: "Sign in with Ethereum to eth.ed",
         uri: window.location.origin,
         version: "1",
         chainId: parseInt(chainId as string, 16),

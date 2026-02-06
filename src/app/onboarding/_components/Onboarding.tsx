@@ -239,7 +239,7 @@ export default function Onboarding() {
     try {
       await updateUserProfile();
       
-      toast.success("Welcome to EthEd! Your journey begins now.", {
+      toast.success("Welcome to eth.ed! Your journey begins now.", {
         duration: 5000,
       });
       
@@ -322,7 +322,7 @@ export default function Onboarding() {
                       <Sparkles className="w-12 h-12 text-cyan-400" />
                     </div>
                     <h2 className="text-3xl font-bold text-white mb-4">
-                      Welcome to EthEd 🚀
+                      Welcome to eth.ed 🚀
                     </h2>
                     <p className="text-slate-300 text-lg mb-8 max-w-lg mx-auto leading-relaxed">
                       You're about to join a community of lifelong learners 
@@ -425,7 +425,7 @@ export default function Onboarding() {
                       )}
                       <p className="text-xs text-slate-500 leading-relaxed bg-slate-800/50 p-3 rounded-lg border border-white/5">
                         <Sparkles className="w-3 h-3 inline mr-2 text-cyan-400" />
-                        This name will be your primary identity across the EthEd ecosystem. It's yours for free as an early pioneer!
+                        This name will be your primary identity across the eth.ed ecosystem. It's yours for free as an early pioneer!
                       </p>
                     </div>
 
@@ -496,7 +496,7 @@ export default function Onboarding() {
                           <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-purple-500/20">
                             <Crown className="w-10 h-10 text-white" />
                           </div>
-                          <h3 className="text-2xl font-bold text-white mb-2">EthEd Pioneer</h3>
+                          <h3 className="text-2xl font-bold text-white mb-2">eth.ed Pioneer</h3>
                           <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">GENESIS EDITION</Badge>
                           <p className="mt-4 text-slate-400 text-sm px-10">
                             {ensName}.ethed.eth • Pioneer Scholar #001

@@ -5,6 +5,8 @@
 
 import { pinata } from "./pinata-config";
 import { prisma } from "./prisma-client";
+import fs from "fs";
+import path from "path";
 
 // Add proper type definitions for Pinata SDK
 type PinataUploadResponse = {
@@ -80,8 +82,8 @@ export function generateGenesisScholarMetadata(
   ensName?: string
 ): NFTMetadata {
   return {
-    name: "EthEd Pioneer NFT",
-    description: `Commemorates being an early EthEd pioneer and completing the onboarding journey.`,
+    name: "eth.ed Pioneer NFT",
+    description: `Commemorates being an early eth.ed pioneer and completing the onboarding journey.`,
     image: imageUri,
     attributes: [
       { trait_type: "Type", value: "Genesis Scholar" },
@@ -100,7 +102,7 @@ export function generateGenesisScholarMetadata(
 export async function mintOnChain(
   recipientAddress: string,
   metadataUri: string,
-  nftType: "pioneer"
+  nftType: "pioneer" | "course-completion"
 ): Promise<{ tokenId: string; txHash: string }> {
   // TODO: Replace with actual smart contract interaction
   // Example using ethers.js:
@@ -173,7 +175,7 @@ export async function mintGenesisNFTs(params: MintNFTParams) {
   const genesisNFT = await saveNFTToDatabase({
     userId,
     tokenId: genesisResult.tokenId,
-    name: "EthEd Pioneer NFT",
+    name: "eth.ed Pioneer NFT",
     image: genesisImageUri,
     metadata: genesisMetadata,
   });
@@ -183,5 +185,105 @@ export async function mintGenesisNFTs(params: MintNFTParams) {
     transactions: [
       { type: "pioneer", txHash: genesisResult.txHash, tokenId: genesisResult.tokenId },
     ],
+  };
+}
+
+/**
+ * Upload course completion NFT image (Learning Sprout GIF) to IPFS
+ */
+export async function uploadCourseSproutToIPFS(): Promise<string> {
+  try {
+    // Read the sprout GIF from public folder
+    const sproutPath = path.join(process.cwd(), "public", "nft-learning-sprout.gif");
+    const imageBuffer = fs.readFileSync(sproutPath);
+    
+    // Convert to File for Pinata
+    const arrayBuffer = imageBuffer.buffer.slice(
+      imageBuffer.byteOffset,
+      imageBuffer.byteOffset + imageBuffer.byteLength
+    ) as ArrayBuffer;
+    const blob = new Blob([arrayBuffer], { type: "image/gif" });
+    const file = new File([blob], "learning-sprout.gif", { type: "image/gif" });
+    
+    const upload = (await (pinata as any).upload.file(file)) as PinataUploadResponse;
+    return `ipfs://${upload.IpfsHash}`;
+  } catch (error) {
+    console.error("Error uploading sprout GIF to IPFS:", error);
+    // Fallback to local URL if IPFS fails
+    return "/nft-learning-sprout.gif";
+  }
+}
+
+/**
+ * Generate NFT metadata for course completion
+ */
+export function generateCourseCompletionMetadata(
+  imageUri: string,
+  courseName: string,
+  courseSlug: string
+): NFTMetadata {
+  return {
+    name: `${courseName} - Learning Sprout`,
+    description: `Commemorates the successful completion of ${courseName} on eth.ed. This Learning Sprout represents your growth and mastery in blockchain education.`,
+    image: imageUri,
+    animation_url: imageUri, // GIF works as animation
+    attributes: [
+      { trait_type: "Type", value: "Course Completion" },
+      { trait_type: "Course", value: courseName },
+      { trait_type: "Course Slug", value: courseSlug },
+      { trait_type: "Platform", value: "eth.ed" },
+      { trait_type: "Completion Date", value: new Date().toISOString().split("T")[0] },
+      { trait_type: "NFT Design", value: "Learning Sprout" }
+    ],
+    external_url: `https://ethed.app/courses/${courseSlug}`,
+  };
+}
+
+/**
+ * Mint course completion NFT with Learning Sprout design
+ */
+export async function mintCourseCompletionNFT(params: {
+  userId: string;
+  courseSlug: string;
+  courseName: string;
+  userAddress?: string;
+}) {
+  const { userId, courseSlug, courseName, userAddress } = params;
+
+  // Upload sprout GIF to IPFS
+  console.log("Uploading Learning Sprout GIF to IPFS...");
+  const imageUri = await uploadCourseSproutToIPFS();
+  console.log(`Image uploaded: ${imageUri}`);
+
+  // Generate metadata
+  const metadata = generateCourseCompletionMetadata(imageUri, courseName, courseSlug);
+
+  // Upload metadata to IPFS
+  console.log("Uploading metadata to IPFS...");
+  const metadataUri = await uploadMetadataToIPFS(metadata);
+  console.log(`Metadata uploaded: ${metadataUri}`);
+
+  // Mint on-chain
+  const recipientAddress = userAddress || "0x0000000000000000000000000000000000000000";
+  const mintResult = await mintOnChain(recipientAddress, metadataUri, "course-completion");
+  
+  // Save to database
+  const nft = await saveNFTToDatabase({
+    userId,
+    tokenId: mintResult.tokenId,
+    name: `${courseName} - Learning Sprout`,
+    image: imageUri,
+    metadata,
+  });
+
+  return {
+    nft,
+    transaction: { 
+      type: "course-completion", 
+      txHash: mintResult.txHash, 
+      tokenId: mintResult.tokenId,
+      courseSlug,
+      courseName
+    },
   };
 }

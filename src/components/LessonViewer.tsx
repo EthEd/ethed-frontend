@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useCourseProgress } from '@/hooks/useCourseProgress';
 import { ArrowLeft, ArrowRight, CheckCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'motion/react';
+import { toast } from 'sonner';
 
 interface LessonContent {
   id: number;
@@ -784,12 +786,15 @@ interface LessonViewerProps {
   moduleId: string;
 }
 
+import { useRouter } from 'next/navigation';
+
 export default function LessonViewer({ moduleId }: LessonViewerProps) {
+  const router = useRouter();
   const [lesson, setLesson] = useState<LessonContent | null>(null);
-  const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
 
   const moduleNumber = parseInt(moduleId);
   const totalModules = Object.keys(lessonContents).length;
+  const { completedModules, completionCount, markModuleComplete } = useCourseProgress('eips-101', totalModules);
 
   useEffect(() => {
     const currentLesson = lessonContents[moduleNumber];
@@ -797,23 +802,55 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
       setLesson(currentLesson);
     }
     
-    // Load completed modules from localStorage
-    const saved = localStorage.getItem('eips-101-completed');
-    if (saved) {
-      setCompletedModules(new Set(JSON.parse(saved)));
-    }
+    // initial lesson load handled by hook; nothing to do here
   }, [moduleNumber]);
 
-  const markAsCompleted = () => {
-    const newCompleted = new Set([...completedModules, moduleNumber]);
-    setCompletedModules(newCompleted);
-    localStorage.setItem('eips-101-completed', JSON.stringify([...newCompleted]));
+  const finishCourseBackend = async () => {
+    try {
+      const res = await fetch('/api/user/course/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseSlug: 'eips-101' })
+      });
+      if (res.ok) {
+        toast.success('Course completed! 🎉');
+      } else {
+        console.error('Finish course API error:', await res.text());
+      }
+      // refresh server data (profile etc.)
+      try { router.refresh(); } catch (e) { /* ignore */ }
+    } catch (err) {
+      console.error('Finish course API error:', err);
+    }
   };
 
-  const goToNextLesson = () => {
+  const markAsCompleted = () => {
+    if (completedModules.has(moduleNumber)) return;
+    markModuleComplete(moduleNumber);
+
+    const newCount = completionCount + 1;
+    if (newCount === totalModules) {
+      finishCourseBackend();
+    } else {
+      try {
+        fetch('/api/user/course/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courseSlug: 'eips-101', completedCount: newCount, totalModules })
+        });
+      } catch (err) { /* ignore */ }
+    }
+  };
+
+  const goToNextLesson = async () => {
     if (moduleNumber < totalModules) {
       window.location.href = `/courses/eips-101/lesson/${moduleNumber + 1}`;
     } else {
+      // ensure last module marked complete and persist
+      if (!completedModules.has(moduleNumber)) {
+        markAsCompleted();
+      }
+      await finishCourseBackend();
       window.location.href = '/courses/eips-101';
     }
   };
@@ -902,7 +939,7 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
               </div>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-4">
               {lesson.title}
             </h1>
           </motion.div>
@@ -918,9 +955,9 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
                 <div 
                   className="prose prose-invert prose-cyan max-w-none
                     prose-headings:font-bold prose-headings:leading-tight
-                    prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-0 prose-h1:text-white prose-h1:font-extrabold
-                    prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-8 prose-h2:text-cyan-300 prose-h2:font-bold
-                    prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-6 prose-h3:text-emerald-300 prose-h3:font-semibold
+                    prose-h1:text-3xl prose-h1:mb-6 prose-h1:mt-0 prose-h1:text-white prose-h1:font-bold
+                    prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-6 prose-h2:text-cyan-300 prose-h2:font-semibold
+                    prose-h3:text-xl prose-h3:mb-3 prose-h3:mt-4 prose-h3:text-emerald-300 prose-h3:font-semibold
                     prose-p:text-lg prose-p:text-slate-300 prose-p:leading-relaxed prose-p:mb-6
                     prose-strong:text-xl prose-strong:text-cyan-200 prose-strong:font-bold
                     prose-code:text-cyan-300 prose-code:bg-slate-800 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-base
@@ -971,13 +1008,13 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
                         
                         // Convert markdown headers
                         if (line.startsWith('### ')) {
-                          result.push(`<h3 class="text-2xl font-semibold text-emerald-300 mb-4 mt-8">${line.slice(4)}</h3>`);
+                          result.push(`<h3 class="text-xl font-semibold text-emerald-300 mb-3 mt-4">${line.slice(4)}</h3>`);
                         }
                         else if (line.startsWith('## ')) {
-                          result.push(`<h2 class="text-3xl font-bold text-cyan-300 mb-6 mt-10">${line.slice(3)}</h2>`);
+                          result.push(`<h2 class="text-2xl font-semibold text-cyan-300 mb-4 mt-6">${line.slice(3)}</h2>`);
                         }
                         else if (line.startsWith('# ')) {
-                          result.push(`<h1 class="text-4xl font-extrabold text-white mb-8 mt-0">${line.slice(2)}</h1>`);
+                          result.push(`<h1 class="text-3xl font-bold text-white mb-6 mt-0">${line.slice(2)}</h1>`);
                         }
                         // Handle lists properly
                         else if (line.startsWith('- ')) {
@@ -1063,16 +1100,6 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
             </Button>
 
             <div className="flex items-center gap-4">
-              {!completedModules.has(moduleNumber) && (
-                <Button
-                  onClick={markAsCompleted}
-                  className="bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl"
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Mark Complete
-                </Button>
-              )}
-
               {completedModules.has(moduleNumber) && (
                 <div className="flex items-center gap-2 text-cyan-400 px-4 py-2 bg-cyan-400/10 rounded-xl border border-cyan-400/20">
                   <CheckCircle className="h-5 w-5" />
@@ -1081,7 +1108,16 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
               )}
 
               <Button
-                onClick={goToNextLesson}
+                onClick={async () => {
+                  if (!completedModules.has(moduleNumber)) markAsCompleted();
+                  if (moduleNumber < totalModules) {
+                    window.location.href = `/courses/eips-101/lesson/${moduleNumber + 1}`;
+                  } else {
+                    // ensure last module persisted then navigate back to course
+                    try { await finishCourseBackend(); } catch (e) {}
+                    window.location.href = '/courses/eips-101';
+                  }
+                }}
                 className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl"
               >
                 {moduleNumber === totalModules ? 'Finish Course' : 'Next Lesson'}

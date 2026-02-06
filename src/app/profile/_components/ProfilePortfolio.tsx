@@ -70,7 +70,7 @@ export default function ProfilePortfolio({ handle }: Props) {
             ensName: data.ensName,
             displayName: data.user?.name || handle,
             avatar: data.user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${handle}`,
-            bio: `Web3 learner on EthEd`,
+            bio: `Web3 learner on eth.ed`,
             verified: !!data.ensName,
           });
         }
@@ -95,7 +95,10 @@ export default function ProfilePortfolio({ handle }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-950">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 animate-spin text-cyan-400" />
+          <p className="text-slate-400">Loading profile...</p>
+        </div>
       </div>
     );
   }
@@ -103,9 +106,22 @@ export default function ProfilePortfolio({ handle }: Props) {
   if (error || !profile) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-950">
-        <Card className="bg-slate-900/40 backdrop-blur-xl border border-red-400/30 rounded-2xl">
-          <CardContent className="p-6">
-            <p className="text-red-300">{error || "Profile not found"}</p>
+        <div className="absolute inset-0 z-0">
+          <div className="from-cyan-400/10 via-background to-background absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))]"></div>
+        </div>
+        <Card className="relative z-10 bg-slate-900/90 backdrop-blur-xl border border-cyan-400/20 rounded-2xl max-w-md mx-4">
+          <CardContent className="p-8 text-center">
+            <div className="h-16 w-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-cyan-500/20">
+              <Users className="h-8 w-8 text-cyan-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Profile Not Found</h2>
+            <p className="text-slate-400 mb-6">The profile you're looking for doesn't exist or hasn't been set up yet.</p>
+            <Button 
+              asChild
+              className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white"
+            >
+              <a href="/courses">Browse Courses</a>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -260,20 +276,24 @@ export default function ProfilePortfolio({ handle }: Props) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {mockCourses.slice(0, 3).map((course) => (
-                    <div key={course.id} className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-slate-300 truncate">{course.title}</span>
-                        <span className="text-xs font-bold text-cyan-400">{course.progress}%</span>
+                  {(profile?.courses?.slice(0, 3) || mockCourses.slice(0, 3)).map((uc: any, idx: number) => {
+                    const course = uc.course || uc;
+                    const progress = uc.progress ?? (course.progress ?? 0);
+                    return (
+                      <div key={uc.id || idx} className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-slate-300 truncate">{course.title}</span>
+                          <span className="text-xs font-bold text-cyan-400">{progress}%</span>
+                        </div>
+                        <div className="w-full bg-slate-950 rounded-full h-2 border border-white/5">
+                          <div
+                            className="bg-gradient-to-r from-cyan-400 to-teal-400 h-full rounded-full transition-all duration-500 shadow-cyan- glow"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="w-full bg-slate-950 rounded-full h-2 border border-white/5">
-                        <div
-                          className="bg-gradient-to-r from-cyan-400 to-teal-400 h-full rounded-full transition-all duration-500 shadow-cyan- glow"
-                          style={{ width: `${course.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </CardContent>
               </Card>
 
@@ -340,43 +360,47 @@ export default function ProfilePortfolio({ handle }: Props) {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              {mockCourses.map((course) => (
-                <Card key={course.id} className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-emerald-400/20 to-cyan-400/20 flex items-center justify-center">
-                          <BookOpen className="w-5 h-5 text-emerald-400" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-white">{course.title}</h3>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-slate-300 border-slate-400/30">
-                              {course.difficulty}
-                            </Badge>
-                            <span className="text-xs text-slate-400">
-                              {course.progress === 100 ? `Completed ${course.completedAt}` : `${Math.round((course.progress / 100) * course.totalLessons)}/${course.totalLessons} lessons`}
-                            </span>
+              {(profile?.courses || mockCourses).map((uc: any, idx: number) => {
+                const course = uc.course || uc;
+                const progress = uc.progress ?? (course.progress ?? 0);
+                return (
+                  <Card key={uc.id || idx} className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-emerald-400/20 to-cyan-400/20 flex items-center justify-center">
+                            <BookOpen className="w-5 h-5 text-emerald-400" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-white">{course.title}</h3>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-slate-300 border-slate-400/30">
+                                {course.difficulty ?? 'Course'}
+                              </Badge>
+                              <span className="text-xs text-slate-400">
+                                {progress === 100 ? `Completed` : `${progress}% progress`}
+                              </span>
+                            </div>
                           </div>
                         </div>
+                        {progress === 100 && <Trophy className="w-5 h-5 text-yellow-400" />}
                       </div>
-                      {course.progress === 100 && <Trophy className="w-5 h-5 text-yellow-400" />}
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-300">Progress</span>
-                        <span className="text-white font-medium">{course.progress}%</span>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-slate-300">Progress</span>
+                          <span className="text-white font-medium">{progress}%</span>
+                        </div>
+                        <div className="w-full bg-slate-700 rounded-full h-2">
+                          <div
+                            className="bg-gradient-to-r from-emerald-400 to-cyan-400 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="w-full bg-slate-700 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-emerald-400 to-cyan-400 h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${course.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </motion.div>
           </TabsContent>
 
@@ -414,7 +438,7 @@ export default function ProfilePortfolio({ handle }: Props) {
   );
 }
 const mockNFTs = [
-  { id: 1, name: "Early Adopter", description: "Joined EthEd during alpha", rarity: "Legendary", earned: "Feb 2025" },
+  { id: 1, name: "Early Adopter", description: "Joined eth.ed during alpha", rarity: "Legendary", earned: "Feb 2025" },
   { id: 2, name: "ENS Pioneer", description: "Registered an .ethed.eth subdomain", rarity: "Epic", earned: "Feb 2025" },
 ];
 

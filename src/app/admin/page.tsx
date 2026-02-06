@@ -63,7 +63,7 @@ export default function AdminDashboard() {
             Admin Dashboard
           </h1>
           <p className="text-slate-300">
-            Manage EthEd platform, courses, and user analytics.
+            Manage eth.ed platform, courses, and user analytics.
           </p>
         </div>
 

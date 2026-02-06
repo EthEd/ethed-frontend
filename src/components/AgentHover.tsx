@@ -232,7 +232,7 @@ export default function AgentHover({
         description: data.description,
       });
       
-      console.log("Learn about EthEd:", data);
+      console.log("Learn about eth.ed:", data);
     } catch (error) {
       console.error("Learn error:", error);
       toast.error("Failed to load information", {
@@ -326,7 +326,7 @@ export default function AgentHover({
           zIndex: 9999,
           cursor: "pointer",
         }}
-        aria-label="EthEd Agent"
+        aria-label="eth.ed Agent"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -378,7 +378,7 @@ export default function AgentHover({
                   <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gradient-to-r from-cyan-400/10 to-emerald-400/10 border border-cyan-300/20">
                     <div className="w-1.5 h-1.5 bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full animate-pulse" />
                     <p className="text-xs font-medium bg-gradient-to-r from-cyan-300/90 to-emerald-300/90 bg-clip-text text-transparent">
-                      EthEd Assistant
+                      eth.ed Assistant
                     </p>
                   </div>
                 </div>
@@ -410,7 +410,7 @@ export default function AgentHover({
                     <div className="flex items-center gap-2">
                       <div className="text-sm">{isLoading ? "⏳" : "📚"}</div>
                       <div className="text-xs font-medium text-emerald-200 group-hover:text-emerald-100">
-                        Learn about EthEd
+                        Learn about eth.ed
                       </div>
                     </div>
                   </button>

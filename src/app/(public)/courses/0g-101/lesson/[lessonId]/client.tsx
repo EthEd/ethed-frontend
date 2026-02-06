@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useCourseProgress } from '@/hooks/useCourseProgress';
 import { ArrowLeft, ArrowRight, Clock, Play, FileText, Code, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -175,22 +176,47 @@ function renderTextContent(content: string) {
   return elements;
 }
 
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+
 export default function ZeroGLessonClient({ lessonId }: { lessonId: string }) {
+  const router = useRouter();
   const moduleId = parseInt(lessonId);
   const currentModule = modules.find(m => m.id === moduleId);
-  const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
+  const { completedModules, completionCount, markModuleComplete } = useCourseProgress('0g-101', modules.length);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('0g-101-completed');
-    if (saved) {
-      setCompletedModules(new Set(JSON.parse(saved)));
+  // progress state is managed by useCourseProgress hook
+
+  const finishCourseBackend = async () => {
+    try {
+      const res = await fetch('/api/user/course/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseSlug: '0g-101' })
+      });
+      if (res.ok) toast.success('Course completed! 🎉');
+      try { router.refresh(); } catch (e) {}
+    } catch (err) {
+      console.error('Finish course API error:', err);
     }
-  }, []);
+  };
 
   const markAsCompleted = () => {
-    const newCompleted = new Set([...completedModules, moduleId]);
-    setCompletedModules(newCompleted);
-    localStorage.setItem('0g-101-completed', JSON.stringify([...newCompleted]));
+    if (completedModules.has(moduleId)) return;
+    markModuleComplete(moduleId);
+
+    const newCount = completionCount + 1;
+    if (newCount === modules.length) {
+      finishCourseBackend();
+    } else {
+      try {
+        fetch('/api/user/course/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courseSlug: '0g-101', completedCount: newCount, totalModules: modules.length })
+        });
+      } catch (err) { /* ignore */ }
+    }
   };
 
   if (!currentModule) {
@@ -261,26 +287,13 @@ export default function ZeroGLessonClient({ lessonId }: { lessonId: string }) {
               </div>
             )}
 
-            {/* Completion Button */}
+            {/* Completion indicator (progress managed by hook) */}
             <div className="flex justify-center pt-8">
-              <Button
-                onClick={markAsCompleted}
-                className={`px-8 py-3 text-lg ${
-                  completedModules.has(moduleId)
-                    ? 'bg-green-600 hover:bg-green-700'
-                    : 'bg-green-500 hover:bg-green-600'
-                } text-white`}
-                disabled={completedModules.has(moduleId)}
-              >
-                {completedModules.has(moduleId) ? (
-                  <>
-                    <CheckCircle className="mr-2 h-5 w-5" />
-                    Completed
-                  </>
-                ) : (
-                  'Mark as Complete'
-                )}
-              </Button>
+              {completedModules.has(moduleId) ? (
+                <div className="px-8 py-3 text-lg bg-green-600 text-white rounded-lg">
+                  <CheckCircle className="mr-2 h-5 w-5 inline" /> Completed
+                </div>
+              ) : null}
             </div>
           </CardContent>
         </Card>
@@ -299,11 +312,15 @@ export default function ZeroGLessonClient({ lessonId }: { lessonId: string }) {
           )}
           
           {moduleId < modules.length ? (
-            <Button asChild className="bg-green-500 hover:bg-green-600 text-white">
-              <a href={`/courses/0g-101/lesson/${moduleId + 1}`}>
-                Next Module
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
+            <Button
+              className="bg-green-500 hover:bg-green-600 text-white"
+              onClick={async () => {
+                if (!completedModules.has(moduleId)) markAsCompleted();
+                window.location.href = `/courses/0g-101/lesson/${moduleId + 1}`;
+              }}
+            >
+              Next Module
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
             <div></div>

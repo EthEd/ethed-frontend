@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
-      message: "EthEd Pioneer NFT minted successfully",
+      message: "eth.ed Pioneer NFT minted successfully",
       nfts: result.nfts,
       transactions: result.transactions,
       totalMinted: result.nfts.length,

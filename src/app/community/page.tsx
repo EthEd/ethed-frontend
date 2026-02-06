@@ -82,7 +82,7 @@ export default function CommunityPage() {
     {
       date: "March 2024",
       title: "The Spark of an Idea",
-      description: "EthEd was born at ETHGlobal London, where our founder realized that Web3 education needed a more personalized, AI-driven approach.",
+      description: "EIPSInsight was born at ETHGlobal London, where our founder realized that Web3 education needed a more personalized, AI-driven approach.",
       icon: Lightbulb,
       color: "emerald",
       ethGlobalEvent: "ETHGlobal London 2024",
@@ -109,7 +109,7 @@ export default function CommunityPage() {
     {
       date: "May 2024",
       title: "European Expansion", 
-      description: "ETHGlobal Brussels was where EthEd truly came alive. We launched our ENS integration and saw our first real user growth.",
+      description: "ETHGlobal Brussels was where EIPSInsight truly came alive. We launched our ENS integration and saw our first real user growth.",
       icon: Globe,
       color: "blue",
       ethGlobalEvent: "ETHGlobal Brussels 2024",
@@ -123,7 +123,7 @@ export default function CommunityPage() {
     {
       date: "July 2024",
       title: "Community Growth",
-      description: "Summer brought incredible growth as word spread through the Web3 community. Developers from around the world started joining EthEd.",
+      description: "Summer brought incredible growth as word spread through the Web3 community. Developers from around the world started joining EIPSInsight.",
       icon: Users,
       color: "purple",
       achievements: [
@@ -144,13 +144,13 @@ export default function CommunityPage() {
         "🥇 Winner - Best Educational Platform",
         "💰 $15,000 prize + $500K Series A",
         "📰 Featured in TechCrunch & CoinDesk",
-        "🚀 Launched EthEd free learning platform"
+        "🚀 Launched EIPSInsight free learning platform"
       ]
     },
     {
       date: "Present Day",
       title: "Building the Future",
-      description: "Today, EthEd is the leading Web3 education platform. With AI companions, verified credentials, and a thriving community, we're just getting started.",
+      description: "Today, EIPSInsight is the leading Web3 education platform. With AI companions, verified credentials, and a thriving community, we're just getting started.",
       icon: Star,
       color: "purple",
       achievements: [
@@ -240,7 +240,7 @@ export default function CommunityPage() {
       id: "ethglobal", 
       name: "ETHGlobal",
       logo: "/sponsors/ethglobal.png",
-      description: "More than a sponsor - ETHGlobal is where EthEd was born! They continue to support us with hackathon partnerships and community access.",
+      description: "More than a sponsor - ETHGlobal is where eth.ed was born! They continue to support us with hackathon partnerships and community access.",
       type: "Community",
       contribution: "Platform Partnership + Community Access",
       website: "https://ethglobal.com",
@@ -311,14 +311,14 @@ export default function CommunityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-slate-950 relative">
       {/* Background Effects */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-300/15 via-background to-background" />
-        <div className="absolute top-20 left-1/2 h-[800px] w-[800px] -translate-x-1/2 rounded-full bg-cyan-300/10 blur-3xl" />
+      <div className="absolute inset-0 z-0">
+        <div className="from-emerald-400/10 via-background to-background absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))]"></div>
+        <div className="bg-purple-300/5 absolute top-0 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="container mx-auto px-4 py-16 max-w-7xl">
+      <div className="relative z-10 container mx-auto px-4 py-16 max-w-7xl">
         {/* Hero Section */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -331,11 +331,11 @@ export default function CommunityPage() {
             <span className="text-sm font-medium text-emerald-300">Our Story</span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-emerald-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
-            The EthEd Journey
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
+            The EIPSInsight Journey
           </h1>
           
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed mb-8">
+          <p className=\"text-lg text-muted-foreground max-w-3xl mx-auto mb-8\">
             From a weekend hackathon idea to the world's leading Web3 education platform. 
             This is how ETHGlobal, our amazing sponsors, and an incredible community helped us build the future of blockchain learning.
           </p>
@@ -449,7 +449,7 @@ export default function CommunityPage() {
               Built at Hackathons
             </h2>
             <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-              Every major feature of EthEd was born or refined during ETHGlobal events, shaped by the hackathon community's feedback
+              Every major feature of eth.ed was born or refined during ETHGlobal events, shaped by the hackathon community's feedback
             </p>
           </div>
 
@@ -636,7 +636,7 @@ export default function CommunityPage() {
                   Be Part of Our Story
                 </h2>
                 <p className="text-slate-300 text-lg mb-8">
-                  Join the ${formattedMetrics.developers} developers already learning with EthEd. Get your AI companion, 
+                  Join the ${formattedMetrics.developers} developers already learning with eth.ed. Get your AI companion, 
                   earn NFT credentials, and help us build the future of Web3 education together.
                 </p>
                 
@@ -658,7 +658,7 @@ export default function CommunityPage() {
                 {/* Thank You Message */}
                 <div className="p-6 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg">
                   <p className="text-purple-200 font-medium">
-                    💜 Special thanks to ETHGlobal for providing the platform where EthEd was born, 
+                    💜 Special thanks to ETHGlobal for providing the platform where eth.ed was born, 
                     and to all our sponsors who make free Web3 education possible for everyone.
                   </p>
                 </div>

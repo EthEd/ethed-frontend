@@ -13,16 +13,16 @@ export async function GET() {
       );
     }
 
-    // For demo purposes, return empty array
-    // In production, you would fetch from database:
-    // const nfts = await prisma.nft.findMany({
-    //   where: { userId: session.user.id },
-    //   orderBy: { createdAt: 'desc' }
-    // });
+    const { prisma } = await import("@/lib/prisma-client");
+    
+    const nfts = await prisma.nFT.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'desc' }
+    });
 
     return NextResponse.json({ 
-      nfts: [],
-      total: 0 
+      nfts,
+      total: nfts.length
     });
 
   } catch (error) {

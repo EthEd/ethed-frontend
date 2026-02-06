@@ -94,16 +94,30 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <div className="container mx-auto px-4 py-12 max-w-7xl">
+    <div className="min-h-screen bg-slate-950 relative">
+      {/* Background effects */}
+      <div className="absolute inset-0 z-0">
+        <div className="from-cyan-400/10 via-background to-background absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))]"></div>
+        <div className="bg-cyan-300/5 absolute top-0 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 rounded-full blur-3xl"></div>
+      </div>
+      
+      <div className="relative z-10 container mx-auto px-4 py-12 max-w-7xl">
         {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent mb-3">
-            Welcome back, {session.user.name || 'Learner'}! 👋
-          </h1>
-          <p className="text-slate-400 text-lg">
-            Track your progress and continue your journey into the world of EIPs.
-          </p>
+        <div className="mb-12 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent mb-4">
+              Welcome back, {session.user.name || 'Learner'}! 👋
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Track your progress and continue your journey into the world of EIPs.
+            </p>
+          </div>
+          <Button asChild variant="outline" className="border-cyan-400/20 hover:border-cyan-400/40 text-cyan-300 hover:bg-cyan-400/5">
+            <Link href="/profile">
+              <Users className="h-4 w-4 mr-2" />
+              View Profile
+            </Link>
+          </Button>
         </div>
 
         {/* Stats Grid */}

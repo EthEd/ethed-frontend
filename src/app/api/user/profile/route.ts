@@ -88,27 +88,27 @@ export async function PATCH(request: NextRequest) {
 
     console.log("Profile update for user:", session.user.email, body);
 
-    // For demo purposes, just return success
-    // In production, you would update the database:
-    // const user = await prisma.user.update({
-    //   where: { id: session.user.id },
-    //   data: updates
-    // });
-
-    const mockUser = {
-      id: session.user.id,
-      name: name || session.user.name,
-      email: session.user.email,
-      image: image || session.user.image,
-      onboardingCompleted: onboardingCompleted || false,
-      selectedBuddy: selectedBuddy || null,
-      ensName: ensName || null,
-      updatedAt: new Date()
-    };
+    // Update user in database
+    const { prisma } = await import("@/lib/prisma-client");
+    
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        name: name || undefined,
+        image: image || undefined,
+        // Add other fields as needed
+      }
+    });
 
     return NextResponse.json({
       message: "Profile updated successfully",
-      user: mockUser
+      user: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        image: updatedUser.image,
+        updatedAt: updatedUser.updatedAt
+      }
     });
 
   } catch (error) {

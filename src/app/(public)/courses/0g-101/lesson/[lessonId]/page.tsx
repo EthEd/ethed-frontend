@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useCourseProgress } from '@/hooks/useCourseProgress';
 import { ArrowLeft, ArrowRight, Clock, Play, FileText, Code, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -104,7 +105,7 @@ function renderTextContent(content: string) {
     // Sub headings (## )
     else if (line.startsWith('## ')) {
       elements.push(
-        <h2 key={i} className="text-2xl font-semibold text-green-300 mb-4 mt-6">
+        <h2 key={i} className="text-2xl font-semibold text-emerald-300 mb-4 mt-6">
           {line.substring(3)}
         </h2>
       );
@@ -193,18 +194,27 @@ export default function ZeroGLessonPage({ params }: PageProps) {
     getParams();
   }, [params]);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('0g-101-completed');
-    if (saved) {
-      setCompletedModules(new Set(JSON.parse(saved)));
-    }
-  }, []);
+  const { completedModules, completionCount, markModuleComplete } = useCourseProgress('0g-101', modules.length);
 
   const markAsCompleted = () => {
     const moduleId = parseInt(lessonId);
-    const newCompleted = new Set([...completedModules, moduleId]);
-    setCompletedModules(newCompleted);
-    localStorage.setItem('0g-101-completed', JSON.stringify([...newCompleted]));
+    if (completedModules.has(moduleId)) return;
+    markModuleComplete(moduleId);
+
+    const newCount = completionCount + 1;
+    if (newCount === modules.length) {
+      try {
+        fetch('/api/user/course/complete', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ courseSlug: '0g-101' })
+        });
+      } catch (err) {}
+    } else {
+      try {
+        fetch('/api/user/course/progress', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ courseSlug: '0g-101', completedCount: newCount, totalModules: modules.length })
+        });
+      } catch (err) {}
+    }
   };
 
   if (loading) {
@@ -237,7 +247,7 @@ export default function ZeroGLessonPage({ params }: PageProps) {
         <Button 
           variant="ghost" 
           asChild
-          className="mb-6 text-green-400 hover:text-green-300" 
+          className="mb-6 text-emerald-400 hover:text-emerald-300" 
         >
           <a href="/courses/0g-101">
             <ArrowLeft className="mr-2 h-4 w-4" /> 
@@ -245,14 +255,14 @@ export default function ZeroGLessonPage({ params }: PageProps) {
           </a>
         </Button>
 
-        <Card className="mb-8 bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-green-400/20">
+        <Card className="mb-8 bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-emerald-400/20">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-white mb-4">{currentModule.title}</CardTitle>
             <div className="flex items-center gap-4 mb-4">
               <div className={`px-3 py-1 rounded-full border text-sm font-medium ${
-                currentModule.type === 'video' ? 'border-green-400/40 text-green-300' :
-                currentModule.type === 'code' ? 'border-green-400/40 text-green-300' :
-                'border-green-400/40 text-green-300'
+                currentModule.type === 'video' ? 'border-emerald-400/40 text-emerald-300' :
+                currentModule.type === 'code' ? 'border-cyan-400/40 text-cyan-300' :
+                'border-purple-400/40 text-purple-300'
               }`}>
                 {currentModule.type === 'video' && <Play className="inline h-3 w-3 mr-1" />}
                 {currentModule.type === 'code' && <Code className="inline h-3 w-3 mr-1" />}
@@ -286,26 +296,13 @@ export default function ZeroGLessonPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Completion Button */}
+            {/* Completion indicator (managed by hook) */}
             <div className="flex justify-center pt-8">
-              <Button
-                onClick={markAsCompleted}
-                className={`px-8 py-3 text-lg ${
-                  completedModules.has(moduleId)
-                    ? 'bg-green-600 hover:bg-green-700'
-                    : 'bg-green-500 hover:bg-green-600'
-                } text-white`}
-                disabled={completedModules.has(moduleId)}
-              >
-                {completedModules.has(moduleId) ? (
-                  <>
-                    <CheckCircle className="mr-2 h-5 w-5" />
-                    Completed
-                  </>
-                ) : (
-                  'Mark as Complete'
-                )}
-              </Button>
+              {completedModules.has(moduleId) ? (
+                <div className="px-8 py-3 text-lg bg-emerald-600 text-white rounded-lg">
+                  <CheckCircle className="mr-2 h-5 w-5 inline" /> Completed
+                </div>
+              ) : null}
             </div>
           </CardContent>
         </Card>
@@ -313,7 +310,7 @@ export default function ZeroGLessonPage({ params }: PageProps) {
         {/* Navigation */}
         <div className="flex justify-between items-center">
           {moduleId > 1 ? (
-            <Button variant="outline" asChild className="border-green-400/40 text-green-300 hover:bg-green-400/10">
+            <Button variant="outline" asChild className="border-emerald-400/40 text-emerald-300 hover:bg-emerald-400/10">
               <a href={`/courses/0g-101/lesson/${moduleId - 1}`}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Previous Module
@@ -324,11 +321,15 @@ export default function ZeroGLessonPage({ params }: PageProps) {
           )}
           
           {moduleId < modules.length ? (
-            <Button asChild className="bg-green-500 hover:bg-green-600 text-white">
-              <a href={`/courses/0g-101/lesson/${moduleId + 1}`}>
-                Next Module
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 text-white"
+              onClick={async () => {
+                if (!completedModules.has(moduleId)) markAsCompleted();
+                window.location.href = `/courses/0g-101/lesson/${moduleId + 1}`;
+              }}
+            >
+              Next Module
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
             <div></div>

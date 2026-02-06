@@ -69,7 +69,7 @@ const learningSteps: Step[] = [
   {
     id: 2,
     title: "Claim Your ENS Identity",
-    description: "Get your unique EthEd subdomain for your permanent blockchain identity",
+    description: "Get your unique eth.ed subdomain for your permanent blockchain identity",
     icon: Globe,
     color: "blue",
     details: [
@@ -166,14 +166,14 @@ export default function HowItWorksPage() {
   const currentStep = learningSteps.find(step => step.id === activeStep);
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-slate-950 relative">
       {/* Background Effects */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px]" />
+      <div className="absolute inset-0 z-0">
+        <div className="from-purple-400/10 via-background to-background absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))]"></div>
+        <div className="bg-cyan-300/5 absolute top-0 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="container mx-auto px-4 py-16 max-w-7xl">
+      <div className="relative z-10 container mx-auto px-4 py-16 max-w-7xl">
         {/* Hero Section */}
         <div className="text-center mb-20">
           <motion.div
@@ -190,18 +190,18 @@ export default function HowItWorksPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent"
+            className="text-4xl md:text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-cyan-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent"
           >
-            How EthEd Works
+            How EIPSInsight Works
           </motion.h1>
           
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg text-muted-foreground max-w-3xl mx-auto"
           >
-            Discover how EthEd revolutionizes Web3 education with permanent 
+            Discover how EIPSInsight revolutionizes Web3 education with permanent 
             blockchain credentials and hands-on learning experiences.
           </motion.p>
         </div>
@@ -439,7 +439,7 @@ export default function HowItWorksPage() {
         >
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Why EthEd is Different
+              Why eth.ed is Different
             </h2>
             <p className="text-slate-300 text-lg max-w-2xl mx-auto">
               Revolutionary features that make Web3 learning engaging, verifiable, and rewarding
@@ -594,7 +594,7 @@ export default function HowItWorksPage() {
                   Ready to Start Your Web3 Journey?
                 </h2>
                 <p className="text-slate-300 text-lg mb-8">
-                  Join thousands of developers already learning and building on EthEd. 
+                  Join thousands of developers already learning and building on eth.ed. 
                   Master the Ethereum stack, claim your ENS identity, and earn NFT credentials as you learn.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">

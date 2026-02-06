@@ -1,5 +1,5 @@
 /**
- * Centralized metrics configuration for EthEd platform
+ * Centralized metrics configuration for eth.ed platform
  * Single source of truth for all platform statistics
  */
 

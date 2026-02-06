@@ -54,13 +54,29 @@ export const authOptions: NextAuthOptions = {
         }
         
         try {
-          // For demo purposes, we'll create a simple user object without database
-          // In a real app, you'd validate against a database
+          // Create or find user in database
+          const { prisma } = await import("@/lib/prisma-client");
+          
+          let dbUser = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          });
+          
+          if (!dbUser) {
+            dbUser = await prisma.user.create({
+              data: {
+                email: credentials.email,
+                name: credentials.name || "Demo User",
+                image: null,
+              }
+            });
+            console.log("Created demo user:", dbUser.id);
+          }
+          
           const user = {
-            id: `demo-${Date.now()}`, // Simple ID generation
-            email: credentials.email,
-            name: credentials.name || "Demo User",
-            image: null,
+            id: dbUser.id,
+            email: dbUser.email,
+            name: dbUser.name,
+            image: dbUser.image,
           };
           
           console.log("Demo auth successful:", user);
@@ -106,10 +122,46 @@ export const authOptions: NextAuthOptions = {
         return false;
       }
       
-      // For demo purposes, always allow sign in
-      // In production, you'd validate against your database
-      console.log("Sign in successful for:", user.email);
-      return true;
+      try {
+        // Create or update user in database
+        const { prisma } = await import("@/lib/prisma-client");
+        
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email }
+        });
+        
+        if (!existingUser) {
+          // Create new user
+          const newUser = await prisma.user.create({
+            data: {
+              email: user.email,
+              name: user.name || null,
+              image: user.image || null,
+            }
+          });
+          console.log("Created new user:", newUser.id);
+          user.id = newUser.id;
+        } else {
+          // Update existing user
+          user.id = existingUser.id;
+          // Optionally update name/image if changed
+          if (existingUser.name !== user.name || existingUser.image !== user.image) {
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: {
+                name: user.name || existingUser.name,
+                image: user.image || existingUser.image,
+              }
+            });
+          }
+        }
+        
+        console.log("Sign in successful for:", user.email);
+        return true;
+      } catch (error) {
+        console.error("Error creating/updating user:", error);
+        return false;
+      }
     },
     async jwt({ token, user }) {
       console.log("JWT callback:", { token: !!token, user: !!user });

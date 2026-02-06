@@ -85,24 +85,48 @@ interface ENSLessonClientProps {
   lessonId: string;
 }
 
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useCourseProgress } from '@/hooks/useCourseProgress';
+
 export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
+  const router = useRouter();
   const moduleId = parseInt(lessonId);
   const currentModule = modules.find(m => m.id === moduleId);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
+  const { completedModules, completionCount, markModuleComplete } = useCourseProgress('ens-101', modules.length);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('ens-101-completed');
-    if (saved) {
-      setCompletedModules(new Set(JSON.parse(saved)));
+  const finishCourseBackend = async () => {
+    try {
+      const res = await fetch('/api/user/course/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseSlug: 'ens-101' })
+      });
+      if (res.ok) toast.success('Course completed! 🎉');
+      try { router.refresh(); } catch (e) {}
+    } catch (err) {
+      console.error('Finish course API error:', err);
     }
-  }, []);
+  };
 
   const markAsCompleted = () => {
-    const newCompleted = new Set([...completedModules, moduleId]);
-    setCompletedModules(newCompleted);
-    localStorage.setItem('ens-101-completed', JSON.stringify([...newCompleted]));
+    if (completedModules.has(moduleId)) return;
+    markModuleComplete(moduleId);
+
+    const newCount = completionCount + 1;
+    if (newCount === modules.length) {
+      finishCourseBackend();
+    } else {
+      try {
+        fetch('/api/user/course/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courseSlug: 'ens-101', completedCount: newCount, totalModules: modules.length })
+        });
+      } catch (err) { /* ignore */ }
+    }
   };
 
   if (!currentModule) {
@@ -120,23 +144,23 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
 
   const renderTextContent = (content: string) => {
     return content.split('\n').map((line: string, i: number) => {
-      // Main headings - largest and most prominent
+      // Main headings - standardized size
       if (line.startsWith('# ')) return (
-        <h1 key={i} className="text-4xl font-extrabold text-white mb-8 mt-0 leading-tight">
+        <h1 key={i} className="text-3xl font-bold text-white mb-6 mt-0 leading-tight">
           {line.slice(2)}
         </h1>
       );
       
       // Section headings - cyan color for hierarchy
       if (line.startsWith('## ')) return (
-        <h2 key={i} className="text-3xl font-bold text-cyan-300 mb-6 mt-10 leading-tight">
+        <h2 key={i} className="text-2xl font-semibold text-cyan-300 mb-4 mt-6 leading-tight">
           {line.slice(3)}
         </h2>
       );
       
       // Subsection headings - emerald for further hierarchy
       if (line.startsWith('### ')) return (
-        <h3 key={i} className="text-2xl font-semibold text-emerald-300 mb-4 mt-8 leading-snug">
+        <h3 key={i} className="text-xl font-semibold text-emerald-300 mb-3 mt-4 leading-snug">
           {line.slice(4)}
         </h3>
       );
@@ -342,20 +366,12 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
 
               {/* Completion Section */}
               <div className="pt-8 border-t border-slate-700">
-                {!completedModules.has(moduleId) ? (
-                  <Button 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all shadow-lg" 
-                    onClick={markAsCompleted}
-                  >
-                    <CheckCircle className="mr-3 h-5 w-5" />
-                    Mark Complete
-                  </Button>
-                ) : (
+                {completedModules.has(moduleId) ? (
                   <div className="flex items-center gap-3 text-emerald-400">
                     <CheckCircle className="h-6 w-6" />
                     <span className="text-xl font-semibold">Completed! ✨</span>
                   </div>
-                )}
+                ) : null}
               </div>
             </CardContent>
           </Card>
@@ -373,9 +389,11 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
             </Button>
 
             <Button
-              variant="outline" 
-              onClick={() => {
+              variant="outline"
+              onClick={async () => {
+                if (!completedModules.has(moduleId)) markAsCompleted();
                 if (moduleId === modules.length) {
+                  try { await finishCourseBackend(); } catch (e) {}
                   window.location.href = '/courses/ens-101';
                 } else {
                   window.location.href = `/courses/ens-101/lesson/${moduleId + 1}`;

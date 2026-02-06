@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, BookOpen, Clock, Award, CheckCircle, Play, FileText } from 'lucide-react';
+import React from 'react';
+import { ArrowLeft, BookOpen, Clock, Award, CheckCircle, Play, FileText, LayoutDashboard, User } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -83,18 +84,13 @@ const courseModules = [
   }
 ];
 
+import { useCourseProgress } from '@/hooks/useCourseProgress';
+import { useClaimNFT } from '@/hooks/use-claim-nft';
+
 export default function EIPs101Course() {
-  const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
-  
-  useEffect(() => {
-    // Load completed modules from localStorage
-    const saved = localStorage.getItem('eips-101-completed');
-    if (saved) {
-      setCompletedModules(new Set(JSON.parse(saved)));
-    }
-  }, []);
-  
-  const completionPercentage = (completedModules.size / courseModules.length) * 100;
+  const { completedModules, completionCount, percent } = useCourseProgress('eips-101', courseModules.length);
+  const completionPercentage = percent;
+  const { claimNFT, isClaiming, claimed } = useClaimNFT();
 
   const handleModuleClick = (moduleId: number) => {
     // Navigate to the lesson viewer with the module ID
@@ -110,6 +106,26 @@ export default function EIPs101Course() {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 text-sm text-slate-400">
+            <Link href="/dashboard" className="hover:text-cyan-400 transition-colors flex items-center gap-1">
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </Link>
+            <span>/</span>
+            <Link href="/courses" className="hover:text-cyan-400 transition-colors">
+              Courses
+            </Link>
+            <span>/</span>
+            <span className="text-slate-300">EIPs 101</span>
+          </div>
+          <Link href="/profile" className="text-sm text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1">
+            <User className="h-4 w-4" />
+            Profile
+          </Link>
+        </div>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -128,10 +144,10 @@ export default function EIPs101Course() {
           
           <div className="flex flex-col lg:flex-row lg:items-start gap-8">
             <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-4">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-4">
                 EIPs 101: From First Principles to First Proposal
               </h1>
-              <p className="text-xl text-slate-300 mb-6">
+              <p className="text-lg text-muted-foreground mb-6">
                 Master Ethereum Improvement Proposals from basics to writing your first EIP using EIPsInsight&apos;s tools.
               </p>
               
@@ -173,15 +189,19 @@ export default function EIPs101Course() {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-slate-400">Completed</span>
-                    <span className="text-cyan-300">{completedModules.size}/{courseModules.length}</span>
+                    <span className="text-cyan-300">{completionCount}/{courseModules.length}</span>
                   </div>
                   <Progress value={completionPercentage} className="h-2" />
                 </div>
                 
                 {completionPercentage === 100 ? (
-                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                  <Button 
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    onClick={() => claimNFT('eips-101')}
+                    disabled={isClaiming || claimed}
+                  >
                     <Award className="mr-2 h-4 w-4" />
-                    Claim NFT Badge
+                    {claimed ? 'NFT Claimed!' : isClaiming ? 'Claiming...' : 'Claim NFT Badge'}
                   </Button>
                 ) : (
                   <div className="text-center p-4 bg-purple-500/10 rounded-lg border border-purple-400/20">
@@ -202,9 +222,9 @@ export default function EIPs101Course() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="grid gap-4"
         >
-          <h2 className="text-2xl font-semibold text-white mb-4">Course Modules</h2>
+          <h2 className="text-3xl font-bold text-white mb-6">Course Modules</h2>
           
-          {courseModules.map((module, index) => {
+            {courseModules.map((module, index) => {
             const isCompleted = completedModules.has(module.id);
             const isAvailable = index === 0 || completedModules.has(courseModules[index - 1].id);
             

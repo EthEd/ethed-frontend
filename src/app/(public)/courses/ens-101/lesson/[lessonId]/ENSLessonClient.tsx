@@ -86,24 +86,48 @@ interface ENSLessonClientProps {
   lessonId: string;
 }
 
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useCourseProgress } from '@/hooks/useCourseProgress';
+
 export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
+  const router = useRouter();
   const moduleId = parseInt(lessonId);
   const currentModule = modules.find(m => m.id === moduleId);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
+  const { completedModules, completionCount, markModuleComplete } = useCourseProgress('ens-101', modules.length);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('ens-101-completed');
-    if (saved) {
-      setCompletedModules(new Set(JSON.parse(saved)));
+  const finishCourseBackend = async () => {
+    try {
+      const res = await fetch('/api/user/course/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseSlug: 'ens-101' })
+      });
+      if (res.ok) toast.success('Course completed! 🎉');
+      try { router.refresh(); } catch (e) {}
+    } catch (err) {
+      console.error('Finish course API error:', err);
     }
-  }, []);
+  };
 
   const markAsCompleted = () => {
-    const newCompleted = new Set([...completedModules, moduleId]);
-    setCompletedModules(newCompleted);
-    localStorage.setItem('ens-101-completed', JSON.stringify([...newCompleted]));
+    if (completedModules.has(moduleId)) return;
+    markModuleComplete(moduleId);
+
+    const newCount = completionCount + 1;
+    if (newCount === modules.length) {
+      finishCourseBackend();
+    } else {
+      try {
+        fetch('/api/user/course/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courseSlug: 'ens-101', completedCount: newCount, totalModules: modules.length })
+        });
+      } catch (err) { /* ignore */ }
+    }
   };
 
   if (!currentModule) {
@@ -343,20 +367,12 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
 
               {/* Completion Section */}
               <div className="pt-8 border-t border-slate-700">
-                {!completedModules.has(moduleId) ? (
-                  <Button 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all shadow-lg" 
-                    onClick={markAsCompleted}
-                  >
-                    <CheckCircle className="mr-3 h-5 w-5" />
-                    Mark Complete
-                  </Button>
-                ) : (
+                {completedModules.has(moduleId) ? (
                   <div className="flex items-center gap-3 text-emerald-400">
                     <CheckCircle className="h-6 w-6" />
                     <span className="text-xl font-semibold">Completed! ✨</span>
                   </div>
-                )}
+                ) : null}
               </div>
             </CardContent>
           </Card>
@@ -371,13 +387,16 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> 
               Previous Lesson
+            <Button 
+              onClick={() => {
+                if (!isCompleted) handleMarkComplete();
+                onNavigate('next');
+              }}
+              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white"
+            >
+              Next Lesson
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-
-            <Button
-              variant="outline" 
-              onClick={() => window.location.href = `/courses/ens-101/lesson/${moduleId + 1}`} 
-              disabled={moduleId === modules.length}
-              className="border-slate-600 text-slate-300 hover:bg-slate-800 px-6 py-3"
             >
               {moduleId === modules.length ? 'Finish Course' : 'Next Lesson'}
               <ArrowRight className="ml-2 h-4 w-4" />
