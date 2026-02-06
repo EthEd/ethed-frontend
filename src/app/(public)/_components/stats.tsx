@@ -1,15 +1,18 @@
 "use client";
 
 import { motion } from "motion/react";
-
-const stats = [
-  { k: "15K+", v: "Lessons Completed" },
-  { k: "8.2K", v: "NFT Badges Minted" },
-  { k: "3.7K", v: "ENS Identities Reserved" },
-  { k: "42%", v: "Faster Completion w/ Buddy" },
-];
+import { getFormattedMetrics } from "@/lib/metrics";
 
 export default function Stats() {
+  const formattedMetrics = getFormattedMetrics();
+  
+  const stats = [
+    { k: `${formattedMetrics.lessonsCompleted}`, v: "Lessons Completed" },
+    { k: `${formattedMetrics.nftBadgesMinted}`, v: "NFT Badges Minted" },
+    { k: `${formattedMetrics.ensIdentitiesReserved}`, v: "ENS Identities Reserved" },
+    { k: `${formattedMetrics.fasterCompletionPercent}`, v: "Faster Completion w/ Buddy" },
+  ];
+
   return (
     <section className="relative py-10">
       <div className="mx-auto max-w-screen-xl px-4 md:px-8">

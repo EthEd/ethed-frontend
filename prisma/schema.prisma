@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -29,8 +29,6 @@ model User {
   // Wallets / ENS
   wallets       WalletAddress[]
 
-  // LearningBuddy entities
-  pets          Pet[]
   courses       UserCourse[]
   purchases     Purchase[]
   payments      Payment[]
@@ -87,19 +85,6 @@ model WalletAddress {
   user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([address, chainId])
-}
-
-model Pet {
-  id          String   @id @default(uuid())
-  userId      String
-  name        String
-  level       Int      @default(1)
-  experience  Int      @default(0)
-  state       Json     // AI/interaction state
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Course {

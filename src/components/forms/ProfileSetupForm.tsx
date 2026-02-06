@@ -96,7 +96,7 @@ export default function ProfileSetupForm({
           Setup Your Profile
         </CardTitle>
         <CardDescription>
-          Personalize your EthEd experience
+          Personalize your eth.ed experience
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -145,7 +145,7 @@ export default function ProfileSetupForm({
               maxLength={50}
             />
             <p className="text-xs text-muted-foreground">
-              This is how others will see you on EthEd
+              This is how others will see you on eth.ed
             </p>
           </div>
 

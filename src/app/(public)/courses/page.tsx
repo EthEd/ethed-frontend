@@ -1,139 +1,42 @@
 'use client';
 
-import React from 'react';
-import { ArrowRight, Clock, Star, Users, Award } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, Clock, Star, Users, Award, Lock, CheckCircle, Zap, BookOpen, Target, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'motion/react';
+import { Badge } from '@/components/ui/badge';
+import { coursesWithPath, learningPaths, canAccessCourse } from '@/lib/courseData';
 
-const courses = [
-  {
-    id: 'eips-101',
-    title: 'EIPs 101: From First Principles to First Proposal',
-    description: 'Master Ethereum Improvement Proposals from basics to writing your first EIP using EIPsInsight\'s tools.',
-    level: 'Beginner',
-    duration: '2-3 hours',
-    students: 1200,
-    rating: 4.8,
-    price: 'Free',
-    badge: 'EIP Expert NFT',
-    topics: ['Ethereum', 'EIPs', 'ERCs', 'Governance'],
-    href: '/courses/eips-101',
-    available: true
-  },
-  {
-    id: 'ens-101',
-    title: 'ENS 101: Ethereum Name Service Essentials',
-    description: 'Learn how Ethereum Name Service works, register names, integrate with dApps, and build ENS-powered apps.',
-    level: 'Beginner',
-    duration: '2 hours',
-    students: 900,
-    rating: 4.7,
-    price: 'Free',
-    badge: 'ENS Pro NFT',
-    topics: ['ENS', 'Domains', 'Web3', 'Integration'],
-    href: '/courses/ens-101',
-    available: true
-  },
-  {
-    id: 'polygon-101',
-    title: 'Polygon 101: Agentic Payments & x402',
-    description: 'Master agentic payments on Polygon, learn x402 protocol, and build payment systems for AI agents.',
-    level: 'Beginner',
-    duration: '5 hours',
-    students: 450,
-    rating: 4.9,
-    price: 'Free',
-    badge: 'Polygon Developer NFT',
-    topics: ['Polygon', 'x402', 'Agentic Payments', 'ETHGlobal'],
-    href: '/courses/polygon-101',
-    available: true
-  },
-  {
-    id: '0g-101',
-    title: '0G 101: AI-Native Blockchain Infrastructure',
-    description: 'Master 0G\'s decentralized AI stack - storage, compute, and inference for next-generation blockchain applications.',
-    level: 'Beginner',
-    duration: '4 hours',
-    students: 320,
-    rating: 4.9,
-    price: 'Free',
-    badge: '0G Infrastructure NFT',
-    topics: ['0G', 'AI Infrastructure', 'Decentralized Storage', 'GPU Networks'],
-    href: '/courses/0g-101',
-    available: true
-  },
-  {
-    id: 'blockchain-basics',
-    title: 'Blockchain Fundamentals',
-    description: 'Understand how blockchain works, from cryptographic hashing to consensus mechanisms.',
-    level: 'Beginner',
-    duration: '4-5 hours',
-    students: 2500,
-    rating: 4.9,
-    price: 'Free',
-    badge: 'Blockchain Foundation NFT',
-    topics: ['Hashing', 'Merkle Trees', 'Consensus', 'Mining vs Staking'],
-    href: '/courses/blockchain-basics',
-    available: false
-  },
-  {
-    id: 'solidity-dev',
-    title: 'Smart Contract Development',
-    description: 'Build and deploy your first smart contracts using Solidity and modern tooling.',
-    level: 'Intermediate',
-    duration: '8-10 hours',
-    students: 950,
-    rating: 4.7,
-    price: 'Premium',
-    badge: 'Smart Contract Developer NFT',
-    topics: ['Solidity Syntax', 'Testing', 'Deployment', 'Security'],
-    href: '/courses/solidity-dev',
-    available: false
-  },
-  {
-    id: 'defi-protocols',
-    title: 'DeFi Protocol Analysis',
-    description: 'Analyze major DeFi protocols, understand yield farming, and liquidity mechanics.',
-    level: 'Advanced',
-    duration: '6-8 hours',
-    students: 680,
-    rating: 4.6,
-    price: 'Premium',
-    badge: 'DeFi Analyst NFT',
-    topics: ['AMMs', 'Yield Farming', 'Governance', 'Risk Assessment'],
-    href: '/courses/defi-protocols',
-    available: false
-  },
-  {
-    id: 'nft-ecosystem',
-    title: 'NFT Standards & Marketplaces',
-    description: 'Deep dive into ERC-721, ERC-1155, and the NFT ecosystem including marketplaces.',
-    level: 'Intermediate',
-    duration: '5-6 hours',
-    students: 1100,
-    rating: 4.5,
-    price: 'Free',
-    badge: 'NFT Specialist NFT',
-    topics: ['ERC Standards', 'Metadata', 'Marketplaces', 'Royalties'],
-    href: '/courses/nft-ecosystem',
-    available: false
-  },
-  {
-    id: 'web3-security',
-    title: 'Web3 Security Fundamentals',
-    description: 'Learn to identify and prevent common smart contract vulnerabilities and exploits.',
-    level: 'Advanced',
-    duration: '7-9 hours',
-    students: 425,
-    rating: 4.9,
-    price: 'Premium',
-    badge: 'Security Auditor NFT',
-    topics: ['Reentrancy', 'Flash Loans', 'Governance Attacks', 'Best Practices'],
-    href: '/courses/web3-security',
-    available: false
-  }
-];
+// Mock completed courses - in real app, would come from user session/DB
+const mockCompletedCourses = ['eips-101'];
+
+const courses = coursesWithPath.map(c => ({
+  id: c.id,
+  title: c.title,
+  description: c.description,
+  level: c.level,
+  duration: c.modules.reduce((acc, m) => {
+    const match = m.estimatedTime.match(/(\d+)/);
+    return acc + (match ? parseInt(match[0]) : 0);
+  }, 0) + ' hours',
+  students: Math.floor(Math.random() * 3000) + 100,
+  rating: (Math.random() * 0.4 + 4.5).toFixed(1),
+  price: 'Free',
+  badge: c.badge,
+  topics: c.skillsGained,
+  href: `/courses/${c.id}`,
+  available: c.id === 'eips-101' || c.id === 'ens-101' || c.id === '0g-101',
+  prerequisites: c.prerequisites,
+  learningPath: learningPaths.Fundamentals.courses.includes(c.id) ? 'Fundamentals' :
+                learningPaths.Infrastructure.courses.includes(c.id) ? 'Infrastructure' :
+                learningPaths.Development.courses.includes(c.id) ? 'Development' : 'Other',
+  difficultyMilestones: c.difficultyMilestones,
+  modules: c.modules,
+  nextRecommendedCourse: c.nextRecommendedCourse
+}));
+
+
 
 const containerVariants = {
   hidden: {},
@@ -158,8 +61,14 @@ const cardVariants = {
 };
 
 export default function CoursesPage() {
+  const [selectedPath, setSelectedPath] = useState<'all' | 'Fundamentals' | 'Infrastructure' | 'Development'>('all');
+
   const availableCourses = courses.filter(course => course.available);
   const comingSoonCourses = courses.filter(course => !course.available);
+
+  const filteredCourses = selectedPath === 'all' 
+    ? availableCourses 
+    : availableCourses.filter(c => c.learningPath === selectedPath);
 
   return (
     <div className="bg-background relative w-full overflow-hidden min-h-screen">
@@ -177,13 +86,68 @@ export default function CoursesPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-emerald-400 to-blue-400 bg-clip-text text-transparent mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-emerald-400 to-purple-400 bg-clip-text text-transparent mb-6">
             Master Web3 & Blockchain
           </h1>
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             Learn blockchain fundamentals, smart contracts, DeFi, and more. Earn verifiable NFT credentials as you progress through hands-on courses.
           </p>
         </motion.div>
+
+        {/* Learning Paths Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="mb-12"
+        >
+          <h2 className="text-2xl font-bold text-white mb-6">Choose Your Learning Path</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {[
+              { id: 'Fundamentals', icon: '📚', title: 'Fundamentals', description: 'Start your Web3 journey', color: 'from-cyan-600 to-blue-600' },
+              { id: 'Infrastructure', icon: '⚙️', title: 'Infrastructure', description: 'Build the backbone', color: 'from-emerald-600 to-teal-600' },
+              { id: 'Development', icon: '💻', title: 'Development', description: 'Create advanced systems', color: 'from-purple-600 to-pink-600' }
+            ].map((path) => (
+              <motion.button
+                key={path.id}
+                onClick={() => setSelectedPath(path.id as any)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                className={`p-4 rounded-lg border-2 transition-all text-left ${
+                  selectedPath === path.id
+                    ? `border-${path.color.split('-')[1]}-400 bg-gradient-to-br ${path.color}`
+                    : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                }`}
+              >
+                <div className={`text-3xl mb-2 ${selectedPath === path.id ? 'scale-110' : ''}`}>
+                  {path.icon}
+                </div>
+                <h3 className="font-bold text-white mb-1">{path.title}</h3>
+                <p className={`text-sm ${selectedPath === path.id ? 'text-white' : 'text-slate-400'}`}>
+                  {path.description}
+                </p>
+              </motion.button>
+            ))}
+            <motion.button
+              onClick={() => setSelectedPath('all')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className={`p-4 rounded-lg border-2 transition-all text-left md:col-span-3 lg:col-span-1 ${
+                selectedPath === 'all'
+                  ? 'border-cyan-400 bg-gradient-to-br from-cyan-600/50 to-purple-600/50'
+                  : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+              }`}
+            >
+              <div className={`text-3xl mb-2 ${selectedPath === 'all' ? 'scale-110' : ''}`}>
+                🎯
+              </div>
+              <h3 className="font-bold text-white mb-1">All Courses</h3>
+              <p className={`text-sm ${selectedPath === 'all' ? 'text-white' : 'text-slate-400'}`}>
+                Browse everything
+              </p>
+            </motion.button>
+          </div>
+        </motion.section>
 
         {/* Available Courses */}
         <motion.section
@@ -192,75 +156,168 @@ export default function CoursesPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-16"
         >
-          <h2 className="text-3xl font-bold text-white mb-8 text-center">Available Courses</h2>
+          <h2 className="text-3xl font-bold text-white mb-8">
+            {selectedPath === 'all' ? 'Available Courses' : `${selectedPath} Path`}
+          </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {availableCourses.map((course) => (
-              <motion.div key={course.id} variants={cardVariants}>
-                <Card className="h-full bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-cyan-400/20 hover:border-emerald-400/40 transition-all duration-300 group">
-                  <CardHeader className="pb-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs font-medium px-2 py-1 bg-emerald-400/10 text-emerald-300 rounded-full border border-emerald-400/20">
-                        {course.level}
-                      </span>
-                      <span className="text-xs font-bold text-cyan-400">{course.price}</span>
-                    </div>
-                    <CardTitle className="text-xl text-white group-hover:text-cyan-300 transition-colors">
-                      {course.title}
-                    </CardTitle>
-                    <CardDescription className="text-slate-400 line-clamp-2">
-                      {course.description}
-                    </CardDescription>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    {/* Stats */}
-                    <div className="flex items-center gap-4 text-sm text-slate-400">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {course.duration}
+            {filteredCourses.map((course) => {
+              const canAccess = canAccessCourse(course.id, mockCompletedCourses);
+              
+              return (
+                <motion.div key={course.id} variants={cardVariants}>
+                  <Card className={`h-full transition-all duration-300 group relative overflow-hidden ${
+                    canAccess.canAccess
+                      ? 'bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-cyan-400/20 hover:border-emerald-400/40'
+                      : 'bg-gradient-to-br from-slate-900/60 to-slate-800/60 border-slate-600/20 opacity-75'
+                  }`}>
+                    {/* Prerequisite Lock Overlay */}
+                    {!canAccess.canAccess && (
+                      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-20 flex items-center justify-center">
+                        <div className="text-center">
+                          <Lock className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                          <p className="text-xs text-slate-300 font-medium">Locked</p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        {course.students.toLocaleString()}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        {course.rating}
-                      </div>
-                    </div>
+                    )}
 
-                    {/* Badge */}
-                    <div className="flex items-center gap-2 p-2 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-400/20">
-                      <Award className="h-4 w-4 text-purple-400" />
-                      <span className="text-sm text-purple-300">{course.badge}</span>
-                    </div>
-
-                    {/* Topics */}
-                    <div className="flex flex-wrap gap-1">
-                      {course.topics.slice(0, 3).map((topic) => (
-                        <span key={topic} className="text-xs px-2 py-1 bg-slate-700/50 text-slate-300 rounded">
-                          {topic}
+                    <CardHeader className="pb-4">
+                      <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full border ${
+                          canAccess.canAccess
+                            ? 'bg-emerald-400/10 text-emerald-300 border-emerald-400/20'
+                            : 'bg-slate-700/50 text-slate-400 border-slate-600/20'
+                        }`}>
+                          {course.level}
                         </span>
-                      ))}
-                      {course.topics.length > 3 && (
-                        <span className="text-xs px-2 py-1 bg-slate-700/50 text-slate-300 rounded">
-                          +{course.topics.length - 3}
+                        <Badge className="bg-cyan-600/40 text-cyan-300 border-cyan-400/30">
+                          {course.learningPath}
+                        </Badge>
+                        <span className={`text-xs font-bold ${canAccess.canAccess ? 'text-cyan-400' : 'text-slate-500'}`}>
+                          {course.price}
                         </span>
+                      </div>
+                      <CardTitle className={`text-xl group-hover:text-cyan-300 transition-colors ${
+                        canAccess.canAccess ? 'text-white' : 'text-slate-300'
+                      }`}>
+                        {course.title}
+                      </CardTitle>
+                      <CardDescription className={canAccess.canAccess ? 'text-slate-400' : 'text-slate-500'}>
+                        {course.description}
+                      </CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4">
+                      {/* Prerequisites Badge */}
+                      {course.prerequisites.length > 0 && (
+                        <div className={`p-2 rounded-lg border ${
+                          canAccess.canAccess
+                            ? 'bg-cyan-500/10 border-cyan-400/30'
+                            : 'bg-red-500/10 border-red-400/30'
+                        }`}>
+                          <p className={`text-xs font-semibold mb-1 ${
+                            canAccess.canAccess ? 'text-cyan-300' : 'text-red-300'
+                          }`}>
+                            Prerequisites:
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {course.prerequisites.map((prereq) => (
+                              <Badge
+                                key={prereq.courseId}
+                                variant="outline"
+                                className={`text-xs ${
+                                  mockCompletedCourses.includes(prereq.courseId)
+                                    ? 'border-emerald-400/50 bg-emerald-500/10 text-emerald-300'
+                                    : 'border-orange-400/50 bg-orange-500/10 text-orange-300'
+                                }`}
+                              >
+                                {mockCompletedCourses.includes(prereq.courseId) && '✓ '}
+                                {prereq.courseName}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
                       )}
-                    </div>
 
-                    {/* CTA */}
-                    <Button 
-                      className="w-full bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-cyan-400 hover:to-blue-500 text-slate-900 hover:text-white transition-all duration-300"
-                      onClick={() => window.location.href = course.href}
-                    >
-                      Start Course
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                      {/* Stats */}
+                      <div className={`flex items-center gap-4 text-sm ${
+                        canAccess.canAccess ? 'text-slate-400' : 'text-slate-500'
+                      }`}>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {course.duration}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          {course.students.toLocaleString()}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Star className={`h-4 w-4 ${canAccess.canAccess ? 'fill-yellow-400 text-yellow-400' : 'text-slate-500'}`} />
+                          {course.rating}
+                        </div>
+                      </div>
+
+                      {/* Badge */}
+                      <div className={`flex items-center gap-2 p-2 rounded-lg border ${
+                        canAccess.canAccess
+                          ? 'bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-400/20'
+                          : 'bg-slate-800/50 border-slate-600/20'
+                      }`}>
+                        <Award className={`h-4 w-4 ${canAccess.canAccess ? 'text-purple-400' : 'text-slate-500'}`} />
+                        <span className={`text-sm ${canAccess.canAccess ? 'text-purple-300' : 'text-slate-400'}`}>
+                          {course.badge}
+                        </span>
+                      </div>
+
+                      {/* Topics */}
+                      <div className="flex flex-wrap gap-1">
+                        {course.topics.slice(0, 3).map((topic) => (
+                          <span key={topic} className={`text-xs px-2 py-1 rounded ${
+                            canAccess.canAccess
+                              ? 'bg-slate-700/50 text-slate-300'
+                              : 'bg-slate-800/30 text-slate-500'
+                          }`}>
+                            {topic}
+                          </span>
+                        ))}
+                        {course.topics.length > 3 && (
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            canAccess.canAccess
+                              ? 'bg-slate-700/50 text-slate-300'
+                              : 'bg-slate-800/30 text-slate-500'
+                          }`}>
+                            +{course.topics.length - 3}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* CTA */}
+                      {canAccess.canAccess ? (
+                        <Button 
+                          className="w-full bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-cyan-400 hover:to-blue-500 text-slate-900 font-semibold transition-all duration-300"
+                          onClick={() => window.location.href = course.href}
+                        >
+                          Start Course
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <div className="space-y-2">
+                          <Button 
+                            disabled
+                            className="w-full bg-slate-700/50 text-slate-400 cursor-not-allowed"
+                          >
+                            <Lock className="mr-2 h-4 w-4" />
+                            Complete Prerequisites
+                          </Button>
+                          <p className="text-xs text-slate-500 text-center">
+                            Complete the course{canAccess.missingPrerequisites.length > 1 ? 's' : ''} above to unlock
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.section>
 
@@ -270,8 +327,8 @@ export default function CoursesPage() {
           initial="hidden"
           animate="visible"
         >
-          <h2 className="text-2xl font-semibold text-slate-400 mb-8 flex items-center gap-2">
-            <Clock className="h-6 w-6" />
+          <h2 className="text-3xl font-bold text-white mb-8 text-center flex items-center justify-center gap-2">
+            <Flame className="h-6 w-6 text-orange-400" />
             Coming Soon
           </h2>
           
@@ -280,7 +337,7 @@ export default function CoursesPage() {
               <motion.div key={course.id} variants={cardVariants}>
                 <Card className="h-full bg-gradient-to-br from-slate-900/50 to-slate-800/50 border-slate-600/20 opacity-75">
                   <CardHeader className="pb-4">
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
                       <span className="text-xs font-medium px-2 py-1 bg-slate-700/50 text-slate-400 rounded-full border border-slate-600/20">
                         {course.level}
                       </span>

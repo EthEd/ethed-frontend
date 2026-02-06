@@ -1,9 +1,11 @@
-import ProfilePortfolio from "./_components/ProfilePortfolio";
+import { Metadata } from 'next';
+import ProfileClient from "./_components/ProfileClient";
 
-interface Props {
-  params: { handle: string };
-}
+export const metadata: Metadata = {
+  title: 'Profile | eth.ed',
+  description: 'View your learning profile, courses, and achievements'
+};
 
-export default function ProfilePage({ params }: Props) {
-  return <ProfilePortfolio handle={params.handle} />;
+export default function ProfilePage() {
+  return <ProfileClient />;
 }

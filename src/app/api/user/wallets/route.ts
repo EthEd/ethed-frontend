@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
-import { getAddress } from "viem";
 
 export async function GET() {
   try {
@@ -56,7 +55,15 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const checksummedAddress = getAddress(address);
+      // Simple address validation - just check if it looks like an Ethereum address
+      if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+        return NextResponse.json(
+          { error: "Invalid address format" },
+          { status: 400 }
+        );
+      }
+      
+      const checksummedAddress = address.toLowerCase();
       
       // Check if wallet already exists for this user
       const existingWallet = await prisma.walletAddress.findFirst({

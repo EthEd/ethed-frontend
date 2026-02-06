@@ -3,40 +3,40 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    DATABASE_URL: z.string(),
-    MONGODB_URI: z.string(),
-    OPENPRS_MONGODB_URI: z.string(),
-    OPENPRS_DATABASE: z.string().min(1),
+    DATABASE_URL: z.string().optional(),
+    MONGODB_URI: z.string().optional(),
+    OPENPRS_MONGODB_URI: z.string().optional(),
+    OPENPRS_DATABASE: z.string().optional(),
 
-    NEXTAUTH_SECRET: z.string().min(1),
-    NEXTAUTH_URL: z.string().url(),
+    NEXTAUTH_SECRET: z.string().min(1, "NEXTAUTH_SECRET is required"),
+    NEXTAUTH_URL: z.string().url().optional(),
 
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
-    DOMAIN: z.string().min(1),
+    DOMAIN: z.string().optional(),
 
-    GITHUB_ACCESS_TOKEN: z.string().min(1),
-    GITHUB_CLIENT_SECRET: z.string().min(1),
-    GITHUB_CLIENT_ID: z.string().min(1),
+    GITHUB_ACCESS_TOKEN: z.string().optional(),
+    GITHUB_CLIENT_SECRET: z.string().optional(),
+    GITHUB_CLIENT_ID: z.string().optional(),
 
-    GOOGLE_CLIENT_ID: z.string().min(1),
-    GOOGLE_CLIENT_SECRET: z.string().min(1),
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
 
-    RESEND_API_KEY: z.string(),
+    RESEND_API_KEY: z.string().optional(),
 
-    EMAIL_HOST: z.string().min(1),
-    EMAIL_PORT: z.coerce.number(),
-    EMAIL_USERNAME: z.string().min(1),
-    EMAIL_PASSWORD: z.string().min(1),
-    EMAIL_FROM: z.string(),
+    EMAIL_HOST: z.string().optional(),
+    EMAIL_PORT: z.coerce.number().optional(),
+    EMAIL_USERNAME: z.string().optional(),
+    EMAIL_PASSWORD: z.string().optional(),
+    EMAIL_FROM: z.string().optional(),
 
-    WALLETCONNECT_PROJECT_ID: z.string(),
+    WALLETCONNECT_PROJECT_ID: z.string().optional(),
 
-    ARCJET_KEY: z.string().min(1),
+    ARCJET_KEY: z.string().optional(),
 
-    STRIPE_SECRET_KEY: z.string().min(1),
-    STRIPE_WEBHOOK_SECRET: z.string().min(1),
-    CRON_SECRET: z.string().min(1),
+    STRIPE_SECRET_KEY: z.string().optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().optional(),
+    CRON_SECRET: z.string().optional(),
 
     PINATA_API_KEY: z.string().optional(),
     PINATA_API_SECRET: z.string().optional(),
@@ -44,15 +44,9 @@ export const env = createEnv({
     PINATA_GATEWAY_URL: z.string().optional(),
   },
   client: {
-    NEXT_PUBLIC_AMOY_RPC: z.string().url(),
-    NEXT_PUBLIC_PAYMENT_MANAGER_ADDRESS: z.string().min(1),
-    NEXT_PUBLIC_TREASURY_ADDRESS: z.string().min(1),
-    NEXT_PUBLIC_X402_ADDRESS: z.string().min(1),
+    // No payment-related client environment variables needed
   },
   experimental__runtimeEnv: {
-    NEXT_PUBLIC_AMOY_RPC: process.env.NEXT_PUBLIC_AMOY_RPC,
-    NEXT_PUBLIC_PAYMENT_MANAGER_ADDRESS: process.env.NEXT_PUBLIC_PAYMENT_MANAGER_ADDRESS,
-    NEXT_PUBLIC_TREASURY_ADDRESS: process.env.NEXT_PUBLIC_TREASURY_ADDRESS,
-    NEXT_PUBLIC_X402_ADDRESS: process.env.NEXT_PUBLIC_X402_ADDRESS,
+    // No payment-related runtime environment variables needed
   },
 });

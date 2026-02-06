@@ -34,12 +34,13 @@ export default function Navbar() {
 
         {/* Center Logo */}
         <div>
-          <Image
+          <img
             src="/logos/logo.png"
-            alt="EthEd Logo"
+            alt="eth.ed Logo"
             height={32}
             width={128}
             className="h-8 mx-auto invert"
+            loading="eager"
           />
         </div>
 

@@ -79,16 +79,6 @@ interface LearningPath {
   completionReward: string;
 }
 
-interface Buddy {
-  id: string;
-  name: string;
-  emoji: string;
-  personality: string;
-  specialty: string;
-  description: string;
-  color: string;
-}
-
 const courses: Course[] = [
   {
     id: "blockchain-basics",
@@ -245,45 +235,6 @@ const learningPaths: LearningPath[] = [
   }
 ];
 
-const buddies: Buddy[] = [
-  {
-    id: "spark",
-    name: "Spark",
-    emoji: "🐉",
-    personality: "Wise Mentor",
-    specialty: "Deep understanding and advanced concepts",
-    description: "Spark helps you understand the 'why' behind every concept, providing philosophical insights and connecting complex ideas.",
-    color: "from-yellow-400 to-orange-500"
-  },
-  {
-    id: "cypher",
-    name: "Cypher",
-    emoji: "🦊", 
-    personality: "Tech Genius",
-    specialty: "Coding challenges and technical problem-solving",
-    description: "Cypher loves debugging sessions and code reviews, always ready with optimization tips and best practices.",
-    color: "from-purple-400 to-pink-500"
-  },
-  {
-    id: "hoot",
-    name: "Professor Hoot",
-    emoji: "🦉",
-    personality: "Academic Scholar", 
-    specialty: "Structured learning and comprehensive theory",
-    description: "Hoot ensures you build solid foundations with systematic learning approaches and detailed explanations.",
-    color: "from-blue-400 to-cyan-500"
-  },
-  {
-    id: "luna",
-    name: "Luna",
-    emoji: "🐱",
-    personality: "Creative Explorer",
-    specialty: "Innovation and creative project development",
-    description: "Luna encourages experimentation and helps you think outside the box for unique project ideas.",
-    color: "from-green-400 to-emerald-500"
-  }
-];
-
 const categories = ["All", "Blockchain", "Development", "DeFi", "NFTs", "Governance", "Security"];
 const difficulties = ["All", "Beginner", "Intermediate", "Advanced"];
 const prices = ["All", "Free", "Pro", "Premium"];
@@ -293,7 +244,6 @@ export default function LearnPage() {
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [selectedPrice, setSelectedPrice] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBuddy, setSelectedBuddy] = useState(buddies[0]);
   const [showFilters, setShowFilters] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -350,11 +300,11 @@ export default function LearnPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-slate-950">
       {/* Background Effects */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-300/15 via-background to-background" />
-        <div className="absolute top-20 left-1/2 h-[800px] w-[800px] -translate-x-1/2 rounded-full bg-cyan-300/10 blur-3xl" />
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px]" />
       </div>
 
       <div className="container mx-auto px-4 py-16 max-w-7xl">
@@ -365,17 +315,17 @@ export default function LearnPage() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-400/20">
-            <BookOpen className="h-4 w-4 text-emerald-400" />
-            <span className="text-sm font-medium text-emerald-300">Learn & Build</span>
+          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-400/20">
+            <BookOpen className="h-4 w-4 text-cyan-400" />
+            <span className="text-sm font-medium text-cyan-300">Learn & Build</span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-emerald-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
             Master Web3
           </h1>
           
           <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed mb-8">
-            Learn blockchain development with AI-powered companions, hands-on projects, 
+            Learn blockchain development with interactive lessons, hands-on projects, 
             and NFT credentials that prove your skills to employers worldwide.
           </p>
 
@@ -393,87 +343,16 @@ export default function LearnPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10 text-center">
+                <Card className="bg-slate-950/60 backdrop-blur-md border border-cyan-400/10 text-center rounded-2xl">
                   <CardContent className="p-4">
-                    <stat.icon className="w-6 h-6 text-emerald-400 mx-auto mb-2" />
+                    <stat.icon className="w-6 h-6 text-cyan-400 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-white">{stat.value}</div>
-                    <div className="text-slate-300 text-sm">{stat.label}</div>
+                    <div className="text-slate-400 text-sm">{stat.label}</div>
                   </CardContent>
                 </Card>
               </motion.div>
             ))}
           </div>
-        </motion.section>
-
-        {/* Choose Your Learning Buddy */}
-        <motion.section
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mb-16"
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 flex items-center justify-center gap-3">
-              <PawPrint className="w-8 h-8 text-emerald-400" />
-              Choose Your Learning Buddy
-            </h2>
-            <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-              Meet your AI-powered learning companion who'll guide you through your Web3 journey
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-4 mb-8">
-            {buddies.map((buddy) => (
-              <motion.div
-                key={buddy.id}
-                whileHover={{ scale: 1.02 }}
-                onClick={() => setSelectedBuddy(buddy)}
-                className={`cursor-pointer transition-all duration-300 ${
-                  selectedBuddy.id === buddy.id ? 'scale-105' : ''
-                }`}
-              >
-                <Card className={`bg-slate-800/40 backdrop-blur-xl border transition-all duration-300 ${
-                  selectedBuddy.id === buddy.id 
-                    ? "border-emerald-400/50 ring-2 ring-emerald-400/20" 
-                    : "border-white/10 hover:border-white/20"
-                }`}>
-                  <CardContent className="p-6 text-center">
-                    <div className="text-4xl mb-3">{buddy.emoji}</div>
-                    <h3 className="text-lg font-bold text-white mb-2">{buddy.name}</h3>
-                    <Badge variant="outline" className="mb-3 text-xs">
-                      {buddy.personality}
-                    </Badge>
-                    <p className="text-slate-300 text-sm leading-relaxed">
-                      {buddy.specialty}
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Selected Buddy Description */}
-          <Card className="bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-400/20 backdrop-blur-xl">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="text-3xl">{selectedBuddy.emoji}</div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    Meet {selectedBuddy.name}, Your {selectedBuddy.personality}
-                  </h3>
-                  <p className="text-emerald-200 leading-relaxed">
-                    {selectedBuddy.description}
-                  </p>
-                </div>
-                <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
-                  <Link href="/onboarding">
-                    Start with {selectedBuddy.name}
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </motion.section>
 
         {/* Learning Paths */}
@@ -503,20 +382,20 @@ export default function LearnPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10 h-full hover:border-white/20 transition-all duration-300 group">
+                  <Card className="bg-slate-950/60 backdrop-blur-md border border-cyan-400/10 h-full hover:border-cyan-400/30 transition-all duration-300 group rounded-2xl shadow-lg hover:shadow-cyan-400/5">
                     <CardHeader>
                       <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-xl bg-${path.color}-500/20 border border-${path.color}-400/40`}>
-                          <Icon className={`w-6 h-6 text-${path.color}-400`} />
+                        <div className={`p-3 rounded-xl bg-cyan-500/10 border border-cyan-400/20`}>
+                          <Icon className={`w-6 h-6 text-cyan-400`} />
                         </div>
                         <div className="flex-1">
-                          <CardTitle className="text-xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-emerald-400 group-hover:to-cyan-400 group-hover:bg-clip-text transition-all duration-300">
+                          <CardTitle className="text-xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-400 group-hover:bg-clip-text transition-all duration-300">
                             {path.title}
                           </CardTitle>
                           <div className="flex items-center gap-4 mt-2 text-sm text-slate-400">
                             <span>{path.courses} courses</span>
                             <span>{path.duration}</span>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs border-cyan-400/20 text-cyan-400">
                               {path.level}
                             </Badge>
                           </div>
@@ -524,7 +403,7 @@ export default function LearnPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <p className="text-slate-300 leading-relaxed">
+                      <p className="text-slate-400 leading-relaxed">
                         {path.description}
                       </p>
                       
@@ -532,20 +411,20 @@ export default function LearnPage() {
                         <h4 className="text-sm font-semibold text-slate-300 mb-2">Skills You'll Master:</h4>
                         <div className="flex flex-wrap gap-2">
                           {path.skills.map((skill, skillIndex) => (
-                            <Badge key={skillIndex} variant="secondary" className="text-xs">
+                            <Badge key={skillIndex} variant="secondary" className="text-xs bg-slate-800 text-slate-300">
                               {skill}
                             </Badge>
                           ))}
                         </div>
                       </div>
 
-                      <div className="p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg">
-                        <p className="text-purple-200 text-sm font-medium">
+                      <div className="p-3 bg-cyan-500/5 border border-cyan-500/10 rounded-xl">
+                        <p className="text-cyan-200 text-sm font-medium">
                           🏆 Completion Reward: {path.completionReward}
                         </p>
                       </div>
 
-                      <Button className="w-full" variant="outline">
+                      <Button className="w-full border-cyan-400/20 hover:bg-cyan-400/10 text-cyan-400 hover:text-cyan-300" variant="outline">
                         View Path Details
                         <ChevronRight className="w-4 h-4 ml-2" />
                       </Button>
@@ -576,19 +455,19 @@ export default function LearnPage() {
           {/* Search and Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-8">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search courses, skills, or topics..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-800/40 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-slate-950/60 border border-cyan-400/10 rounded-xl text-white placeholder-slate-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all outline-none"
               />
             </div>
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+              className="border-cyan-400/10 text-slate-300 hover:bg-slate-900 bg-slate-950/60"
             >
               <Filter className="w-4 h-4 mr-2" />
               Filters
@@ -606,7 +485,7 @@ export default function LearnPage() {
                 transition={{ duration: 0.3 }}
                 className="mb-8"
               >
-                <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
+                <Card className="bg-slate-950/60 backdrop-blur-md border border-cyan-400/10 rounded-2xl overflow-hidden">
                   <CardContent className="p-6">
                     <div className="grid md:grid-cols-3 gap-6">
                       {/* Category Filter */}
@@ -619,8 +498,8 @@ export default function LearnPage() {
                               onClick={() => setSelectedCategory(category)}
                               className={`block w-full text-left px-3 py-2 rounded-lg transition-all text-sm ${
                                 selectedCategory === category
-                                  ? "bg-emerald-500/20 text-emerald-300"
-                                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-700/40"
+                                  ? "bg-cyan-500/10 text-cyan-300 border border-cyan-400/20"
+                                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
                               }`}
                             >
                               {category}
@@ -639,8 +518,8 @@ export default function LearnPage() {
                               onClick={() => setSelectedDifficulty(difficulty)}
                               className={`block w-full text-left px-3 py-2 rounded-lg transition-all text-sm ${
                                 selectedDifficulty === difficulty
-                                  ? "bg-cyan-500/20 text-cyan-300"
-                                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-700/40"
+                                  ? "bg-blue-500/10 text-blue-300 border border-blue-400/20"
+                                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
                               }`}
                             >
                               {difficulty}
@@ -723,12 +602,12 @@ export default function LearnPage() {
                       {/* Progress Bar for Enrolled Courses */}
                       {course.progress !== undefined && course.progress > 0 && (
                         <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <div className="bg-slate-900/80 rounded-lg p-2">
+                          <div className="bg-slate-950/80 rounded-lg p-2 backdrop-blur-sm border border-cyan-400/10">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-xs text-slate-300">Progress</span>
-                              <span className="text-xs text-emerald-400">{course.progress}%</span>
+                              <span className="text-xs text-cyan-400">{course.progress}%</span>
                             </div>
-                            <Progress value={course.progress} className="h-1" />
+                            <Progress value={course.progress} className="h-1 bg-slate-800" />
                           </div>
                         </div>
                       )}
@@ -736,36 +615,36 @@ export default function LearnPage() {
 
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-lg font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-emerald-400 group-hover:to-cyan-400 group-hover:bg-clip-text transition-all duration-300 line-clamp-2">
+                        <CardTitle className="text-lg font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-400 group-hover:bg-clip-text transition-all duration-300 line-clamp-2">
                           {course.title}
                         </CardTitle>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-slate-400">
                         <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
+                          <Clock className="w-4 h-4 text-cyan-400/60" />
                           {course.duration}
                         </div>
                         <div className="flex items-center gap-1">
-                          <Play className="w-4 h-4" />
+                          <Play className="w-4 h-4 text-cyan-400/60" />
                           {course.lessons} lessons
                         </div>
                       </div>
                     </CardHeader>
 
                     <CardContent className="space-y-4">
-                      <p className="text-slate-300 text-sm leading-relaxed line-clamp-3">
+                      <p className="text-slate-400 text-sm leading-relaxed line-clamp-3">
                         {course.description}
                       </p>
 
                       {/* Tags */}
                       <div className="flex flex-wrap gap-1">
                         {course.tags.slice(0, 3).map((tag, tagIndex) => (
-                          <Badge key={tagIndex} variant="secondary" className="text-xs">
+                          <Badge key={tagIndex} variant="secondary" className="text-xs bg-slate-900 text-slate-400 border-none">
                             {tag}
                           </Badge>
                         ))}
                         {course.tags.length > 3 && (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs bg-slate-900 text-slate-400 border-none">
                             +{course.tags.length - 3}
                           </Badge>
                         )}
@@ -774,13 +653,13 @@ export default function LearnPage() {
                       {/* Course Info */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <Badge className={getDifficultyColor(course.difficulty)}>
+                          <Badge className={`${getDifficultyColor(course.difficulty)} border-none`}>
                             {course.difficulty}
                           </Badge>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-slate-400">
                           <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
                             {course.rating}
                           </div>
                           <div className="flex items-center gap-1">
@@ -792,10 +671,10 @@ export default function LearnPage() {
 
                       {/* NFT Reward */}
                       {course.nftReward && (
-                        <div className="p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg">
+                        <div className="p-3 bg-cyan-500/5 border border-cyan-500/10 rounded-xl">
                           <div className="flex items-center gap-2">
-                            <Trophy className="w-4 h-4 text-purple-400" />
-                            <p className="text-purple-200 text-sm font-medium">
+                            <Trophy className="w-4 h-4 text-cyan-400" />
+                            <p className="text-cyan-200 text-sm font-medium">
                               Earn: {course.nftReward}
                             </p>
                           </div>
@@ -803,7 +682,7 @@ export default function LearnPage() {
                       )}
 
                       {/* Action Button */}
-                      <Button className="w-full" asChild>
+                      <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl shadow-lg shadow-cyan-900/20" asChild>
                         <Link href={`/courses/${course.id}`}>
                           {course.progress !== undefined && course.progress > 0 ? (
                             <>
@@ -828,11 +707,12 @@ export default function LearnPage() {
           {/* No Results */}
           {filteredCourses.length === 0 && (
             <div className="text-center py-12">
-              <Search className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+              <Search className="w-12 h-12 text-slate-500 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">No courses found</h3>
               <p className="text-slate-400 mb-4">Try adjusting your search or filter criteria</p>
               <Button 
                 variant="outline" 
+                className="border-cyan-400/20 text-cyan-400"
                 onClick={() => {
                   setSearchQuery("");
                   setSelectedCategory("All");
@@ -853,43 +733,43 @@ export default function LearnPage() {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="text-center"
         >
-          <Card className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-400/20 backdrop-blur-xl">
+          <Card className="bg-slate-950/60 border border-cyan-400/20 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
             <CardContent className="p-12">
               <div className="max-w-3xl mx-auto">
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+                <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
                   Ready to Start Your Web3 Journey?
                 </h2>
-                <p className="text-slate-300 text-lg mb-8">
-                  Join 12,000+ developers learning Web3 with AI companions. 
+                <p className="text-slate-400 text-lg mb-8">
+                  Join 12,000+ developers mastering Web3. 
                   Get personalized learning paths, earn NFT credentials, and build your blockchain career.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button asChild size="lg" className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700">
+                  <Button asChild size="lg" className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-full px-8">
                     <Link href="/onboarding">
                       Start Learning Free
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg" className="border-slate-600 text-slate-300 hover:bg-slate-800">
+                  <Button asChild variant="outline" size="lg" className="border-cyan-400/20 text-cyan-400 hover:bg-cyan-400/10 rounded-full px-8">
                     <Link href="/how-it-works">
                       See How It Works
                     </Link>
                   </Button>
                 </div>
                 
-                <div className="flex items-center justify-center gap-8 mt-8 text-slate-400">
+                <div className="flex items-center justify-center gap-8 mt-12 text-slate-500">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle className="w-4 h-4 text-cyan-400" />
                     <span className="text-sm">Free courses available</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle className="w-4 h-4 text-cyan-400" />
                     <span className="text-sm">NFT certificates</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    <span className="text-sm">AI-powered learning</span>
+                    <CheckCircle className="w-4 h-4 text-cyan-400" />
+                    <span className="text-sm">Structured Curriculum</span>
                   </div>
                 </div>
               </div>

@@ -18,7 +18,7 @@ export {
 };
 
 export default arcjet({
-  key : env.ARCJET_KEY,
+  key : env.ARCJET_KEY || "test-key",
   characteristics: ["fingerprint"],
   rules: [
     shield({

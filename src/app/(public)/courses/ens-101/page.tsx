@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useCourseProgress } from '@/hooks/useCourseProgress';
 import { ArrowLeft, ArrowRight, Play, FileText, Code, CheckCircle, Clock, Award, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,16 +60,8 @@ ENS makes it easy to get a human-readable name for your Ethereum address.\n\n## 
 ];
 
 export default function ENS101Course() {
-  const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
-
-  useEffect(() => {
-    const saved = localStorage.getItem('ens-101-completed');
-    if (saved) {
-      setCompletedModules(new Set(JSON.parse(saved)));
-    }
-  }, []);
-
-  const completionPercentage = (completedModules.size / courseModules.length) * 100;
+  const { completedModules, completionCount, percent } = useCourseProgress('ens-101', courseModules.length);
+  const completionPercentage = percent;
 
   const handleModuleClick = (moduleId: number) => {
     window.location.href = `/courses/ens-101/lesson/${moduleId}`;
@@ -97,10 +90,10 @@ export default function ENS101Course() {
           </Button>
           <div className="flex flex-col lg:flex-row lg:items-start gap-8">
             <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-4">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-4">
                 ENS 101: Ethereum Name Service Essentials
               </h1>
-              <p className="text-xl text-slate-300 mb-6">
+              <p className="text-lg text-muted-foreground mb-6">
                 Learn how ENS works, register names, integrate with dApps, and build ENS-powered apps.
               </p>
               <div className="flex flex-wrap gap-4 mb-6">
@@ -129,14 +122,18 @@ export default function ENS101Course() {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-slate-400">Completed</span>
-                    <span className="text-cyan-300">{completedModules.size}/{courseModules.length}</span>
+                    <span className="text-cyan-300">{completionCount}/{courseModules.length}</span>
                   </div>
                   <Progress value={completionPercentage} className="h-2" />
                 </div>
                 {completionPercentage === 100 ? (
-                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                  <Button 
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    onClick={() => claimNFT('ens-101')}
+                    disabled={isClaiming || claimed}
+                  >
                     <Award className="mr-2 h-4 w-4" />
-                    Claim NFT Badge
+                    {claimed ? 'NFT Claimed!' : isClaiming ? 'Claiming...' : 'Claim NFT Badge'}
                   </Button>
                 ) : (
                   <div className="text-center p-4 bg-purple-500/10 rounded-lg border border-purple-400/20">
@@ -155,7 +152,7 @@ export default function ENS101Course() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="grid gap-4"
         >
-          <h2 className="text-2xl font-semibold text-white mb-4">Course Modules</h2>
+          <h2 className="text-3xl font-bold text-white mb-6">Course Modules</h2>
           {courseModules.map((module, index) => {
             const isCompleted = completedModules.has(module.id);
             const isAvailable = index === 0 || completedModules.has(courseModules[index - 1].id);

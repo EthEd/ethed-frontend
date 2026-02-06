@@ -23,7 +23,7 @@ export default function HowItWorks() {
           transition={{ duration: 0.5 }}
           className="bg-gradient-to-r from-cyan-300 via-emerald-300 to-blue-300 bg-clip-text text-2xl font-bold tracking-tight text-transparent md:text-3xl"
         >
-          How EthEd Works
+          How eth.ed Works
         </motion.h3>
 
         <motion.ul

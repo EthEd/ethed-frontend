@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
-import { getAddress } from "viem";
 
 export async function GET() {
   try {
@@ -15,35 +14,19 @@ export async function GET() {
       );
     }
 
+    // Fetch real user data from database
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: {
-        wallets: {
-          orderBy: { isPrimary: 'desc' }
-        },
-        pets: {
-          orderBy: { createdAt: 'desc' }
-        },
+        wallets: true,
+        // Keep pet data in DB for future use, but do not return to the UI
+        // pets: true,
         courses: {
           include: {
-            course: {
-              select: {
-                id: true,
-                title: true,
-                slug: true,
-                level: true
-              }
-            }
-          },
-          orderBy: { startedAt: 'desc' }
-        },
-        _count: {
-          select: {
-            courses: true,
-            purchases: true,
-            nfts: true
+            course: true
           }
-        }
+        },
+        nfts: true
       }
     });
 
@@ -54,6 +37,16 @@ export async function GET() {
       );
     }
 
+    // Calculate stats
+    const stats = {
+      coursesEnrolled: user.courses.length,
+      coursesCompleted: user.courses.filter(c => c.completed).length,
+      nftsOwned: user.nfts.length,
+      walletConnected: user.wallets.length > 0,
+      ensName: user.wallets.find(w => w.ensName)?.ensName || null,
+      joinedDate: user.createdAt
+    };
+
     return NextResponse.json({
       user: {
         id: user.id,
@@ -63,13 +56,10 @@ export async function GET() {
         role: user.role,
         createdAt: user.createdAt,
         wallets: user.wallets,
-        pets: user.pets,
+        // pet data intentionally omitted from the response for MVP
         courses: user.courses,
-        stats: {
-          coursesEnrolled: user._count.courses,
-          purchasesMade: user._count.purchases,
-          nftsOwned: user._count.nfts
-        }
+        nfts: user.nfts,
+        stats
       }
     });
 
@@ -94,46 +84,30 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, image, primaryWallet } = body;
+    const { onboardingCompleted, selectedBuddy, ensName, name, image } = body;
 
-    const updates: any = {};
-    
-    if (name !== undefined) {
-      updates.name = name;
-    }
-    
-    if (image !== undefined) {
-      updates.image = image;
-    }
+    console.log("Profile update for user:", session.user.email, body);
 
-    const user = await prisma.user.update({
+    // Update user in database
+    const { prisma } = await import("@/lib/prisma-client");
+    
+    const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
-      data: updates,
-      include: {
-        wallets: true
+      data: {
+        name: name || undefined,
+        image: image || undefined,
+        // Add other fields as needed
       }
     });
-
-    // Update primary wallet if specified
-    if (primaryWallet && user.wallets.length > 0) {
-      await prisma.walletAddress.updateMany({
-        where: { userId: session.user.id },
-        data: { isPrimary: false }
-      });
-
-      await prisma.walletAddress.update({
-        where: { id: primaryWallet },
-        data: { isPrimary: true }
-      });
-    }
 
     return NextResponse.json({
       message: "Profile updated successfully",
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        image: user.image
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        image: updatedUser.image,
+        updatedAt: updatedUser.updatedAt
       }
     });
 

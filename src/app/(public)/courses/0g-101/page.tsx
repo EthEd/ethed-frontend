@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useCourseProgress } from '@/hooks/useCourseProgress';
 import Link from 'next/link';
 import { ArrowRight, Play, FileText, Code, CheckCircle, Clock, Award, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,16 +23,8 @@ const courseModules = [
 ];
 
 export default function ZeroGCoursePage() {
-  const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
-
-  useEffect(() => {
-    const saved = localStorage.getItem('0g-101-completed');
-    if (saved) {
-      setCompletedModules(new Set(JSON.parse(saved)));
-    }
-  }, []);
-
-  const completionPercentage = (completedModules.size / courseModules.length) * 100;
+  const { completedModules, completionCount, percent } = useCourseProgress('0g-101', courseModules.length);
+  const completionPercentage = percent;
 
   return (
     <div className="bg-background min-h-screen">
@@ -43,16 +36,16 @@ export default function ZeroGCoursePage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-2 bg-green-500/10 text-green-300 px-4 py-2 rounded-full text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-300 px-4 py-2 rounded-full text-sm font-medium mb-6">
             <Award className="h-4 w-4" />
             AI-Native Blockchain
           </div>
           
-          <h1 className="text-5xl font-extrabold text-white mb-6 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-6 leading-tight">
             0G 101: AI-Native Stack
           </h1>
           
-          <p className="text-xl text-slate-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
             Master 0G&apos;s AI-native stack. Store and retrieve data, call the decentralized Compute Network 
             for LLM inference, and record verifiable outputs on-chain in a single, working dApp! 🚀
           </p>
@@ -72,7 +65,7 @@ export default function ZeroGCoursePage() {
             </div>
           </div>
 
-          <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-4 text-lg rounded-lg">
+          <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white px-8 py-4 text-lg rounded-lg">
             <Link href="/courses/0g-101/lesson/1" className="flex items-center gap-2">
               Start Learning
               <ArrowRight className="h-5 w-5" />
@@ -87,17 +80,17 @@ export default function ZeroGCoursePage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-12"
         >
-          <Card className="bg-gradient-to-r from-green-900/50 to-blue-900/50 border-green-400/20">
+          <Card className="bg-gradient-to-r from-emerald-900/50 to-cyan-900/50 border-emerald-400/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <CheckCircle className="h-6 w-6 text-green-400" />
+                <CheckCircle className="h-6 w-6 text-emerald-400" />
                 Your Progress
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-slate-300">
-                  Completed: <span className="text-green-300">{completedModules.size}/{courseModules.length}</span>
+                  Completed: <span className="text-green-300">{completionCount}/{courseModules.length}</span>
                 </span>
                 <span className="text-slate-300">{Math.round(completionPercentage)}%</span>
               </div>
@@ -116,8 +109,12 @@ export default function ZeroGCoursePage() {
                       <p className="text-slate-300 text-sm">You&apos;ve completed the 0G 101 course!</p>
                     </div>
                   </div>
-                  <Button className="mt-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white">
-                    Claim Your NFT Certificate
+                  <Button 
+                    className="mt-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
+                    onClick={() => claimNFT('0g-101')}
+                    disabled={isClaiming || claimed}
+                  >
+                    {claimed ? 'NFT Claimed!' : isClaiming ? 'Claiming...' : 'Claim Your NFT Certificate'}
                   </Button>
                 </motion.div>
               )}
@@ -141,11 +138,11 @@ export default function ZeroGCoursePage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 * index }}
               >
-                <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-green-400/20 hover:border-green-400/40 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/10">
+                <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-emerald-400/20 hover:border-emerald-400/40 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-blue-500 text-white font-bold">
+                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold">
                           {module.id}
                         </div>
                         <div>
@@ -158,8 +155,8 @@ export default function ZeroGCoursePage() {
                       
                       <div className="flex items-center gap-4">
                         <div className={`px-3 py-1 rounded-full border text-sm font-medium ${
-                          module.type === 'video' ? 'border-green-400/40 text-green-300' :
-                          module.type === 'code' ? 'border-blue-400/40 text-blue-300' :
+                          module.type === 'video' ? 'border-emerald-400/40 text-emerald-300' :
+                          module.type === 'code' ? 'border-cyan-400/40 text-cyan-300' :
                           'border-purple-400/40 text-purple-300'
                         }`}>
                           {module.type === 'video' && <Play className="inline h-3 w-3 mr-1" />}
@@ -174,7 +171,7 @@ export default function ZeroGCoursePage() {
                         </div>
                         
                         {completedModules.has(module.id) && (
-                          <CheckCircle className="h-6 w-6 text-green-400" />
+                          <CheckCircle className="h-6 w-6 text-emerald-400" />
                         )}
                       </div>
                     </div>
@@ -184,7 +181,7 @@ export default function ZeroGCoursePage() {
                     <Link href={`/courses/0g-101/lesson/${module.id}`}>
                       <Button 
                         variant="outline" 
-                        className="w-full border-green-400/40 text-green-300 hover:bg-green-400/10 hover:border-green-400"
+                        className="w-full border-emerald-400/40 text-emerald-300 hover:bg-emerald-400/10 hover:border-emerald-400"
                       >
                         {completedModules.has(module.id) ? 'Review Module' : 'Start Module'}
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -207,9 +204,9 @@ export default function ZeroGCoursePage() {
           <h2 className="text-3xl font-bold text-white mb-8 text-center">What You&apos;ll Build</h2>
           
           <div className="grid md:grid-cols-3 gap-6">
-            <Card className="bg-gradient-to-br from-green-900/50 to-slate-900/50 border-green-400/20">
+            <Card className="bg-gradient-to-br from-emerald-900/50 to-slate-900/50 border-emerald-400/20">
               <CardHeader>
-                <CardTitle className="text-green-300 flex items-center gap-2">
+                <CardTitle className="text-emerald-300 flex items-center gap-2">
                   <Code className="h-6 w-6" />
                   Storage & Retrieval
                 </CardTitle>
@@ -221,9 +218,9 @@ export default function ZeroGCoursePage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-blue-900/50 to-slate-900/50 border-blue-400/20">
+            <Card className="bg-gradient-to-br from-cyan-900/50 to-slate-900/50 border-cyan-400/20">
               <CardHeader>
-                <CardTitle className="text-blue-300 flex items-center gap-2">
+                <CardTitle className="text-cyan-300 flex items-center gap-2">
                   <Play className="h-6 w-6" />
                   AI Inference
                 </CardTitle>
