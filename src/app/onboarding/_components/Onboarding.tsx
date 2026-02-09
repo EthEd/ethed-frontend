@@ -48,6 +48,35 @@ export default function Onboarding() {
   }, [session, status, router]);
 
   const [step, setStep] = useState(0);
+
+  // Fetch initial onboarding step
+  useEffect(() => {
+    const fetchStep = async () => {
+      try {
+        const response = await fetch("/api/user/profile");
+        const data = await response.json();
+        if (data.user?.onboardingStep) {
+          setStep(data.user.onboardingStep);
+        }
+      } catch (error) {
+        console.error("Failed to fetch onboarding step:", error);
+      }
+    };
+    if (session) fetchStep();
+  }, [session]);
+
+  const changeStep = async (newStep: number) => {
+    setStep(newStep);
+    try {
+      await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ onboardingStep: newStep }),
+      });
+    } catch (error) {
+      console.error("Failed to persist onboarding step:", error);
+    }
+  };
   const [ensName, setEnsName] = useState("");
   const [ensAvailable, setEnsAvailable] = useState<boolean | null>(null);
   const [ensChecking, setEnsChecking] = useState(false);
@@ -158,7 +187,7 @@ export default function Onboarding() {
       setNftsMinted((prev) => [...prev, "ens-pioneer"]);
       toast.success(`🌐 ENS ${ensName}.ethed.eth registered successfully!`);
       
-      setTimeout(() => setStep(2), 1500);
+      setTimeout(() => changeStep(2), 1500);
 
     } catch (error: any) {
       console.error("ENS registration error:", error);
@@ -201,7 +230,7 @@ export default function Onboarding() {
 
       setTimeout(() => {
         setShowConfetti(false);
-        setStep(3);
+        changeStep(3);
       }, 4000);
 
     } catch (error: any) {
@@ -359,7 +388,7 @@ export default function Onboarding() {
                     </div>
                     
                     <Button 
-                      onClick={() => setStep(1)} 
+                      onClick={() => changeStep(1)} 
                       size="lg" 
                       className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold h-14 text-lg"
                     >

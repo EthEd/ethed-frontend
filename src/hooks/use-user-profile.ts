@@ -10,6 +10,7 @@ interface UserProfile {
   email?: string;
   image?: string;
   role?: string;
+  onboardingStep: number;
   createdAt: string;
   wallets: WalletAddress[];
   courses: UserCourse[];

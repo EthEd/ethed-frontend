@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,9 +18,33 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+interface UserProfile {
+  coursesEnrolled: number;
+  coursesCompleted: number;
+  nftsOwned: number;
+  walletConnected: boolean;
+  ensName: string | null;
+  joinedDate: string;
+  courses: Array<{
+    course: {
+      slug: string;
+      title: string;
+    };
+    completed: boolean;
+    startedAt: string;
+  }>;
+  nfts: Array<{
+    id: string;
+    name: string;
+    createdAt: string;
+  }>;
+}
+
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -29,9 +53,21 @@ export default function DashboardPage() {
       router.push("/login");
       return;
     }
+
+    // Fetch user profile
+    fetch('/api/user/profile')
+      .then(res => res.json())
+      .then(data => {
+        setProfile(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch profile:', err);
+        setLoading(false);
+      });
   }, [session, status, router]);
 
-  if (status === "loading") {
+  if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
@@ -42,55 +78,35 @@ export default function DashboardPage() {
     );
   }
 
-  if (!session) {
+  if (!session || !profile) {
     return null;
   }
 
-  // Mock data for demo
-  const mockStats = {
-    coursesEnrolled: 3,
-    coursesCompleted: 1,
-    totalLessons: 24,
-    completedLessons: 8,
-    nftsEarned: 2,
-    studyStreak: 5,
-    totalStudyTime: 12.5, // hours
-    averageScore: 85
+  // Calculate stats from real data
+  const stats = {
+    coursesEnrolled: profile.coursesEnrolled,
+    coursesCompleted: profile.coursesCompleted,
+    nftsEarned: profile.nftsOwned,
+    walletConnected: profile.walletConnected,
+    ensName: profile.ensName,
+    joinedDate: profile.joinedDate
   };
 
-  const mockCourses = [
-    {
-      id: 'eips-101',
-      title: 'EIPs 101',
-      progress: 100,
-      status: 'completed',
-      nftEarned: true,
-      lastAccessed: '2 days ago'
-    },
-    {
-      id: 'ens-101',
-      title: 'ENS 101',
-      progress: 75,
-      status: 'in-progress',
-      nftEarned: false,
-      lastAccessed: '1 day ago'
-    },
-    {
-      id: '0g-101',
-      title: '0G 101',
-      progress: 25,
-      status: 'in-progress',
-      nftEarned: false,
-      lastAccessed: '3 days ago'
-    }
-  ];
+  const courses = profile.courses.map(c => ({
+    id: c.course.slug,
+    title: c.course.title,
+    progress: c.completed ? 100 : 50, // Placeholder, could calculate from progress
+    status: c.completed ? 'completed' : 'in-progress',
+    nftEarned: profile.nfts.some(nft => nft.name.includes(c.course.title)),
+    lastAccessed: new Date(c.startedAt).toLocaleDateString()
+  }));
 
-  const mockAchievements = [
+  const achievements = [
     { name: 'Genesis Scholar', type: 'Founder', earned: true },
-    { name: 'EIP Expert', type: 'Course', earned: true },
-    { name: 'ENS Pro', type: 'Course', earned: false },
-    { name: '0G Infrastructure', type: 'Course', earned: false },
-    { name: 'Study Streak', type: 'Milestone', earned: true }
+    { name: 'EIP Expert', type: 'Course', earned: stats.coursesCompleted > 0 },
+    { name: 'ENS Pro', type: 'Course', earned: stats.ensName !== null },
+    { name: 'NFT Collector', type: 'Milestone', earned: stats.nftsEarned > 0 },
+    { name: 'Wallet Connected', type: 'Milestone', earned: stats.walletConnected }
   ];
 
   return (
@@ -127,7 +143,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-400 text-sm font-medium">Courses Completed</p>
-                  <p className="text-2xl font-bold text-white mt-1">{mockStats.coursesCompleted}</p>
+                  <p className="text-2xl font-bold text-white mt-1">{stats.coursesCompleted}</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
                   <BookOpen className="h-6 w-6 text-cyan-400" />
@@ -141,7 +157,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-400 text-sm font-medium">NFTs Earned</p>
-                  <p className="text-2xl font-bold text-white mt-1">{mockStats.nftsEarned}</p>
+                  <p className="text-2xl font-bold text-white mt-1">{stats.nftsEarned}</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
                   <Award className="h-6 w-6 text-purple-400" />
@@ -155,7 +171,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-400 text-sm font-medium">Study Streak</p>
-                  <p className="text-2xl font-bold text-white mt-1">{mockStats.studyStreak} days</p>
+                  <p className="text-2xl font-bold text-white mt-1">N/A</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
                   <TrendingUp className="h-6 w-6 text-cyan-400" />
@@ -169,7 +185,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-400 text-sm font-medium">Avg Score</p>
-                  <p className="text-2xl font-bold text-white mt-1">{mockStats.averageScore}%</p>
+                  <p className="text-2xl font-bold text-white mt-1">N/A</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
                   <Star className="h-6 w-6 text-yellow-400" />
@@ -191,7 +207,7 @@ export default function DashboardPage() {
                 <CardDescription className="text-slate-400">Continue learning where you left off</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {mockCourses.map((course) => (
+                {courses.map((course) => (
                   <div key={course.id} className="p-6 bg-slate-950/40 rounded-xl border border-white/5 hover:border-cyan-400/20 transition-all duration-300">
                     <div className="flex items-center justify-between mb-4">
                       <div>
@@ -250,7 +266,7 @@ export default function DashboardPage() {
                 <CardDescription className="text-slate-400">Your earned badges and NFTs</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {mockAchievements.map((achievement, index) => (
+                {achievements.map((achievement, index) => (
                   <div 
                     key={index} 
                     className={`flex items-center justify-between p-4 rounded-xl transition-all duration-300 ${

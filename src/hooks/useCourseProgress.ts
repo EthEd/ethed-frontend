@@ -9,14 +9,34 @@ function storageKey(courseSlug: string) {
 
 export function useCourseProgress(courseSlug: string, totalModules?: number) {
   const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = () => {
+    const load = async () => {
       try {
+        setLoading(true);
+        // 1. Try DB first
+        const dbRes = await fetch(`/api/user/course/progress?courseSlug=${courseSlug}`);
+        if (dbRes.ok) {
+          const dbData = await dbRes.json();
+          if (dbData.completedModules?.length > 0) {
+            const dbSet = new Set<number>(dbData.completedModules);
+            setCompletedModules(dbSet);
+            // Sync to local
+            localStorage.setItem(storageKey(courseSlug), JSON.stringify(Array.from(dbSet)));
+            setLoading(false);
+            return;
+          }
+        }
+
+        // 2. Fallback to localStorage
         const saved = localStorage.getItem(storageKey(courseSlug));
         if (saved) setCompletedModules(new Set(JSON.parse(saved)));
       } catch (e) {
+        console.error("Progress load error", e);
         setCompletedModules(new Set());
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -24,7 +44,11 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
 
     const onStorage = (e: StorageEvent) => {
       if (e.key === storageKey(courseSlug)) {
-        load();
+        // reload from local storage only
+        try {
+          const saved = localStorage.getItem(storageKey(courseSlug));
+          if (saved) setCompletedModules(new Set(JSON.parse(saved)));
+        } catch (err) { /* ignore */ }
       }
     };
 
@@ -45,38 +69,84 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
     };
   }, [courseSlug]);
 
-  const markModuleComplete = useCallback((moduleId: number) => {
+  const markModuleComplete = useCallback(async (moduleId: number) => {
     try {
       const saved = localStorage.getItem(storageKey(courseSlug));
       const arr: number[] = saved ? JSON.parse(saved) : [];
       if (!arr.includes(moduleId)) arr.push(moduleId);
       localStorage.setItem(storageKey(courseSlug), JSON.stringify(arr));
+      
       // dispatch custom event for same-window updates
       window.dispatchEvent(new CustomEvent(eventName, { detail: { courseSlug } }));
       setCompletedModules(new Set(arr));
+
+      // Sync to DB
+      if (totalModules) {
+        await fetch('/api/user/course/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            courseSlug,
+            completedModules: arr,
+            completedCount: arr.length,
+            totalModules
+          })
+        });
+      }
     } catch (err) {
       console.error('useCourseProgress markModuleComplete error', err);
     }
-  }, [courseSlug]);
+  }, [courseSlug, totalModules]);
 
-  const markModuleIncomplete = useCallback((moduleId: number) => {
+  const markModuleIncomplete = useCallback(async (moduleId: number) => {
     try {
       const saved = localStorage.getItem(storageKey(courseSlug));
       const arr: number[] = saved ? JSON.parse(saved) : [];
       const filtered = arr.filter((n) => n !== moduleId);
       localStorage.setItem(storageKey(courseSlug), JSON.stringify(filtered));
+      
       window.dispatchEvent(new CustomEvent(eventName, { detail: { courseSlug } }));
       setCompletedModules(new Set(filtered));
+
+      // Sync to DB
+      if (totalModules) {
+        await fetch('/api/user/course/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            courseSlug,
+            completedModules: filtered,
+            completedCount: filtered.length,
+            totalModules
+          })
+        });
+      }
     } catch (err) {
       console.error('useCourseProgress markModuleIncomplete error', err);
     }
-  }, [courseSlug]);
+  }, [courseSlug, totalModules]);
 
-  const clearProgress = useCallback(() => {
+  const clearProgress = useCallback(async () => {
     localStorage.removeItem(storageKey(courseSlug));
     window.dispatchEvent(new CustomEvent(eventName, { detail: { courseSlug } }));
     setCompletedModules(new Set());
-  }, [courseSlug]);
+
+    // Reset in DB
+    try {
+        await fetch('/api/user/course/progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                courseSlug,
+                completedModules: [],
+                completedCount: 0,
+                totalModules: totalModules || 1
+            })
+        });
+    } catch (err) {
+        console.error('Reset progress error', err);
+    }
+  }, [courseSlug, totalModules]);
 
   const completionCount = completedModules.size;
   const percent = totalModules ? (completionCount / totalModules) * 100 : 0;
@@ -87,6 +157,7 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
     markModuleIncomplete,
     clearProgress,
     completionCount,
-    percent
+    percent,
+    loading
   };
 }

@@ -24,9 +24,12 @@ const fileUrl = `${gatewayUrl}/ipfs/${upload.cid}`;
 
 
     return NextResponse.json({ cid: upload.cid, url: fileUrl }, { status: 200 });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  } catch (error) {
+    console.error("File upload error:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Internal server error during file upload" },
+      { status: 500 }
+    );
   }
 }
 
