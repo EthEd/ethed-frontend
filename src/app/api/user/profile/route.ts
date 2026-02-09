@@ -54,6 +54,7 @@ export async function GET() {
         email: user.email,
         image: user.image,
         role: user.role,
+        onboardingStep: user.onboardingStep,
         createdAt: user.createdAt,
         wallets: user.wallets,
         // pet data intentionally omitted from the response for MVP
@@ -84,7 +85,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { onboardingCompleted, selectedBuddy, ensName, name, image } = body;
+    const { onboardingStep, name, image } = body;
 
     console.log("Profile update for user:", session.user.email, body);
 
@@ -96,7 +97,7 @@ export async function PATCH(request: NextRequest) {
       data: {
         name: name || undefined,
         image: image || undefined,
-        // Add other fields as needed
+        onboardingStep: typeof onboardingStep === 'number' ? onboardingStep : undefined,
       }
     });
 
