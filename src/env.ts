@@ -42,6 +42,11 @@ export const env = createEnv({
     PINATA_API_SECRET: z.string().optional(),
     PINATA_JWT: z.string().optional(),
     PINATA_GATEWAY_URL: z.string().optional(),
+
+    // Supabase
+    SUPABASE_URL: z.string().optional(),
+    SUPABASE_ANON_KEY: z.string().optional(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   },
   client: {
     // No payment-related client environment variables needed
