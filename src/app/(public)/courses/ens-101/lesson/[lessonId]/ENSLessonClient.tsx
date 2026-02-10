@@ -98,6 +98,24 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
   const [showAnswer, setShowAnswer] = useState(false);
   const { completedModules, completionCount, markModuleComplete } = useCourseProgress('ens-101', modules.length);
 
+  const isCompleted = completedModules.has(moduleId);
+
+  const handleMarkComplete = () => {
+    markModuleComplete(moduleId);
+  };
+
+  const onNavigate = (direction: 'next') => {
+    if (direction === 'next') {
+      if (moduleId === modules.length) {
+        // Finish course
+        finishCourseBackend();
+        router.push('/courses/ens-101');
+      } else {
+        router.push(`/courses/ens-101/lesson/${moduleId + 1}`);
+      }
+    }
+  };
+
   const finishCourseBackend = async () => {
     try {
       const res = await fetch('/api/user/course/complete', {
@@ -387,16 +405,13 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> 
               Previous Lesson
+            </Button>
             <Button 
               onClick={() => {
                 if (!isCompleted) handleMarkComplete();
                 onNavigate('next');
               }}
               className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white"
-            >
-              Next Lesson
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
             >
               {moduleId === modules.length ? 'Finish Course' : 'Next Lesson'}
               <ArrowRight className="ml-2 h-4 w-4" />

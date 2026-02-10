@@ -4,6 +4,7 @@
  */
 
 import { prisma } from "./prisma-client";
+import { AMOY_CHAIN_ID } from "./contracts";
 
 export interface ENSRegistrationParams {
   userId: string;
@@ -139,7 +140,7 @@ export async function saveENSToDatabase(params: {
       data: {
         userId,
         address: address || "0x0000000000000000000000000000000000000000",
-        chainId: 1, // Ethereum mainnet
+        chainId: AMOY_CHAIN_ID,
         ensName,
         isPrimary: true,
       },

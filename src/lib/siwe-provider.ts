@@ -6,6 +6,7 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import { SiweMessage } from "siwe";
 import { prisma } from "./prisma-client";
+import { AMOY_CHAIN_ID } from "./contracts";
 
 export function SiweProvider() {
   return CredentialsProvider({
@@ -24,7 +25,7 @@ export function SiweProvider() {
         // Parse the SIWE message (just extract the address and chain ID)
         const messageData = JSON.parse(credentials.message);
         const address = messageData.address.toLowerCase();
-        const chainId = messageData.chainId || 1;
+        const chainId = messageData.chainId || AMOY_CHAIN_ID;
         
         // Verify the signature using siwe
         const siweMessage = new SiweMessage(messageData);

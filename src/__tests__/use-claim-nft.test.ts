@@ -75,8 +75,8 @@ describe('useClaimNFT', () => {
     await result.current.claimNFT('eips-101');
 
     expect(result.current.claimed).toBe(false);
-    expect(toast.error).toHaveBeenCalledWith('Failed to claim NFT', {
-      description: 'Network error. Please try again.'
+    expect(toast.error).toHaveBeenCalledWith('Blockchain error', {
+      description: 'Network failure'
     });
   });
 });

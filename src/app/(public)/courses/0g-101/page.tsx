@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useCourseProgress } from '@/hooks/useCourseProgress';
+import { useClaimNFT } from '@/hooks/use-claim-nft';
 import Link from 'next/link';
 import { ArrowRight, Play, FileText, Code, CheckCircle, Clock, Award, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ const courseModules = [
 
 export default function ZeroGCoursePage() {
   const { completedModules, completionCount, percent } = useCourseProgress('0g-101', courseModules.length);
+  const { claimNFT, isClaiming, claimed } = useClaimNFT();
   const completionPercentage = percent;
 
   return (

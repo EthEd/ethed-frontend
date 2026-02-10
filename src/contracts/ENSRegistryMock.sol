@@ -6,12 +6,16 @@ pragma solidity ^0.8.20;
 contract ENSRegistryMock {
     mapping(address => string) public ensNames;
 
-    event SubdomainAssigned(address indexed user, string ensName);
+    event SubdomainRegistered(string indexed subdomain, address indexed owner);
 
-    function assignSubdomain(address user, string memory subdomain) external {
-        string memory fullDomain = string(abi.encodePacked(subdomain, ".etheed.eth"));
-        ensNames[user] = fullDomain;
-        emit SubdomainAssigned(user, fullDomain);
+    function register(
+        string memory subdomain,
+        address owner,
+        uint256 /* duration */
+    ) external payable {
+        string memory fullDomain = string(abi.encodePacked(subdomain, ".ethed.eth"));
+        ensNames[owner] = fullDomain;
+        emit SubdomainRegistered(subdomain, owner);
     }
 
     function getSubdomain(address user) external view returns (string memory) {

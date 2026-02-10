@@ -335,29 +335,31 @@ export default function CommunityPage() {
             The EIPSInsight Journey
           </h1>
           
-          <p className=\"text-lg text-muted-foreground max-w-3xl mx-auto mb-8\">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
             From a weekend hackathon idea to the world's leading Web3 education platform. 
             This is how ETHGlobal, our amazing sponsors, and an incredible community helped us build the future of blockchain learning.
           </p>
 
           {/* Community Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-5xl mx-auto">
-            {Object.entries(communityStats).map(([key, value], index) => (
-              <motion.div
-                key={key}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10 text-center hover:border-emerald-400/30 transition-all duration-300">
-                  <CardContent className="p-4">
-                    <div className="text-2xl font-bold text-emerald-400 mb-1">{value}</div>
-                    <div className="text-slate-300 capitalize text-sm">{key.replace('nfts', 'NFTs')}</div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          {mounted && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-5xl mx-auto">
+              {Object.entries(communityStats).map(([key, value], index) => (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10 text-center hover:border-emerald-400/30 transition-all duration-300">
+                    <CardContent className="p-4">
+                      <div className="text-2xl font-bold text-emerald-400 mb-1">{value}</div>
+                      <div className="text-slate-300 capitalize text-sm">{key.replace('nfts', 'NFTs')}</div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </motion.section>
 
         {/* Our Journey Timeline */}

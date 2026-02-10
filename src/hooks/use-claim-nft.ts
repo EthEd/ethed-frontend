@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { getBlockchainErrorInfo } from '@/lib/blockchain-errors';
 
 export function useClaimNFT() {
   const [isClaiming, setIsClaiming] = useState(false);
@@ -40,8 +41,9 @@ export function useClaimNFT() {
       }
     } catch (err) {
       console.error('Claim NFT error:', err);
-      toast.error('Failed to claim NFT', {
-        description: 'Network error. Please try again.'
+      const info = getBlockchainErrorInfo(err);
+      toast.error(info.title, {
+        description: info.description || 'Network error. Please try again.'
       });
     } finally {
       setIsClaiming(false);

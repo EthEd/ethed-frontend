@@ -6,6 +6,10 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
 import { SiweMessage } from "siwe";
+import { toast } from "sonner";
+import { AMOY_CHAIN_ID, getChainConfig } from "@/lib/contracts";
+import { getBlockchainErrorInfo } from "@/lib/blockchain-errors";
+import { ensureAmoyChain, getWalletChainId } from "@/lib/wallet-client";
 
 export function SiweLoginButton() {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +20,9 @@ export function SiweLoginButton() {
 
       // Check if wallet is available
       if (!window.ethereum) {
-        alert("Please install a Web3 wallet like MetaMask");
+        toast.error("Wallet not found", {
+          description: "Please install a Web3 wallet like MetaMask.",
+        });
         return;
       }
 
@@ -26,11 +32,22 @@ export function SiweLoginButton() {
       })) as string[];
 
       if (!accounts.length) {
-        alert("No accounts found in wallet");
+        toast.error("No accounts found", {
+          description: "Please unlock your wallet and try again.",
+        });
         return;
       }
 
       const address = accounts[0];
+
+      const currentChainId = await getWalletChainId();
+      if (currentChainId !== AMOY_CHAIN_ID) {
+        await ensureAmoyChain();
+        const chain = getChainConfig(AMOY_CHAIN_ID);
+        toast.success("Network updated", {
+          description: `Connected to ${chain.name}.`,
+        });
+      }
 
       // Get nonce from backend
       const nonceResponse = await fetch("/api/auth/siwe/nonce");
@@ -69,15 +86,16 @@ export function SiweLoginButton() {
       });
 
       if (!result?.ok) {
-        alert("Sign in failed");
+        toast.error("Sign in failed", {
+          description: "Please try again.",
+        });
       }
     } catch (error) {
       console.error("SIWE sign in error:", error);
-      if (error instanceof Error) {
-        alert(`Sign in error: ${error.message}`);
-      } else {
-        alert("Failed to sign in with Ethereum");
-      }
+      const info = getBlockchainErrorInfo(error);
+      toast.error(info.title, {
+        description: info.description || "Failed to sign in with Ethereum.",
+      });
     } finally {
       setIsLoading(false);
     }

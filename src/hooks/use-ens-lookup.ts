@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
+import { getBlockchainErrorInfo } from "@/lib/blockchain-errors";
 
 interface ENSData {
   ensName?: string;
@@ -29,7 +31,11 @@ export function useENSLookup() {
       const data = await response.json();
       return data;
     } catch (err: any) {
-      setError(err.message);
+      const info = getBlockchainErrorInfo(err);
+      setError(info.description || info.title);
+      toast.error(info.title, {
+        description: info.description || "ENS lookup failed.",
+      });
       return null;
     } finally {
       setLoading(false);
@@ -52,7 +58,11 @@ export function useENSLookup() {
       const data = await response.json();
       return data;
     } catch (err: any) {
-      setError(err.message);
+      const info = getBlockchainErrorInfo(err);
+      setError(info.description || info.title);
+      toast.error(info.title, {
+        description: info.description || "ENS lookup failed.",
+      });
       return null;
     } finally {
       setLoading(false);

@@ -183,7 +183,6 @@ interface PageProps {
 export default function ZeroGLessonPage({ params }: PageProps) {
   const [lessonId, setLessonId] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const getParams = async () => {
