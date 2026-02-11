@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
 
 type Props = {
@@ -201,8 +202,6 @@ export default function AgentHover({
       toast.success("🎯 Genesis NFTs minted successfully!", {
         description: `Minted ${data.totalMinted} NFT${data.totalMinted > 1 ? "s" : ""}`,
       });
-      
-      console.log("Minted NFTs:", data.nfts);
     } catch (error) {
       console.error("NFT minting error:", error);
       toast.error("Failed to mint NFT", {
@@ -231,8 +230,6 @@ export default function AgentHover({
       toast.info("📚 " + data.title, {
         description: data.description,
       });
-      
-      console.log("Learn about eth.ed:", data);
     } catch (error) {
       console.error("Learn error:", error);
       toast.error("Failed to load information", {
@@ -261,9 +258,7 @@ export default function AgentHover({
       toast.success("🚀 " + data.message, {
         description: "Your learning path is ready!",
       });
-      
       // Could redirect to onboarding: window.location.href = "/onboarding";
-      console.log("Start journey:", data);
     } catch (error) {
       console.error("Start journey error:", error);
       toast.error("Failed to start journey", {
@@ -295,8 +290,6 @@ export default function AgentHover({
       toast.info("💬 Agent Response", {
         description: data.reply,
       });
-      
-      console.log("Agent response:", data);
     } catch (error) {
       console.error("Ask question error:", error);
       toast.error("Failed to contact agent", {
@@ -328,21 +321,20 @@ export default function AgentHover({
         }}
         aria-label="eth.ed Agent"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt="agent"
-          width={size}
-          height={size}
-          style={{ 
-            width: "100%", 
-            height: "100%", 
-            objectFit: "contain", 
-            display: "block",
-            opacity: isVisible ? 1 : 0,
-            transition: "opacity 0.2s ease-in-out" // Smooth fade in/out
-          }}
-        />
+          <Image
+            src={src}
+            alt="agent"
+            fill
+            sizes={`${size}px`}
+            priority
+            unoptimized
+            style={{
+              objectFit: "contain",
+              display: "block",
+              opacity: isVisible ? 1 : 0,
+              transition: "opacity 0.2s ease-in-out",
+            }}
+          />
       </div>
 
       {/* Enhanced Dialog/Chat Bubble */}

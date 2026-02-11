@@ -53,6 +53,15 @@ export function getBlockchainErrorInfo(error: unknown): BlockchainErrorInfo {
   if (typeof message === "string") {
     const lower = message.toLowerCase();
 
+    // Normalize and present common address/formatting errors to users more clearly
+    if (lower.includes("eip-55") || lower.includes("checksum") || lower.includes("invalid address")) {
+      return {
+        title: "Invalid address",
+        description:
+          "The provided Ethereum address appears malformed. Check for typos, extra spaces, or incorrect capitalization. Please verify the address (copy/paste or use your wallet) and try again.",
+      };
+    }
+
     if (lower.includes("chain") && (lower.includes("switch") || lower.includes("wrong"))) {
       return {
         title: "Wrong network",

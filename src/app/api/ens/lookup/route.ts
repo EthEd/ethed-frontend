@@ -46,8 +46,18 @@ export async function GET(request: NextRequest) {
 
     // Lookup by address
     if (address) {
+      const cleanAddress = address.trim().toLowerCase();
+
+      // Validate simple Ethereum address format (lowercase hex)
+      if (!/^0x[a-f0-9]{40}$/.test(cleanAddress)) {
+        return NextResponse.json(
+          { error: "Invalid Ethereum address" },
+          { status: 400 }
+        );
+      }
+
       const wallet = await prisma.walletAddress.findFirst({
-        where: { address },
+        where: { address: cleanAddress },
         include: {
           user: {
             select: {
@@ -64,14 +74,14 @@ export async function GET(request: NextRequest) {
       if (!wallet?.ensName) {
         return NextResponse.json({
           ensName: null,
-          address,
+          address: cleanAddress,
           user: null
         });
       }
 
       return NextResponse.json({
         ensName: wallet.ensName,
-        address,
+        address: cleanAddress,
         user: wallet.user
       });
     }

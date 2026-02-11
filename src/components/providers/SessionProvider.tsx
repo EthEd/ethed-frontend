@@ -12,7 +12,14 @@ interface Props {
   children: ReactNode;
 }
 
-function ChainSwitcher({ children }: Props) {
+const SWITCH_MAX_ATTEMPTS = 3;
+const SWITCH_BASE_DELAY_MS = 400;
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+export function ChainSwitcher({ children }: Props) {
   const { status } = useSession();
 
   useEffect(() => {
@@ -24,14 +31,44 @@ function ChainSwitcher({ children }: Props) {
 
     const requestSwitch = async () => {
       try {
-        await ensureAmoyChain();
-
+        const initialChainId = await getWalletChainId();
         if (!mounted) return;
 
-        const config = getChainConfig(AMOY_CHAIN_ID);
-        toast.success("Wallet connected", {
-          description: `Switched to ${config.name}.`,
-        });
+        if (initialChainId === null || initialChainId === AMOY_CHAIN_ID) {
+          return;
+        }
+
+        for (let attempt = 1; attempt <= SWITCH_MAX_ATTEMPTS; attempt++) {
+          try {
+            await ensureAmoyChain();
+
+            if (!mounted) return;
+
+            const config = getChainConfig(AMOY_CHAIN_ID);
+            toast.success("Wallet connected", {
+              description: `Switched to ${config.name}.`,
+            });
+
+            return;
+          } catch (error) {
+            if (!mounted) return;
+
+            const info = getBlockchainErrorInfo(error);
+            const isLastAttempt = attempt === SWITCH_MAX_ATTEMPTS;
+            const isUserAction = info.code === 4001;
+            const isPending = info.code === -32002;
+            const isChainIssue = info.isChainError === true;
+
+            if (isUserAction || isPending || isChainIssue || isLastAttempt) {
+              toast.error(info.title, {
+                description: info.description,
+              });
+              return;
+            }
+
+            await sleep(SWITCH_BASE_DELAY_MS * 2 ** (attempt - 1));
+          }
+        }
       } catch (error) {
         const info = getBlockchainErrorInfo(error);
         toast.error(info.title, {

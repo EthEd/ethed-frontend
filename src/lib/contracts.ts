@@ -57,8 +57,8 @@ export const ENS_REGISTRAR_ABI = [
 export const CONTRACTS = {
   // Polygon Amoy Testnet
   [AMOY_CHAIN_ID]: {
-    NFT_CONTRACT: "0x0000000000000000000000000000000000000000", // Replace with your Amoy NFT contract
-    ENS_REGISTRAR: "0x0000000000000000000000000000000000000000", // Replace with your Amoy ENS registrar
+    NFT_CONTRACT: "0xd9a8c19a04bb1e578c2655b9f58d83d8a39cdb88",
+    ENS_REGISTRAR: "0xe248de43bbda470c9ca0262d09865f53270ce76d",
   },
   // Polygon Mainnet
   137: {

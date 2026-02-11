@@ -87,8 +87,6 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { onboardingStep, name, image } = body;
 
-    console.log("Profile update for user:", session.user.email, body);
-
     // Update user in database
     const { prisma } = await import("@/lib/prisma-client");
     

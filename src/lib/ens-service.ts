@@ -3,7 +3,7 @@
  * Handles ENS subdomain registration and management
  */
 
-import { prisma } from "./prisma-client";
+import { prisma } from "@/lib/prisma-client";
 import { AMOY_CHAIN_ID } from "./contracts";
 
 export interface ENSRegistrationParams {
@@ -98,8 +98,6 @@ export async function registerOnChain(
   // const tx = await ensRegistrar.register(subdomain, ownerAddress, duration);
   // const receipt = await tx.wait();
   // return { txHash: receipt.transactionHash, ensName: `${subdomain}.ethed.eth` };
-
-  console.log(`Registering ENS: ${subdomain}.ethed.eth for ${ownerAddress}`);
 
   // Simulate blockchain transaction
   await new Promise((resolve) => setTimeout(resolve, 1500));

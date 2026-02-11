@@ -29,16 +29,12 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log('Attempting login with:', { email, name });
-      
       const result = await signIn('demo', {
         email,
         name,
         redirect: false,
         callbackUrl: '/onboarding'
       });
-
-      console.log('SignIn result:', result);
 
       if (result?.error) {
         console.error('Login error:', result.error);

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +31,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { ipfsToGatewayUrl } from '@/lib/ipfs';
 
 interface ProfileData {
   id: string;
@@ -449,9 +451,15 @@ export default function ProfileClient() {
                 {nfts.map((nft) => (
                   <Card key={nft.id} className="bg-slate-900/40 backdrop-blur-xl border border-purple-400/10 rounded-2xl hover:border-purple-400/30 transition-all duration-300 group">
                     <CardContent className="p-6">
-                      <div className="aspect-square rounded-xl bg-gradient-to-br from-purple-500/20 via-cyan-500/20 to-emerald-500/20 mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                      <div className="aspect-square rounded-xl bg-gradient-to-br from-purple-500/20 via-cyan-500/20 to-emerald-500/20 mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300 overflow-hidden relative">
                         {nft.image ? (
-                          <img src={nft.image} alt={nft.name} className="w-full h-full object-cover" />
+                          <Image
+                            src={ipfsToGatewayUrl(nft.image)}
+                            alt={nft.name}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            className="object-cover"
+                          />
                         ) : (
                           <Award className="h-16 w-16 text-purple-400" />
                         )}

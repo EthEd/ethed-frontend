@@ -51,7 +51,19 @@ export function SiweLoginButton() {
 
       // Get nonce from backend
       const nonceResponse = await fetch("/api/auth/siwe/nonce");
+      if (!nonceResponse.ok) {
+        toast.error("Failed to start sign-in", {
+          description: "Could not fetch a login nonce. Please try again.",
+        });
+        return;
+      }
       const { nonce } = await nonceResponse.json();
+      if (!nonce) {
+        toast.error("Failed to start sign-in", {
+          description: "Login nonce was missing. Please try again.",
+        });
+        return;
+      }
 
       // Get chain ID
       const chainId = await window.ethereum.request({
@@ -91,7 +103,6 @@ export function SiweLoginButton() {
         });
       }
     } catch (error) {
-      console.error("SIWE sign in error:", error);
       const info = getBlockchainErrorInfo(error);
       toast.error(info.title, {
         description: info.description || "Failed to sign in with Ethereum.",

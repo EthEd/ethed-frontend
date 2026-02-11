@@ -4,7 +4,8 @@
  */
 
 import { pinata } from "./pinata-config";
-import { prisma } from "./prisma-client";
+import { prisma } from "@/lib/prisma-client";
+import { GENESIS_PIONEER_IMAGE_URI, GENESIS_PIONEER_METADATA_URI } from "@/lib/genesis-assets";
 import fs from "fs";
 import path from "path";
 
@@ -111,9 +112,6 @@ export async function mintOnChain(
   // const receipt = await tx.wait();
   // return { tokenId: receipt.events[0].args.tokenId.toString(), txHash: receipt.transactionHash };
 
-  console.log(`Minting ${nftType} NFT to ${recipientAddress}`);
-  console.log(`Metadata URI: ${metadataUri}`);
-
   // Simulate blockchain transaction
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -151,7 +149,7 @@ export async function mintGenesisNFTs(params: MintNFTParams) {
   const { userId, ensName, userAddress } = params;
 
   // For now, using placeholder URIs
-  const genesisImageUri = `ipfs://QmEthEdPioneer1`;
+  const genesisImageUri = GENESIS_PIONEER_IMAGE_URI;
 
   // Generate metadata
   const genesisMetadata = generateGenesisScholarMetadata(
@@ -159,8 +157,9 @@ export async function mintGenesisNFTs(params: MintNFTParams) {
     ensName
   );
 
-  // Placeholder metadata URIs
-  const genesisMetadataUri = `ipfs://QmGenesisMetadata${Date.now()}`;
+  const genesisMetadataUri = GENESIS_PIONEER_METADATA_URI
+    ? GENESIS_PIONEER_METADATA_URI
+    : await uploadMetadataToIPFS(genesisMetadata);
 
   // Mint on-chain (requires user wallet address)
   const defaultAddress = userAddress || "0x0000000000000000000000000000000000000000";
@@ -251,17 +250,13 @@ export async function mintCourseCompletionNFT(params: {
   const { userId, courseSlug, courseName, userAddress } = params;
 
   // Upload sprout GIF to IPFS
-  console.log("Uploading Learning Sprout GIF to IPFS...");
   const imageUri = await uploadCourseSproutToIPFS();
-  console.log(`Image uploaded: ${imageUri}`);
 
   // Generate metadata
   const metadata = generateCourseCompletionMetadata(imageUri, courseName, courseSlug);
 
   // Upload metadata to IPFS
-  console.log("Uploading metadata to IPFS...");
   const metadataUri = await uploadMetadataToIPFS(metadata);
-  console.log(`Metadata uploaded: ${metadataUri}`);
 
   // Mint on-chain
   const recipientAddress = userAddress || "0x0000000000000000000000000000000000000000";

@@ -27,8 +27,17 @@ export async function POST(request: NextRequest) {
     }
 
     const cleanSubdomain = subdomain.trim().toLowerCase();
-    
-    console.log(`ENS registration for ${session.user.email}: ${cleanSubdomain}.ethed.eth`);
+
+    // Validate provided wallet address if present
+    if (walletAddress) {
+      const cleanAddress = (walletAddress as string).trim().toLowerCase();
+      if (!/^0x[a-f0-9]{40}$/.test(cleanAddress)) {
+        return NextResponse.json(
+          { error: "Invalid Ethereum address" },
+          { status: 400 }
+        );
+      }
+    }
 
     // Register ENS using the service
     const result = await registerENS({

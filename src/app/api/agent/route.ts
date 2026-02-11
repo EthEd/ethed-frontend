@@ -21,12 +21,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { action, message, context } = body;
 
-    console.log(`Agent action requested by ${session.user.email}:`, {
-      action,
-      message,
-      context,
-    });
-
     // Handle different agent actions
     switch (action) {
       case "ask":

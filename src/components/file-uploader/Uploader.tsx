@@ -1,6 +1,7 @@
 "use client";
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
@@ -112,8 +113,6 @@ export default function Uploader({
     const completedUrls = updatedFiles
       .filter(f => f.status === "completed" && f.uploadedUrl)
       .map(f => f.uploadedUrl!);
-    
-    console.log("🔄 Updating form value:", completedUrls); // Debug log
     onChange?.(completedUrls);
   }, [onChange]);
 
@@ -246,8 +245,6 @@ export default function Uploader({
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
       
-      console.log(`📤 Uploading file to: ${uploadEndpoint}`); // Debug log
-      
       const response = await fetch(uploadEndpoint, {
         method: "POST",
         body: formData,
@@ -255,21 +252,17 @@ export default function Uploader({
       });
 
       clearTimeout(timeoutId);
-      console.log(`📥 Upload response status: ${response.status}`); // Debug log
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Upload error response:", errorData); // Debug log
         throw new Error(errorData.message || errorData.error || `Upload failed with status ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("✅ Upload success data:", data); // Debug log
       
       const url = data.url || data.secure_url || data.location || data.fileUrl;
       
       if (!url) {
-        console.error("No URL in response:", data); // Debug log
         throw new Error("Server did not return a valid file URL");
       }
       
@@ -278,7 +271,6 @@ export default function Uploader({
         cid: data.cid || data.hash || data.ipfsHash
       };
     } catch (error) {
-      console.error("Upload error:", error); // Debug log
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           throw new Error("Upload timed out. Please try again.");
@@ -298,8 +290,6 @@ export default function Uploader({
       return;
     }
 
-    console.log(`🚀 Starting upload of ${pendingFiles.length} files`); // Debug log
-    
     setIsUploading(true);
     setUploadStatus("uploading");
     setGlobalProgress(0);
@@ -321,14 +311,10 @@ export default function Uploader({
         const fileItem = pendingFiles[i];
         
         try {
-          console.log(`📤 Uploading file: ${fileItem.file.name}`); // Debug log
-          
           const [, uploadResult] = await Promise.all([
             simulateUploadProgress(fileItem.id),
             uploadFileToServer(fileItem)
           ]);
-          
-          console.log(`✅ Upload completed for: ${fileItem.file.name}`, uploadResult); // Debug log
           
           // Update file with upload result
           setFiles(prev => {
@@ -355,8 +341,6 @@ export default function Uploader({
           
           toast.success(`${fileItem.file.name} uploaded successfully`);
         } catch (error) {
-          console.error(`❌ Upload failed for ${fileItem.file.name}:`, error); // Debug log
-          
           setFiles(prev => prev.map(file => {
             if (file.id === fileItem.id) {
               return {
@@ -383,7 +367,6 @@ export default function Uploader({
       
       setUploadStatus(errorCount === 0 ? "completed" : "error");
     } catch (error) {
-      console.error("Upload process error:", error);
       setUploadStatus("error");
       toast.error("Upload process failed. Please try again.");
     } finally {
@@ -493,9 +476,12 @@ export default function Uploader({
           <div className="text-center py-6">
             <div className="mb-4">
               {completedFile.fileType === "image" ? (
-                <img
+                <Image
                   src={completedFile.uploadedUrl || completedFile.previewUrl}
                   alt={completedFile.file.name}
+                  width={128}
+                  height={128}
+                  unoptimized
                   className="w-32 h-32 mx-auto rounded-lg object-cover border-2 border-emerald-400 shadow-lg"
                 />
               ) : (
@@ -632,9 +618,12 @@ export default function Uploader({
                         {/* File preview/icon */}
                         <div className="flex-shrink-0 relative">
                           {fileItem.fileType === "image" ? (
-                            <img
+                            <Image
                               src={fileItem.uploadedUrl || fileItem.previewUrl}
                               alt={fileItem.file.name}
+                              width={48}
+                              height={48}
+                              unoptimized
                               className="w-12 h-12 rounded-lg object-cover border border-slate-500 shadow-lg"
                             />
                           ) : (

@@ -83,17 +83,19 @@ export default function WalletConnectionForm({
     }
 
     try {
-      // Simple address validation
-      if (!/^0x[a-fA-F0-9]{40}$/.test(address.trim())) {
+      // Simple address validation: accept hex addresses in any case and normalize to lowercase
+      const candidate = address.trim();
+      if (!/^0x[a-fA-F0-9]{40}$/.test(candidate)) {
         throw new Error("Invalid address format");
       }
       
-      const checksummedAddress = address.trim().toLowerCase();
-      await handleWalletConnection(checksummedAddress);
+      const normalizedAddress = candidate.toLowerCase();
+      await handleWalletConnection(normalizedAddress);
       setAddress("");
     } catch (error: any) {
-      toast.error("Invalid wallet address format");
-      onError?.("Invalid wallet address format");
+      const msg = error?.message || "Invalid wallet address";
+      toast.error(msg);
+      onError?.(msg);
     }
   };
 

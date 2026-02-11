@@ -4,7 +4,7 @@
 
 1. **Copy the environment file:**
    ```bash
-   cp .env.local .env.local.example
+   cp .env.local.example .env.local
    ```
 
 2. **Update the environment variables:**
@@ -16,6 +16,9 @@
    - Add Google OAuth credentials for Google sign-in
    - Add GitHub OAuth credentials for GitHub sign-in
    - Add email server settings for magic link authentication
+
+4. **Optional Pinata (IPFS uploads):**
+   - `PINATA_JWT`: JWT for Pinata SDK (used by upload flows and `pnpm pin:genesis`)
 
 ## Database Setup
 

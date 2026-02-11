@@ -40,7 +40,6 @@ export function useClaimNFT() {
         }
       }
     } catch (err) {
-      console.error('Claim NFT error:', err);
       const info = getBlockchainErrorInfo(err);
       toast.error(info.title, {
         description: info.description || 'Network error. Please try again.'

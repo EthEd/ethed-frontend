@@ -73,7 +73,6 @@ export async function POST(request: NextRequest) {
     const userAddress = user?.wallets?.[0]?.address;
 
     // Mint NFT using the service
-    console.log(`Minting course completion NFT for ${course.title} to user ${session.user.email}`);
     const result = await mintCourseCompletionNFT({
       userId: session.user.id,
       courseSlug,

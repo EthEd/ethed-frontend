@@ -30,10 +30,8 @@ export async function sendMail({
       html,
     });
 
-    console.log("✅ Email sent:", info.messageId);
     return info;
   } catch (err) {
-    console.error("❌ Email failed:", err);
     throw err;
   }
 }

@@ -46,10 +46,7 @@ export const authOptions: NextAuthOptions = {
         name: { label: "Name", type: "text", placeholder: "Demo User" }
       },
       async authorize(credentials) {
-        console.log("Demo auth attempt:", credentials);
-        
         if (!credentials?.email) {
-          console.log("No email provided");
           return null;
         }
         
@@ -69,7 +66,6 @@ export const authOptions: NextAuthOptions = {
                 image: null,
               }
             });
-            console.log("Created demo user:", dbUser.id);
           }
           
           const user = {
@@ -79,7 +75,6 @@ export const authOptions: NextAuthOptions = {
             image: dbUser.image,
           };
           
-          console.log("Demo auth successful:", user);
           return user;
         } catch (error) {
           console.error("Demo auth error:", error);
@@ -115,8 +110,6 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      console.log("SignIn callback:", { user, account: account?.provider });
-      
       if (!user.email) {
         console.error("No email provided by provider");
         return false;
@@ -139,7 +132,6 @@ export const authOptions: NextAuthOptions = {
               image: user.image || null,
             }
           });
-          console.log("Created new user:", newUser.id);
           user.id = newUser.id;
         } else {
           // Update existing user
@@ -156,7 +148,6 @@ export const authOptions: NextAuthOptions = {
           }
         }
         
-        console.log("Sign in successful for:", user.email);
         return true;
       } catch (error) {
         console.error("Error creating/updating user:", error);
@@ -164,8 +155,6 @@ export const authOptions: NextAuthOptions = {
       }
     },
     async jwt({ token, user }) {
-      console.log("JWT callback:", { token: !!token, user: !!user });
-      
       // If this is the first time the user signs in, user object will be available
       if (user) {
         token.id = user.id;
@@ -176,8 +165,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      console.log("Session callback:", { session: !!session, token: !!token });
-      
       // Send properties to the client
       if (token.id) {
         session.user.id = token.id as string;

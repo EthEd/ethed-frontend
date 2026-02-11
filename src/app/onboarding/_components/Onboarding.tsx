@@ -221,8 +221,6 @@ export default function Onboarding() {
         throw new Error(data.error || "Failed to mint NFTs");
       }
 
-      console.log("NFT minting successful:", data);
-
       setShowConfetti(true);
       setNftsMinted((prev) => [...prev, "pioneer-scholar"]);
 

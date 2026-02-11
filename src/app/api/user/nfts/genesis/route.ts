@@ -18,8 +18,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { walletAddress } = body;
 
-    console.log(`Minting Genesis NFT for user ${session.user.email}`);
-
     // Get user's ENS name if they have one
     const ensName = await getUserENS(session.user.id);
 
