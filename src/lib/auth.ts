@@ -77,7 +77,6 @@ export const authOptions: NextAuthOptions = {
           
           return user;
         } catch (error) {
-          console.error("Demo auth error:", error);
           return null;
         }
       }
@@ -111,7 +110,6 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       if (!user.email) {
-        console.error("No email provided by provider");
         return false;
       }
       
@@ -150,7 +148,6 @@ export const authOptions: NextAuthOptions = {
         
         return true;
       } catch (error) {
-        console.error("Error creating/updating user:", error);
         return false;
       }
     },
@@ -181,5 +178,5 @@ export const authOptions: NextAuthOptions = {
   },
   pages: { signIn: "/login", error: "/auth/error", verifyRequest: "/verify-request" },
   debug: env.NODE_ENV === "development",
-  secret: env.NEXTAUTH_SECRET,
+  secret: env.NEXTAUTH_SECRET ?? undefined,
 };
