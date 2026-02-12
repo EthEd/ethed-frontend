@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
-import { mintNFTAndSave } from "@/lib/nft-service";
+import { mintCourseCompletionNFT } from "@/lib/nft-service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -111,22 +111,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user's ENS name from wallet if available
+    // Get user's wallet address if available
     const primaryWallet = user.WalletAddress?.[0];
-    const ensName = primaryWallet?.ensName || undefined;
     const walletAddress = userAddress || primaryWallet?.address || undefined;
 
-    // Mint NFT
-    const nftData = await mintNFTAndSave({
+    // Mint course completion NFT (Learning Sprout GIF)
+    const mintResult = await mintCourseCompletionNFT({
       userId: session.user.id,
-      ensName,
+      courseSlug,
+      courseName,
       userAddress: walletAddress,
     });
 
     return NextResponse.json(
       {
         message: "NFT claimed successfully! 🎉",
-        nft: nftData,
+        nft: mintResult.nft,
+        transaction: mintResult.transaction,
       },
       { status: 201 }
     );
