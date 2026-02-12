@@ -1,93 +1,146 @@
+/**
+ * NFT Claiming API Route
+ * Validates course completion and mints NFT credential
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
-import { mintCourseCompletionNFT } from "@/lib/nft-service";
+import { mintNFTAndSave } from "@/lib/nft-service";
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized - Please sign in to claim NFT" },
+        { status: 401 }
+      );
     }
 
     const body = await request.json();
-    const { courseSlug } = body;
+    const { courseSlug, userAddress } = body;
+
     if (!courseSlug) {
-      return NextResponse.json({ error: "Missing courseSlug" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing courseSlug parameter" },
+        { status: 400 }
+      );
     }
 
-    // Map course slugs to titles
+    // Map course slugs to display names
     const courseMap: Record<string, string> = {
-      'eips-101': 'EIPs 101: From First Principles to First Proposal',
-      'ens-101': 'ENS 101: Ethereum Name Service Essentials',
-      '0g-101': '0G 101: AI-Native Stack'
+      "eips-101": "EIPs 101: From First Principles to First Proposal",
+      "ens-101": "ENS 101: Ethereum Name Service Essentials",
+      "0g-101": "0G 101: AI-Native Stack",
     };
 
     const courseName = courseMap[courseSlug];
     if (!courseName) {
-      return NextResponse.json({ error: "Invalid course" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid course slug" },
+        { status: 400 }
+      );
     }
 
-    // Find or create course in DB
-    let course = await prisma.course.findUnique({ where: { slug: courseSlug } });
+    // Find or create course
+    let course = await prisma.course.findUnique({
+      where: { slug: courseSlug },
+    });
+
     if (!course) {
       course = await prisma.course.create({
         data: {
           slug: courseSlug,
           title: courseName,
-          status: 'PUBLISHED'
-        }
+          status: "PUBLISHED",
+        },
       });
     }
 
     // Verify course completion
     const userCourse = await prisma.userCourse.findUnique({
-      where: { userId_courseId: { userId: session.user.id, courseId: course.id } }
+      where: {
+        userId_courseId: {
+          userId: session.user.id,
+          courseId: course.id,
+        },
+      },
     });
 
     if (!userCourse?.completed) {
-      return NextResponse.json({ error: "Course not completed" }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Course not completed",
+          message: "You must complete the course before claiming the NFT",
+        },
+        { status: 403 }
+      );
     }
 
-    // Check if NFT already claimed
+    // Check if NFT already claimed for this course
     const existingNFT = await prisma.nFT.findFirst({
       where: {
         userId: session.user.id,
-        name: { contains: course.title }
-      }
+        name: { contains: course.title },
+      },
     });
 
     if (existingNFT) {
-      return NextResponse.json({ 
-        message: "NFT already claimed", 
-        nft: existingNFT 
-      });
+      return NextResponse.json(
+        {
+          message: "NFT already claimed for this course",
+          nft: existingNFT,
+        },
+        { status: 200 }
+      );
     }
 
-    // Get user wallet address (optional)
+    // Fetch user data (including ENS name if available)
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { wallets: true }
+      include: { WalletAddress: { where: { isPrimary: true } } },
     });
-    const userAddress = user?.wallets?.[0]?.address;
 
-    // Mint NFT using the service
-    const result = await mintCourseCompletionNFT({
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Get user's ENS name from wallet if available
+    const primaryWallet = user.WalletAddress?.[0];
+    const ensName = primaryWallet?.ensName || undefined;
+    const walletAddress = userAddress || primaryWallet?.address || undefined;
+
+    // Mint NFT
+    const nftData = await mintNFTAndSave({
       userId: session.user.id,
-      courseSlug,
-      courseName: course.title,
-      userAddress
+      ensName,
+      userAddress: walletAddress,
     });
 
-    return NextResponse.json({
-      message: `${course.title} completion NFT minted successfully`,
-      nft: result.nft,
-      transaction: result.transaction
-    });
-  } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error during NFT claim" },
+      {
+        message: "NFT claimed successfully! 🎉",
+        nft: nftData,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("NFT claim error:", error);
+
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+
+    return NextResponse.json(
+      {
+        error: "Failed to claim NFT",
+        message,
+      },
       { status: 500 }
     );
   }

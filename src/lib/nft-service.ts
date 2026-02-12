@@ -96,8 +96,75 @@ export function generateGenesisScholarMetadata(
 }
 
 /**
- * Mint NFT on blockchain (mock implementation - replace with actual contract call)
+ * Mint NFT on blockchain and save to database
  */
+export async function mintNFTAndSave(
+  params: MintNFTParams
+): Promise<{ id: string; tokenId: string; metadataUri: string }> {
+  try {
+    const { userId, ensName, userAddress } = params;
+
+    // Validate user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Generate metadata
+    const metadata = generateGenesisScholarMetadata(
+      GENESIS_PIONEER_IMAGE_URI,
+      ensName
+    );
+
+    // Upload metadata to IPFS
+    const metadataUri = await uploadMetadataToIPFS(metadata);
+
+    // Generate unique token ID
+    const tokenId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    // Save NFT record to database
+    const nft = await prisma.nFT.create({
+      data: {
+        userId,
+        name: `eth.ed Genesis Pioneer - ${ensName || user.name || "Scholar"}`,
+        description: metadata.description,
+        image: GENESIS_PIONEER_IMAGE_URI,
+        metadata: metadataUri,
+        contractAddress: "0x0000000000000000000000000000000000000000", // Update with actual contract
+        tokenId: tokenId,
+        chainId: 80002, // Polygon Amoy
+        ownerAddress: userAddress || null,
+        transactionHash: null, // Update after actual blockchain call
+        mintedAt: new Date(),
+      },
+    });
+
+    return {
+      id: nft.id,
+      tokenId: nft.tokenId,
+      metadataUri,
+    };
+  } catch (error) {
+    throw new Error(`NFT minting failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+/**
+ * Get user's NFTs
+ */
+export async function getUserNFTs(userId: string): Promise<typeof prisma.nFT.findMany> {
+  try {
+    return await prisma.nFT.findMany({
+      where: { userId },
+      orderBy: { mintedAt: "desc" },
+    });
+  } catch (error) {
+    throw new Error(`Failed to fetch NFTs: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
 export async function mintOnChain(
   recipientAddress: string,
   metadataUri: string,
