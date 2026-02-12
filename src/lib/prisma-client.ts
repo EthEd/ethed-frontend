@@ -2,7 +2,11 @@ import { PrismaClient } from "@/generated/prisma";
 
 function validateDatabaseUrl() {
   const dbUrl = process.env.DATABASE_URL;
-  if (process.env.NODE_ENV === 'test') return; // tests may mock prisma-client
+  
+  // Skip validation during build time (Next.js static generation) and tests
+  if (process.env.NODE_ENV === 'test' || process.env.NEXT_PHASE === 'phase-production-build') {
+    return;
+  }
 
   if (!dbUrl) {
     throw new Error(
