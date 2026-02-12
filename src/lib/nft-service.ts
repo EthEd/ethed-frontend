@@ -54,7 +54,6 @@ export async function uploadImageToIPFS(
     const upload = (await (pinata as any).upload.file(file)) as PinataUploadResponse;
     return `ipfs://${upload.IpfsHash}`;
   } catch (error) {
-    console.error("Error uploading image to IPFS:", error);
     throw new Error("Failed to upload image to IPFS");
   }
 }
@@ -70,7 +69,6 @@ export async function uploadMetadataToIPFS(
     const upload = (await (pinata as any).upload.json(metadata)) as PinataUploadResponse;
     return `ipfs://${upload.IpfsHash}`;
   } catch (error) {
-    console.error("Error uploading metadata to IPFS:", error);
     throw new Error("Failed to upload metadata to IPFS");
   }
 }
@@ -207,7 +205,6 @@ export async function uploadCourseSproutToIPFS(): Promise<string> {
     const upload = (await (pinata as any).upload.file(file)) as PinataUploadResponse;
     return `ipfs://${upload.IpfsHash}`;
   } catch (error) {
-    console.error("Error uploading sprout GIF to IPFS:", error);
     // Fallback to local URL if IPFS fails
     return "/nft-learning-sprout.gif";
   }

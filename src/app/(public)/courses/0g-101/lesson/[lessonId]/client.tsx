@@ -197,7 +197,7 @@ export default function ZeroGLessonClient({ lessonId }: { lessonId: string }) {
       if (res.ok) toast.success('Course completed! 🎉');
       try { router.refresh(); } catch (e) {}
     } catch (err) {
-      console.error('Finish course API error:', err);
+      // finish course API error — silently handled
     }
   };
 

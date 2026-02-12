@@ -26,7 +26,6 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error("NFTs fetch error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -76,7 +75,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("NFT creation error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

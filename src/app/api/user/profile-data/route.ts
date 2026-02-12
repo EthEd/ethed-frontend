@@ -114,7 +114,6 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error("Profile data fetch error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

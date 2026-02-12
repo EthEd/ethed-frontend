@@ -62,7 +62,6 @@ export default function DashboardPage() {
         setLoading(false);
       })
       .catch(err => {
-        console.error('Failed to fetch profile:', err);
         setLoading(false);
       });
   }, [session, status, router]);

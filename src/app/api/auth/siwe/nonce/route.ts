@@ -17,7 +17,6 @@ export async function GET(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Error generating nonce:", error);
     return NextResponse.json(
       { error: "Failed to generate nonce" },
       { status: 500 }

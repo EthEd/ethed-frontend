@@ -426,8 +426,8 @@ export default function Uploader({
               </style>
             </head>
             <body>
-              <div class="info">${file.file.name}</div>
-              <img src="${urlToUse}" alt="${file.file.name}" />
+              <div class="info">${file.file.name.replace(/[<>&"]/g, '')}</div>
+              <img src="${urlToUse}" alt="${file.file.name.replace(/["<>&]/g, '')}" />
             </body>
           </html>
         `);

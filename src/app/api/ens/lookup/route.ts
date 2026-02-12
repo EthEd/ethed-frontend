@@ -48,10 +48,10 @@ export async function GET(request: NextRequest) {
     if (address) {
       const cleanAddress = address.trim().toLowerCase();
 
-      // Validate simple Ethereum address format (lowercase hex)
+      // Validate Ethereum address format (case-insensitive hex, then lowercased)
       if (!/^0x[a-f0-9]{40}$/.test(cleanAddress)) {
         return NextResponse.json(
-          { error: "Invalid Ethereum address" },
+          { error: "Invalid Ethereum address. Expected a 42-character hex string starting with 0x." },
           { status: 400 }
         );
       }
@@ -91,7 +91,6 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
-    console.error("ENS lookup error:", error);
     return NextResponse.json(
       { error: "Failed to check ENS. Please try again." },
       { status: 500 }

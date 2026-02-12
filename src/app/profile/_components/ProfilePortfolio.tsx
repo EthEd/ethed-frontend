@@ -75,7 +75,6 @@ export default function ProfilePortfolio({ handle }: Props) {
           });
         }
       } catch (err) {
-        console.error("Failed to load profile:", err);
         setError("Failed to load profile");
       } finally {
         setLoading(false);

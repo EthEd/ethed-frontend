@@ -109,7 +109,6 @@ export default function ProfileClient() {
 
       setProfile(data.profile);
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
       toast.error('Failed to load profile');
     } finally {
       setLoading(false);

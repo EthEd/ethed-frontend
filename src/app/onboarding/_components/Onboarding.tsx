@@ -59,7 +59,7 @@ export default function Onboarding() {
           setStep(data.user.onboardingStep);
         }
       } catch (error) {
-        console.error("Failed to fetch onboarding step:", error);
+        // onboarding step fetch failed — default to step 0
       }
     };
     if (session) fetchStep();
@@ -74,7 +74,7 @@ export default function Onboarding() {
         body: JSON.stringify({ onboardingStep: newStep }),
       });
     } catch (error) {
-      console.error("Failed to persist onboarding step:", error);
+      // step persist failed — non-blocking
     }
   };
   const [ensName, setEnsName] = useState("");
@@ -150,7 +150,6 @@ export default function Onboarding() {
         const data = await response.json();
         setEnsAvailable(true);
       } catch (error) {
-        console.error("ENS availability check failed:", error);
         setEnsAvailable(null);
       } finally {
         setEnsChecking(false);
@@ -190,7 +189,6 @@ export default function Onboarding() {
       setTimeout(() => changeStep(2), 1500);
 
     } catch (error: any) {
-      console.error("ENS registration error:", error);
       toast.error(error.message || "Failed to register ENS. Please try again.");
     } finally {
       setIsLoading(false);
@@ -232,7 +230,6 @@ export default function Onboarding() {
       }, 4000);
 
     } catch (error: any) {
-      console.error("NFT minting error:", error);
       toast.error(error.message || "Failed to mint NFTs. Please try again.");
     } finally {
       setIsLoading(false);
@@ -257,7 +254,6 @@ export default function Onboarding() {
 
       return await response.json();
     } catch (error: any) {
-      console.error("Profile update failed:", error);
       throw error;
     }
   };

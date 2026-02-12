@@ -203,7 +203,6 @@ export default function AgentHover({
         description: `Minted ${data.totalMinted} NFT${data.totalMinted > 1 ? "s" : ""}`,
       });
     } catch (error) {
-      console.error("NFT minting error:", error);
       toast.error("Failed to mint NFT", {
         description: error instanceof Error ? error.message : "Please try again later",
       });
@@ -231,7 +230,6 @@ export default function AgentHover({
         description: data.description,
       });
     } catch (error) {
-      console.error("Learn error:", error);
       toast.error("Failed to load information", {
         description: error instanceof Error ? error.message : "Please try again later",
       });
@@ -260,7 +258,6 @@ export default function AgentHover({
       });
       // Could redirect to onboarding: window.location.href = "/onboarding";
     } catch (error) {
-      console.error("Start journey error:", error);
       toast.error("Failed to start journey", {
         description: error instanceof Error ? error.message : "Please try again later",
       });
@@ -291,7 +288,6 @@ export default function AgentHover({
         description: data.reply,
       });
     } catch (error) {
-      console.error("Ask question error:", error);
       toast.error("Failed to contact agent", {
         description: error instanceof Error ? error.message : "Please try again later",
       });

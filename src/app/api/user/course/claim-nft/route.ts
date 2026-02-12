@@ -86,7 +86,6 @@ export async function POST(request: NextRequest) {
       transaction: result.transaction
     });
   } catch (error) {
-    console.error("NFT claim error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Internal server error during NFT claim" },
       { status: 500 }

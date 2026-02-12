@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
       completed: userCourse?.completed || false
     });
   } catch (err) {
-    console.error('Fetch course progress error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -77,7 +76,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ message: 'Progress updated', userCourse });
   } catch (err) {
-    console.error('Course progress error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

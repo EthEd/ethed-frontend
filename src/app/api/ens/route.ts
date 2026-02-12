@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       const cleanAddress = (walletAddress as string).trim().toLowerCase();
       if (!/^0x[a-f0-9]{40}$/.test(cleanAddress)) {
         return NextResponse.json(
-          { error: "Invalid Ethereum address" },
+          { error: "Invalid Ethereum address. Expected a 42-character hex string starting with 0x." },
           { status: 400 }
         );
       }
@@ -54,7 +54,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("ENS registration error:", error);
     return NextResponse.json(
       { 
         error: error instanceof Error ? error.message : "Internal server error" 
@@ -93,7 +92,6 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("ENS availability check error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

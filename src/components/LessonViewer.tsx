@@ -815,12 +815,12 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
       if (res.ok) {
         toast.success('Course completed! 🎉');
       } else {
-        console.error('Finish course API error:', await res.text());
+        // API returned non-OK — will retry on next completion attempt
       }
       // refresh server data (profile etc.)
       try { router.refresh(); } catch (e) { /* ignore */ }
     } catch (err) {
-      console.error('Finish course API error:', err);
+      // finish course API error — silently handled
     }
   };
 

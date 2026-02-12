@@ -37,7 +37,6 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        console.error('Login error:', result.error);
         toast.error('Login failed: ' + result.error);
       } else if (result?.ok) {
         toast.success('Welcome to eth.ed!');
@@ -49,7 +48,6 @@ export default function LoginPage() {
         toast.error('Login failed. Please try again.');
       }
     } catch (error) {
-      console.error('Login exception:', error);
       toast.error('Login failed. Please try again.');
     } finally {
       setIsLoading(false);

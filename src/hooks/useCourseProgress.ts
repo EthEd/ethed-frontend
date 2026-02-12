@@ -33,7 +33,6 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
         const saved = localStorage.getItem(storageKey(courseSlug));
         if (saved) setCompletedModules(new Set(JSON.parse(saved)));
       } catch (e) {
-        console.error("Progress load error", e);
         setCompletedModules(new Set());
       } finally {
         setLoading(false);
@@ -94,7 +93,7 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
         });
       }
     } catch (err) {
-      console.error('useCourseProgress markModuleComplete error', err);
+      // sync error — progress saved locally, DB sync will retry
     }
   }, [courseSlug, totalModules]);
 
@@ -122,7 +121,7 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
         });
       }
     } catch (err) {
-      console.error('useCourseProgress markModuleIncomplete error', err);
+      // sync error — progress saved locally, DB sync will retry
     }
   }, [courseSlug, totalModules]);
 
@@ -144,7 +143,7 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
             })
         });
     } catch (err) {
-        console.error('Reset progress error', err);
+      // reset sync error — local state is already cleared
     }
   }, [courseSlug, totalModules]);
 

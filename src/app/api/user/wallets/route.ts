@@ -25,7 +25,6 @@ export async function GET() {
     return NextResponse.json({ wallets });
 
   } catch (error) {
-    console.error("Wallets fetch error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -55,21 +54,21 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Simple address validation - just check if it looks like an Ethereum address
+      // Validate and normalize Ethereum address (accept any case, store lowercase)
       if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
         return NextResponse.json(
-          { error: "Invalid address format" },
+          { error: "Invalid Ethereum address. Expected a 42-character hex string starting with 0x." },
           { status: 400 }
         );
       }
       
-      const checksummedAddress = address.toLowerCase();
+      const normalizedAddress = address.toLowerCase();
       
       // Check if wallet already exists for this user
       const existingWallet = await prisma.walletAddress.findFirst({
         where: {
           userId: session.user.id,
-          address: checksummedAddress,
+          address: normalizedAddress,
           chainId: chainId
         }
       });
@@ -89,7 +88,7 @@ export async function POST(request: NextRequest) {
       const wallet = await prisma.walletAddress.create({
         data: {
           userId: session.user.id,
-          address: checksummedAddress,
+          address: normalizedAddress,
           chainId: chainId,
           isPrimary: walletCount === 0, // First wallet becomes primary
           ensName: ensName || null,
@@ -110,7 +109,6 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
-    console.error("Wallet connect error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
