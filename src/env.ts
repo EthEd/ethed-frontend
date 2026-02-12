@@ -8,7 +8,7 @@ export const env = createEnv({
     OPENPRS_MONGODB_URI: z.string().optional(),
     OPENPRS_DATABASE: z.string().optional(),
 
-    NEXTAUTH_SECRET: z.string().min(1, "NEXTAUTH_SECRET is required"),
+    NEXTAUTH_SECRET: z.string().min(1).optional(),
     NEXTAUTH_URL: z.string().url().optional(),
 
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
