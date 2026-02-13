@@ -35,7 +35,7 @@ export default function WalletConnectionForm({
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [connectedWallets, setConnectedWallets] = useState<any[]>([]);
-  const { lookupByAddress, loading: ensLoading } = useENSLookup();
+  const { lookupByAddress, lookupByName, loading: ensLoading } = useENSLookup();
 
   const connectCurrentWallet = async () => {
     if (!window.ethereum) {
@@ -83,14 +83,25 @@ export default function WalletConnectionForm({
     }
 
     try {
-      // Simple address validation: accept hex addresses in any case and normalize to lowercase
       const candidate = address.trim();
-      if (!/^0x[a-fA-F0-9]{40}$/.test(candidate)) {
-        throw new Error("Invalid address format");
+
+      // Accept ENS names (e.g. vitalik.eth) by resolving them first
+      let resolvedAddress: string | null = null;
+
+      if (candidate.includes('.') || candidate.endsWith('.eth')) {
+        const ens = await lookupByName(candidate);
+        if (!ens?.address) throw new Error('ENS name not found');
+        resolvedAddress = ens.address;
+      } else {
+        // Accept hex addresses with or without 0x prefix
+        const with0x = candidate.startsWith('0x') ? candidate : `0x${candidate}`;
+        if (!/^0x[a-fA-F0-9]{40}$/.test(with0x)) {
+          throw new Error('Invalid address format');
+        }
+        resolvedAddress = with0x.toLowerCase();
       }
-      
-      const normalizedAddress = candidate.toLowerCase();
-      await handleWalletConnection(normalizedAddress);
+
+      await handleWalletConnection(resolvedAddress);
       setAddress("");
     } catch (error: any) {
       const msg = error?.message || "Invalid wallet address";

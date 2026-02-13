@@ -26,6 +26,34 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  async headers() {
+    if (process.env.NODE_ENV === 'production') return [];
+
+    const reportOnlyPolicy = [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      "connect-src 'self' ws: https:",
+      "font-src 'self' data:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "report-uri /api/csp-report"
+    ].join('; ');
+
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: reportOnlyPolicy,
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

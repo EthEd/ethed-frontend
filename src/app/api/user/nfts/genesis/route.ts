@@ -36,10 +36,13 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal server error during NFT minting";
+    if (message.includes('Pinata not configured')) {
+      return NextResponse.json({ error: message }, { status: 503 });
+    }
+
     return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : "Internal server error during NFT minting" 
-      },
+      { error: message },
       { status: 500 }
     );
   }

@@ -95,21 +95,17 @@ export const coursesWithPath: EnhancedCourse[] = [
       {
         id: 1,
         title: 'Foundation Module',
-        description: 'Understand Ethereum fundamentals',
-        estimatedTime: '30 min',
+        description: 'Understand Ethereum fundamentals and the EIP process',
+        estimatedTime: '2-3 hours',
         lessons: [
-          {
-            id: 1,
-            title: 'Ethereum in Plain Language',
-            type: 'reading',
-            duration: 15,
-            difficulty: 'Easy',
-            xpReward: 100,
-            hasQuiz: true,
-            estimatedTime: '15 min',
-            keyTakeaways: ['Ethereum is a global computer', 'Smart contracts enable programmable transactions', 'Decentralization removes single points of failure'],
-            resources: ['ethereum.org', 'ethereum whitepaper']
-          }
+          { id: 1, title: 'Ethereum in Plain Language', type: 'reading', duration: 15, difficulty: 'Easy', xpReward: 100, hasQuiz: true, estimatedTime: '15 min', keyTakeaways: ['Ethereum is a global computer', 'Smart contracts enable programmable transactions', 'Decentralization removes single points of failure'] },
+          { id: 2, title: 'What is an EIP?', type: 'reading', duration: 10, difficulty: 'Easy', xpReward: 80, hasQuiz: false, estimatedTime: '10 min', keyTakeaways: ['Purpose of EIPs', 'Proposal lifecycle', 'Who can author an EIP'] },
+          { id: 3, title: 'Types of EIPs', type: 'reading', duration: 12, difficulty: 'Easy', xpReward: 80, hasQuiz: false, estimatedTime: '12 min', keyTakeaways: ['Standards track vs informational vs meta', 'ERCs and interfaces'] },
+          { id: 4, title: 'EIP Lifecycle', type: 'reading', duration: 18, difficulty: 'Medium', xpReward: 120, hasQuiz: false, estimatedTime: '18 min', keyTakeaways: ['Draft → review → last call → final', 'Editor roles and community process'] },
+          { id: 5, title: 'Anatomy of an EIP', type: 'reading', duration: 20, difficulty: 'Medium', xpReward: 120, hasQuiz: false, estimatedTime: '20 min', keyTakeaways: ['Preamble, abstract, motivation, specification, rationale'] },
+          { id: 6, title: 'Famous EIP Case Studies', type: 'reading', duration: 25, difficulty: 'Medium', xpReward: 140, hasQuiz: false, estimatedTime: '25 min', keyTakeaways: ['ERC-20, EIP-1559, EIP-4844—what changed and why'] },
+          { id: 7, title: 'Reading EIPs Like a Pro', type: 'reading', duration: 15, difficulty: 'Easy', xpReward: 90, hasQuiz: false, estimatedTime: '15 min', keyTakeaways: ['How to skim, understand motivation, and evaluate specification'] },
+          { id: 8, title: 'Draft Your First EIP', type: 'interactive', duration: 45, difficulty: 'Hard', xpReward: 200, hasQuiz: false, estimatedTime: '45 min', keyTakeaways: ['Hands-on drafting, proposal builder, submission checklist'] }
         ]
       }
     ]

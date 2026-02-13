@@ -134,8 +134,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("NFT claim error:", error);
 
-    const message =
-      error instanceof Error ? error.message : "Internal server error";
+    const message = error instanceof Error ? error.message : "Internal server error";
+
+    if (message.includes('Pinata not configured')) {
+      return NextResponse.json({ error: message }, { status: 503 });
+    }
 
     return NextResponse.json(
       {

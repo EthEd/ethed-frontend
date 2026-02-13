@@ -18,7 +18,7 @@
    - Add email server settings for magic link authentication
 
 4. **Optional Pinata (IPFS uploads):**
-   - `PINATA_JWT`: JWT for Pinata SDK (used by upload flows and `pnpm pin:genesis`)
+   - `PINATA_JWT`: JWT for Pinata SDK (used by upload flows and `pnpm pin:genesis`) — **required for production NFT pinning**. If you don't provide it during development, the app will fall back to local assets and local metadata files under `public/local-metadata/` for testing.
 
 ## Database Setup
 
@@ -45,6 +45,19 @@
 3. **Access the application:**
    - Open http://localhost:3001
    - Use the demo login with any email/name for testing
+
+### Dev: CSP warnings (eval / SES / lockdown-install)
+
+- If you see a DevTools console warning about `unsafe-eval` or `lockdown-install.js`, it is most often caused by a browser extension injecting SES/lockdown scripts (not the app itself).
+- Quick checks:
+  - Open an Incognito window with extensions disabled — if the warning disappears, it was an extension.
+  - In DevTools -> Console expand the CSP message to see the **initiator / source**.
+- We do **not** relax CSP in development. Instead this project includes a *report-only* CSP in development that forwards violation reports to `/api/csp-report` so we can identify the initiator without weakening security.
+- If a CSP report shows `blocked-uri: "eval"` and `source-file` pointing at a `_next/static` chunk, common causes are browser extensions or devtools instrumentation (React/Redux/Performance tools) that inject code or use string evaluation.
+  - Quick checks: reproduce in Incognito (extensions off); open DevTools → Sources and search the `source-file` path; temporarily disable React/Redux DevTools.
+  - If the report shows a third‑party library from your bundle, open an issue or replace the library—do NOT add `unsafe-eval` to production CSP.
+- Do NOT enable `unsafe-eval` in production — instead remove the offending library or sandbox it.
+
 
 ## Authentication
 

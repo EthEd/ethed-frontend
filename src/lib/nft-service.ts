@@ -61,15 +61,60 @@ export async function uploadImageToIPFS(
 /**
  * Upload metadata JSON to IPFS
  */
+import { env } from '@/env';
+
 export async function uploadMetadataToIPFS(
   metadata: NFTMetadata
 ): Promise<string> {
+  // IPFS-first: prefer Pinata when configured. If missing, provide a dev fallback to a public local file.
+  if (!env.PINATA_JWT) {
+    if (env.NODE_ENV === 'production') {
+      throw new Error('Pinata not configured');
+    }
+
+    // Development fallback: write metadata JSON to public/local-metadata and return a local URL
+    try {
+      const outDir = `${process.cwd()}/public/local-metadata`;
+      const filename = `metadata-${Date.now()}.json`;
+      // ensure directory exists
+      // Use synchronous fs here because this runs on server side during dev workflow
+      // and simplifies error handling.
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const fs = require('fs');
+      if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+      fs.writeFileSync(`${outDir}/${filename}`, JSON.stringify(metadata, null, 2));
+      // log a dev-time warning
+      // eslint-disable-next-line no-console
+      console.warn(`[dev-fallback] Saved metadata to /local-metadata/${filename} (Pinata not configured)`);
+      return `/local-metadata/${filename}`;
+    } catch (err) {
+      throw new Error('Failed to write local metadata fallback');
+    }
+  }
+
   try {
     // Pinata SDK v2 upload method for JSON - cast to any for now due to SDK type mismatch
     const upload = (await (pinata as any).upload.json(metadata)) as PinataUploadResponse;
     return `ipfs://${upload.IpfsHash}`;
   } catch (error) {
-    throw new Error("Failed to upload metadata to IPFS");
+    // If Pinata fails in dev, fallback to local file; in prod propagate error
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const fs = require('fs');
+    if (env.NODE_ENV !== 'production') {
+      try {
+        const outDir = `${process.cwd()}/public/local-metadata`;
+        const filename = `metadata-${Date.now()}.json`;
+        if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+        fs.writeFileSync(`${outDir}/${filename}`, JSON.stringify(metadata, null, 2));
+        // eslint-disable-next-line no-console
+        console.warn(`[dev-fallback] Pinata upload failed, saved metadata to /local-metadata/${filename}`);
+        return `/local-metadata/${filename}`;
+      } catch (err) {
+        // fall through to throw the original error
+      }
+    }
+
+    throw new Error('Failed to upload metadata to IPFS');
   }
 }
 
@@ -260,7 +305,14 @@ export async function uploadCourseSproutToIPFS(): Promise<string> {
     // Read the sprout GIF from public folder
     const sproutPath = path.join(process.cwd(), "public", "nft-learning-sprout.gif");
     const imageBuffer = fs.readFileSync(sproutPath);
-    
+
+    // If Pinata not configured, return local asset path (dev fallback)
+    if (!env.PINATA_JWT) {
+      // eslint-disable-next-line no-console
+      console.warn('Pinata JWT not configured — using local GIF at /nft-learning-sprout.gif');
+      return '/nft-learning-sprout.gif';
+    }
+
     // Convert to File for Pinata
     const arrayBuffer = imageBuffer.buffer.slice(
       imageBuffer.byteOffset,
@@ -272,7 +324,9 @@ export async function uploadCourseSproutToIPFS(): Promise<string> {
     const upload = (await (pinata as any).upload.file(file)) as PinataUploadResponse;
     return `ipfs://${upload.IpfsHash}`;
   } catch (error) {
-    // Fallback to local URL if IPFS fails
+    // Fallback to local URL if IPFS fails in dev
+    // eslint-disable-next-line no-console
+    console.warn('uploadCourseSproutToIPFS failed, falling back to local GIF:', error?.message || error);
     return "/nft-learning-sprout.gif";
   }
 }
