@@ -29,6 +29,12 @@ describe('getBlockchainErrorInfo', () => {
     expect(info.title).toBe('Insufficient funds');
   });
 
+  it('renders an actionable message for malformed addresses', () => {
+    const info = getBlockchainErrorInfo(new Error('Invalid address'));
+    expect(info.title).toBe('Invalid address');
+    expect(info.description).toMatch(/ENS|Connect Current Wallet|0x/i);
+  });
+
   it('returns fallback for unknown errors', () => {
     const info = getBlockchainErrorInfo(undefined);
     expect(info.title).toBeDefined();

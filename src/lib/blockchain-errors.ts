@@ -58,7 +58,7 @@ export function getBlockchainErrorInfo(error: unknown): BlockchainErrorInfo {
       return {
         title: "Invalid address",
         description:
-          "The provided Ethereum address appears malformed. Check for typos, extra spaces, or incorrect capitalization. Please verify the address (copy/paste or use your wallet) and try again.",
+          "The address looks invalid — remove extra spaces or invisible characters, ensure it starts with `0x`, or use an ENS name (e.g. `vitalik.eth`). You can also click **Connect Current Wallet** to import the address from your wallet.",
       };
     }
 
