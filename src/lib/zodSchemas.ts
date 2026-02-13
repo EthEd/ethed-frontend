@@ -6,7 +6,16 @@ const urlRegex = /^https?:\/\/.+/;
 // Slug validation regex - only lowercase letters, numbers, and hyphens
 const slugRegex = /^[a-z0-9-]+$/;
 
-export const CourseCreateSchema = z.object({
+export const CourseCreateSchema = z.preprocess((val) => {
+  // Accept both client-side keys (`difficulty`, `imageUrl`) and normalize to schema keys (`level`, `fileKey`).
+  if (val && typeof val === "object") {
+    const copy = { ...(val as any) } as any;
+    if (copy.difficulty && !copy.level) copy.level = copy.difficulty;
+    if (copy.imageUrl && !copy.fileKey) copy.fileKey = copy.imageUrl;
+    return copy;
+  }
+  return val;
+}, z.object({
   title: z
     .string()
     .min(5, "Title must be at least 5 characters long")
@@ -102,7 +111,15 @@ export const CourseCreateSchema = z.object({
 });
 
 // Draft schema with more lenient validation
-export const CourseDraftSchema = z.object({
+export const CourseDraftSchema = z.preprocess((val) => {
+  if (val && typeof val === "object") {
+    const copy = { ...(val as any) } as any;
+    if (copy.difficulty && !copy.level) copy.level = copy.difficulty;
+    if (copy.imageUrl && !copy.fileKey) copy.fileKey = copy.imageUrl;
+    return copy;
+  }
+  return val;
+}, z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(100).trim(),
   description: z.string().optional().default(""),
   fileKey: z.string().optional().default(""),

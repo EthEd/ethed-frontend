@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     if (courseId) {
       const course = await prisma.course.findUnique({
         where: { id: courseId },
-        include: { _count: { select: { UserCourse: true } } },
+        include: { _count: { select: { users: true } } },
       });
       if (!course) {
         return NextResponse.json({ error: "Course not found" }, { status: 404 });
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     }
 
     const courses = await prisma.course.findMany({
-      include: { _count: { select: { UserCourse: true } } },
+      include: { _count: { select: { users: true } } },
       orderBy: { createdAt: "desc" },
     });
 
@@ -80,12 +80,12 @@ export async function POST(request: NextRequest) {
     const validation = CourseCreateSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: validation.error.errors },
+        { error: "Validation failed", details: validation.error.issues },
         { status: 400 }
       );
     }
 
-    const { title, description, difficulty, category, imageUrl } = validation.data;
+    const { title, description, level, category, fileKey } = validation.data;
     const slug = sanitizeSlug(body.slug || title);
 
     // Check if slug is unique
@@ -100,15 +100,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create course
+    // Create course (map `level` from schema to Prisma `level`)
     const course = await prisma.course.create({
       data: {
         title,
         slug,
         description,
-        difficulty: difficulty || "BEGINNER",
-        category: category || "BLOCKCHAIN",
-        imageUrl,
+        level: (level as any) || "BEGINNER",
+        price: (validation.data as any).price ?? undefined,
         status: "DRAFT",
       },
     });
@@ -138,7 +137,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { courseId, title, description, difficulty, category, imageUrl, status } = body;
+    const { courseId, title, description, level, category, fileKey, status } = body;
 
     if (!courseId) {
       return NextResponse.json({ error: "Course ID required" }, { status: 400 });
@@ -149,9 +148,7 @@ export async function PUT(request: NextRequest) {
       data: {
         ...(title && { title }),
         ...(description && { description }),
-        ...(difficulty && { difficulty }),
-        ...(category && { category }),
-        ...(imageUrl && { imageUrl }),
+        ...(level && { level }),
         ...(status && { status }),
       },
     });
