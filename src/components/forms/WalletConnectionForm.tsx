@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Wallet, ExternalLink, CheckCircle } from "lucide-react";
+import { Loader2, Wallet, ExternalLink, CheckCircle, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { useENSLookup } from "@/hooks/use-ens-lookup";
+import { getBlockchainErrorInfo } from "@/lib/blockchain-errors";
 
 // Ethereum provider type declaration
 declare global {
@@ -17,6 +18,34 @@ declare global {
       request: (args: { method: string; params?: any[] }) => Promise<any>;
     };
   }
+}
+
+/**
+ * Strip zero-width characters, smart quotes, non-ASCII whitespace, and
+ * leading/trailing spaces that mobile keyboards and copy-paste love to inject.
+ */
+function sanitizeAddress(raw: string): string {
+  return raw
+    // Remove zero-width chars (U+200B, U+200C, U+200D, U+FEFF, U+00AD, etc.)
+    .replace(/[\u200B-\u200D\uFEFF\u00AD\u2060\u180E]/g, "")
+    // Remove smart/curly quotes
+    .replace(/[\u2018\u2019\u201C\u201D]/g, "")
+    // Collapse any non-standard whitespace into nothing
+    .replace(/[\s\u00A0]+/g, " ")
+    .trim();
+}
+
+/** Detect mobile browser (iPhone / Android) */
+function isMobileBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
+
+/** Build a deep-link URL that opens the current page inside MetaMask's in-app browser */
+function metamaskDeepLink(): string {
+  if (typeof window === "undefined") return "https://metamask.io/download/";
+  const dappUrl = window.location.href.replace(/^https?:\/\//, "");
+  return `https://metamask.app.link/dapp/${dappUrl}`;
 }
 
 interface WalletConnectionFormProps {
@@ -37,8 +66,17 @@ export default function WalletConnectionForm({
   const [connectedWallets, setConnectedWallets] = useState<any[]>([]);
   const { lookupByAddress, lookupByName, loading: ensLoading } = useENSLookup();
 
+  const isMobile = useMemo(() => isMobileBrowser(), []);
+  const hasInjectedWallet = typeof window !== "undefined" && !!window.ethereum;
+
   const connectCurrentWallet = async () => {
+    // --- Mobile without injected provider ---
     if (!window.ethereum) {
+      if (isMobile) {
+        // Open in wallet's in-app browser via deep-link
+        window.location.href = metamaskDeepLink();
+        return;
+      }
       toast.error("No wallet found. Please install MetaMask or another Web3 wallet.");
       return;
     }
@@ -54,21 +92,18 @@ export default function WalletConnectionForm({
         throw new Error("No accounts found");
       }
 
-      // Simple address validation
-      if (!/^0x[a-fA-F0-9]{40}$/.test(accounts[0])) {
+      const rawAddr = sanitizeAddress(String(accounts[0]));
+      if (!/^0x[a-fA-F0-9]{40}$/.test(rawAddr)) {
         throw new Error("Invalid address format");
       }
 
-      const walletAddress = accounts[0].toLowerCase();
+      const walletAddress = rawAddr.toLowerCase();
       await handleWalletConnection(walletAddress);
 
     } catch (error: any) {
-      const errorMessage = error.code === 4001 
-        ? "Wallet connection was rejected" 
-        : error.message || "Failed to connect wallet";
-      
-      toast.error(errorMessage);
-      onError?.(errorMessage);
+      const info = getBlockchainErrorInfo(error);
+      toast.error(info.title, { description: info.description });
+      onError?.(info.description || info.title);
     } finally {
       setLoading(false);
     }
@@ -83,20 +118,20 @@ export default function WalletConnectionForm({
     }
 
     try {
-      const candidate = address.trim();
+      const candidate = sanitizeAddress(address);
 
       // Accept ENS names (e.g. vitalik.eth) by resolving them first
       let resolvedAddress: string | null = null;
 
       if (candidate.includes('.') || candidate.endsWith('.eth')) {
         const ens = await lookupByName(candidate);
-        if (!ens?.address) throw new Error('ENS name not found');
+        if (!ens?.address) throw new Error('Could not resolve that ENS name. Please double-check the spelling.');
         resolvedAddress = ens.address;
       } else {
         // Accept hex addresses with or without 0x prefix
         const with0x = candidate.startsWith('0x') ? candidate : `0x${candidate}`;
         if (!/^0x[a-fA-F0-9]{40}$/.test(with0x)) {
-          throw new Error('Invalid address format');
+          throw new Error('Invalid address');
         }
         resolvedAddress = with0x.toLowerCase();
       }
@@ -104,9 +139,9 @@ export default function WalletConnectionForm({
       await handleWalletConnection(resolvedAddress);
       setAddress("");
     } catch (error: any) {
-      const msg = error?.message || "Invalid wallet address";
-      toast.error(msg);
-      onError?.(msg);
+      const info = getBlockchainErrorInfo(error);
+      toast.error(info.title, { description: info.description });
+      onError?.(info.description || info.title);
     }
   };
 
@@ -173,6 +208,11 @@ export default function WalletConnectionForm({
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Connecting...
                 </>
+              ) : isMobile && !hasInjectedWallet ? (
+                <>
+                  <Smartphone className="h-4 w-4 mr-2" />
+                  Open in MetaMask
+                </>
               ) : (
                 <>
                   <Wallet className="h-4 w-4 mr-2" />
@@ -180,6 +220,12 @@ export default function WalletConnectionForm({
                 </>
               )}
             </Button>
+            {isMobile && !hasInjectedWallet && (
+              <p className="text-xs text-center text-muted-foreground">
+                This will open the page inside MetaMask&apos;s browser so it can detect your wallet.
+                You can also paste your address below.
+              </p>
+            )}
           </div>
 
           {/* Divider */}

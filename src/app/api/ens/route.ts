@@ -30,7 +30,12 @@ export async function POST(request: NextRequest) {
 
     // Validate provided wallet address if present
     if (walletAddress) {
-      const cleanAddress = (walletAddress as string).trim().toLowerCase();
+      const cleanAddress = String(walletAddress)
+        .replace(/[\u200B-\u200D\uFEFF\u00AD\u2060\u180E]/g, "")
+        .replace(/[\u2018\u2019\u201C\u201D]/g, "")
+        .replace(/[\s\u00A0]+/g, "")
+        .trim()
+        .toLowerCase();
       if (!/^0x[a-f0-9]{40}$/.test(cleanAddress)) {
         return NextResponse.json(
           { error: "Invalid Ethereum address. Expected a 42-character hex string starting with 0x." },

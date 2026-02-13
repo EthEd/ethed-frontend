@@ -46,7 +46,13 @@ export async function GET(request: NextRequest) {
 
     // Lookup by address
     if (address) {
-      const cleanAddress = address.trim().toLowerCase();
+      // Sanitize: strip zero-width characters, smart quotes, extra whitespace
+      const cleanAddress = address
+        .replace(/[\u200B-\u200D\uFEFF\u00AD\u2060\u180E]/g, "")
+        .replace(/[\u2018\u2019\u201C\u201D]/g, "")
+        .replace(/[\s\u00A0]+/g, "")
+        .trim()
+        .toLowerCase();
 
       // Validate Ethereum address format (case-insensitive hex, then lowercased)
       if (!/^0x[a-f0-9]{40}$/.test(cleanAddress)) {

@@ -44,9 +44,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { address, chainId = 1, ensName, ensAvatar } = body;
+    const { address: rawAddress, chainId = 1, ensName, ensAvatar } = body;
 
-    if (!address) {
+    if (!rawAddress) {
       return NextResponse.json(
         { error: "Address is required" },
         { status: 400 }
@@ -54,6 +54,13 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      // Sanitize: strip zero-width characters, smart quotes, extra whitespace
+      const address = String(rawAddress)
+        .replace(/[\u200B-\u200D\uFEFF\u00AD\u2060\u180E]/g, "")
+        .replace(/[\u2018\u2019\u201C\u201D]/g, "")
+        .replace(/[\s\u00A0]+/g, "")
+        .trim();
+
       // Validate and normalize Ethereum address (accept any case, store lowercase)
       if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
         return NextResponse.json(

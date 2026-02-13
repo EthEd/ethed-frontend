@@ -1,18 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { signIn } from "next-auth/react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Wallet } from "lucide-react";
+import { Wallet, Smartphone } from "lucide-react";
 import { SiweMessage } from "siwe";
 import { toast } from "sonner";
 import { AMOY_CHAIN_ID, getChainConfig } from "@/lib/contracts";
 import { getBlockchainErrorInfo } from "@/lib/blockchain-errors";
 import { ensureAmoyChain, getWalletChainId } from "@/lib/wallet-client";
 
+/**
+ * Strip zero-width characters, smart quotes, non-ASCII whitespace that
+ * mobile keyboards / copy-paste inject.
+ */
+function sanitizeAddress(raw: string): string {
+  return raw
+    .replace(/[\u200B-\u200D\uFEFF\u00AD\u2060\u180E]/g, "")
+    .replace(/[\u2018\u2019\u201C\u201D]/g, "")
+    .replace(/[\s\u00A0]+/g, " ")
+    .trim();
+}
+
+function isMobileBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
+
+function metamaskDeepLink(): string {
+  if (typeof window === "undefined") return "https://metamask.io/download/";
+  const dappUrl = window.location.href.replace(/^https?:\/\//, "");
+  return `https://metamask.app.link/dapp/${dappUrl}`;
+}
+
 export function SiweLoginButton() {
   const [isLoading, setIsLoading] = useState(false);
+  const isMobile = useMemo(() => isMobileBrowser(), []);
+  const hasInjectedWallet = typeof window !== "undefined" && !!window.ethereum;
 
   const handleSiweSignIn = async () => {
     try {
@@ -20,6 +45,11 @@ export function SiweLoginButton() {
 
       // Check if wallet is available
       if (!window.ethereum) {
+        if (isMobile) {
+          // Deep-link into MetaMask's in-app browser
+          window.location.href = metamaskDeepLink();
+          return;
+        }
         toast.error("Wallet not found", {
           description: "Please install a Web3 wallet like MetaMask.",
         });
@@ -38,7 +68,7 @@ export function SiweLoginButton() {
         return;
       }
 
-      const address = accounts[0];
+      const address = sanitizeAddress(String(accounts[0]));
 
       const currentChainId = await getWalletChainId();
       if (currentChainId !== AMOY_CHAIN_ID) {
@@ -122,10 +152,16 @@ export function SiweLoginButton() {
     >
       {isLoading ? (
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      ) : isMobile && !hasInjectedWallet ? (
+        <Smartphone className="mr-2 h-4 w-4" />
       ) : (
         <Wallet className="mr-2 h-4 w-4" />
       )}
-      {isLoading ? "Connecting..." : "Sign in with Ethereum"}
+      {isLoading
+        ? "Connecting..."
+        : isMobile && !hasInjectedWallet
+          ? "Open in MetaMask"
+          : "Sign in with Ethereum"}
     </Button>
   );
 }
