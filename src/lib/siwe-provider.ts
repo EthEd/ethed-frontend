@@ -63,6 +63,14 @@ export function SiweProvider() {
 
         const cookieHeader = (req as any)?.headers?.cookie as string | undefined;
         const nonceCookie = getCookieValue(cookieHeader, "siwe-nonce");
+
+        // Development-only diagnostic logs to help reproduce verification/nonce issues
+        if (process.env.NODE_ENV !== "production") {
+          // Avoid logging signatures or sensitive tokens; log only nonce/cookie/header presence and message fields.
+          // eslint-disable-next-line no-console
+          console.info("[siwe] incoming authorize — message.nonce=", siweMessage.nonce, "cookieHeader=", cookieHeader ? "<present>" : "<missing>", "nonceCookie=", nonceCookie ? "<present>" : "<missing>", "address=", address);
+        }
+
         if (!nonceCookie) {
           throw new Error("Missing SIWE nonce cookie");
         }
@@ -75,6 +83,7 @@ export function SiweProvider() {
           await siweMessage.verify({ signature: credentials.signature });
         } catch (verifyErr: any) {
           // Log server-side for debugging and return a clear message to client
+          // eslint-disable-next-line no-console
           console.error("SIWE verification failed:", verifyErr?.message ?? verifyErr);
           throw new Error("Signature verification failed — please ensure you signed the exact message in your wallet and try again.");
         }
