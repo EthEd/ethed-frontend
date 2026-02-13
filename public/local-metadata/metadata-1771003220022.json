@@ -1,0 +1,28 @@
+{
+  "name": "eth.ed Pioneer NFT",
+  "description": "Commemorates being an early eth.ed pioneer and completing the onboarding journey.",
+  "image": "ipfs://QmEthEdPioneer1",
+  "attributes": [
+    {
+      "trait_type": "Type",
+      "value": "Genesis Scholar"
+    },
+    {
+      "trait_type": "Edition",
+      "value": "Pioneer"
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Founder"
+    },
+    {
+      "trait_type": "Minted Date",
+      "value": "2026-02-13"
+    },
+    {
+      "trait_type": "ENS Name",
+      "value": "ayush1.ethed.eth"
+    }
+  ],
+  "external_url": "https://ethed.app"
+}

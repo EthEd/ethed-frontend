@@ -12,10 +12,10 @@ import { motion } from 'motion/react';
 const courseModules = [
   {
     id: 1,
-    title: 'Ethereum in Plain Language',
-    description: 'Understanding Ethereum as a global computer and the role of smart contracts',
-    duration: '15 min',
-    type: 'reading',
+    title: 'EIPs 101 — Intro (Video)',
+    description: 'Introductory course overview video',
+    duration: '10 min',
+    type: 'video',
     completed: false,
     content: '/EIPs101.md#1-ethereum-in-plain-language'
   },
@@ -81,6 +81,15 @@ const courseModules = [
     type: 'interactive',
     completed: false,
     content: '/EIPs101.md#9-drafting-a-first-eip-with-eipsinsights-proposal-builder'
+  },
+  {
+    id: 9,
+    title: 'Final Quiz — Mint NFT',
+    description: 'Complete a short quiz to mint your EIP Expert NFT',
+    duration: '10 min',
+    type: 'quiz',
+    completed: false,
+    content: '/EIPs101.md#10-final-quiz'
   }
 ];
 
