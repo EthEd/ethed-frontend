@@ -35,7 +35,7 @@ export function useClaimNFT() {
           });
         } else {
           toast.error('Failed to claim NFT', {
-            description: data.error || 'Please try again later'
+            description: typeof data.error === 'string' ? data.error : (data.error ? JSON.stringify(data.error) : 'Please try again later')
           });
         }
       }

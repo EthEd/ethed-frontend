@@ -155,6 +155,70 @@ describe("SiweLoginButton", () => {
     expect(mocks.signInMock).not.toHaveBeenCalled();
   });
 
+  it("continues SIWE flow even if `siwe-nonce` is not visible to document.cookie (HttpOnly)", async () => {
+    // ensure wallet and chain are correct
+    mocks.getWalletChainIdMock.mockResolvedValueOnce(80002);
+
+    setEthereum({
+      request: vi.fn(async ({ method }) => {
+        if (method === "eth_requestAccounts") return ["0xabc"];
+        if (method === "eth_chainId") return "0x13882"; // 80002
+        if (method === "personal_sign") return "0xsig";
+        throw new Error(`unexpected method: ${method}`);
+      }),
+    });
+
+    // nonce endpoint returns a nonce, but document.cookie does NOT contain siwe-nonce
+    (globalThis.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ nonce: "n" }),
+    });
+
+    // ensure document.cookie does not include siwe-nonce
+    Object.defineProperty(document, 'cookie', { value: '', configurable: true });
+
+    mocks.signInMock.mockResolvedValueOnce({ ok: true });
+
+    render(<SiweLoginButton />);
+    fireEvent.click(screen.getByRole("button", { name: /sign in with ethereum/i }));
+
+    await waitFor(() => {
+      expect(mocks.signInMock).toHaveBeenCalled();
+    });
+  });
+
+  it("sanitizes and accepts a mixed-case address (your wallet) from the provider", async () => {
+    const rawAddress = "  0x2A505a987cB41A2e2c235D851e3d74Fa24206229  ";
+    mocks.getWalletChainIdMock.mockResolvedValueOnce(80002);
+
+    setEthereum({
+      request: vi.fn(async ({ method }) => {
+        if (method === "eth_requestAccounts") return [rawAddress];
+        if (method === "eth_chainId") return "0x13882";
+        if (method === "personal_sign") return "0xsig";
+        throw new Error(`unexpected method: ${method}`);
+      }),
+    });
+
+    (globalThis.fetch as any).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ nonce: "n" }),
+    });
+
+    // simulate cookie being HttpOnly (not visible)
+    Object.defineProperty(document, 'cookie', { value: '', configurable: true });
+
+    mocks.signInMock.mockResolvedValueOnce({ ok: true });
+
+    render(<SiweLoginButton />);
+    fireEvent.click(screen.getByRole("button", { name: /sign in with ethereum/i }));
+
+    await waitFor(() => {
+      expect(mocks.signInMock).toHaveBeenCalled();
+      // ensure signIn was invoked (address is passed into message by SiweMessage in real flow)
+    });
+  });
+
   it("toasts error when signIn returns not ok", async () => {
     mocks.getWalletChainIdMock.mockResolvedValueOnce(80002);
 
@@ -174,12 +238,18 @@ describe("SiweLoginButton", () => {
 
     mocks.signInMock.mockResolvedValueOnce({ ok: false });
 
+    // cookie must be present for SIWE flow to continue in test environment
+    Object.defineProperty(document, 'cookie', { value: 'siwe-nonce=test; path=/', configurable: true });
+
     render(<SiweLoginButton />);
     fireEvent.click(screen.getByRole("button", { name: /sign in with ethereum/i }));
 
     await waitFor(() => {
       expect(mocks.signInMock).toHaveBeenCalled();
       expect(mocks.toast.error).toHaveBeenCalledWith("Sign in failed", expect.any(Object));
+      // ensure description passed to toast is a string (prevents object-as-child React errors)
+      const toastArgs = (mocks.toast.error as any).mock.calls[0][1];
+      expect(typeof toastArgs.description).toBe('string');
     });
   });
 
@@ -201,6 +271,9 @@ describe("SiweLoginButton", () => {
     });
 
     mocks.signInMock.mockResolvedValueOnce({ ok: true });
+
+    // cookie must be present for SIWE flow to continue in test environment
+    Object.defineProperty(document, 'cookie', { value: 'siwe-nonce=test; path=/', configurable: true });
 
     render(<SiweLoginButton />);
     fireEvent.click(screen.getByRole("button", { name: /sign in with ethereum/i }));

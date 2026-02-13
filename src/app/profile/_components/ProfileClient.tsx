@@ -103,7 +103,8 @@ export default function ProfileClient() {
           router.push('/login');
           return;
         }
-        toast.error(data.error || 'Failed to load profile');
+        const errText = typeof data.error === 'string' ? data.error : (data.error ? JSON.stringify(data.error) : null);
+        toast.error(errText || 'Failed to load profile');
         return;
       }
 

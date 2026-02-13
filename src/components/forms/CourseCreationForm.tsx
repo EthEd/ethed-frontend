@@ -106,7 +106,7 @@ export default function CourseCreationForm({
       const result = await response.json();
 
       if (!response.ok) {
-        toast.error(result.error || "Failed to save course");
+        toast.error(typeof result.error === 'string' ? result.error : (result.error ? JSON.stringify(result.error) : 'Failed to save course'));
         return;
       }
 

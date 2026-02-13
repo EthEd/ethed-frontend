@@ -95,12 +95,16 @@ export function SiweLoginButton() {
         return;
       }
 
-      // Verify the SIWE nonce cookie was set by the server (helps debug cookie/SameSite issues)
+      // NOTE: server sets `siwe-nonce` as an HttpOnly cookie — it will not be visible to `document.cookie`.
+      // Do not block the SIWE flow based on a client-side cookie check (it was causing false negatives).
       try {
         const hasCookie = typeof document !== 'undefined' && document.cookie.includes('siwe-nonce=');
         if (!hasCookie) {
-          toast.error('Cookies appear to be blocked — SIWE nonce cookie was not set. Open the site in your wallet browser or enable cookies and try again.');
-          return;
+          // Non-blocking diagnostic for developers; proceed regardless because the server will
+          // verify the nonce from the HttpOnly cookie set by `/api/auth/siwe/nonce`.
+          // (Avoid showing a toast here to prevent confusing end users.)
+          // eslint-disable-next-line no-console
+          console.warn('siwe-login: `siwe-nonce` not visible to document.cookie (expected for HttpOnly). Proceeding.');
         }
       } catch (e) {
         // Ignore cookie-check errors in restrictive environments
@@ -139,8 +143,9 @@ export function SiweLoginButton() {
       });
 
       if (!result?.ok) {
-        // NextAuth returns an `error` string when authorize() fails — surface it to the user
-        const errMsg = (result as any)?.error || "Sign in failed. Please try again.";
+        // NextAuth returns an `error` (string or object) when authorize() fails — surface a safe string to the user
+        const rawErr = (result as any)?.error;
+        const errMsg = typeof rawErr === 'string' ? rawErr : (rawErr ? JSON.stringify(rawErr) : "Sign in failed. Please try again.");
         toast.error("Sign in failed", { description: errMsg });
         return;
       }

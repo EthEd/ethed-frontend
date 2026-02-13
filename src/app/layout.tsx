@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import AgentHover from "@/components/AgentHover";
 import GlobalGrid from "@/components/GlobalGrid";
 import NextAuthSessionProvider from "@/components/providers/SessionProvider";
+import DevChildrenGuard from "@/components/DevChildrenGuard";
 import Navbar from "./(public)/_components/navbar";
 
 const geistSans = Geist({
@@ -42,7 +43,8 @@ export default function RootLayout({
           <NextAuthSessionProvider>
           <GlobalGrid enabled={true} adaptiveGlow={true} />
           <Navbar/>
-          {children}
+          {/* Dev-only children guard: throws (with stack) if a non-primitive React child is rendered */}
+          <DevChildrenGuard>{children}</DevChildrenGuard>
           <Toaster />
           {/* <AgentHover
             posterSrc="/pause.png"

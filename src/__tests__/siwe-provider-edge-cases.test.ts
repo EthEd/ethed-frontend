@@ -126,4 +126,31 @@ describe("SiweProvider authorize edge cases", () => {
     expect(mocks.prismaMock.user.create).toHaveBeenCalled();
     expect(user.id).toBe("u1");
   });
+
+  it("accepts the specific wallet address 0x2A505a...6229", async () => {
+    // ensure provider accepts mixed-case address and proceeds with user creation
+    const testAddress = "0x2A505a987cB41A2e2c235D851e3d74Fa24206229";
+    mocks.verifyMock.mockResolvedValueOnce({});
+    mocks.prismaMock.user.findFirst.mockResolvedValueOnce(null);
+    mocks.prismaMock.user.create.mockResolvedValueOnce({
+      id: "u2",
+      email: `${testAddress}@ethereum.local`,
+      name: `${testAddress.slice(0, 6)}...${testAddress.slice(-4)}`,
+      image: null,
+    });
+
+    const authorize = providerAuthorize();
+
+    const user = await authorize(
+      {
+        message: JSON.stringify({ address: testAddress, chainId: 80002, nonce: "expected" }),
+        signature: "0xsignature",
+      },
+      { headers: { cookie: "siwe-nonce=expected" } }
+    );
+
+    expect(mocks.verifyMock).toHaveBeenCalledWith("0xsignature");
+    expect(mocks.prismaMock.user.create).toHaveBeenCalled();
+    expect(user.id).toBe("u2");
+  });
 });
