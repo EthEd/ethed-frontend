@@ -93,11 +93,31 @@ export default function WalletConnectionForm({
       }
 
       const rawAddr = sanitizeAddress(String(accounts[0]));
-      if (!/^0x[a-fA-F0-9]{40}$/.test(rawAddr)) {
+
+      // Dev-only diagnostic to help capture provider anomalies (invisible chars, formatting)
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console
+        console.debug("[wallet-connect] provider account raw:", JSON.stringify(accounts[0]));
+        // eslint-disable-next-line no-console
+        console.debug("[wallet-connect] sanitized:", JSON.stringify(rawAddr));
+      }
+
+      // Primary validation: expect a standard 0x-prefixed 40-hex char address
+      let normalized = rawAddr;
+
+      // If sanitized string doesn't match, attempt an aggressive normalization that strips
+      // any non-hex characters (handles stray unicode or spacing the provider may include).
+      if (!/^0x[a-fA-F0-9]{40}$/.test(normalized)) {
+        const has0x = normalized.toLowerCase().startsWith("0x");
+        const hexOnly = normalized.replace(/[^a-fA-F0-9]/g, "");
+        normalized = `${has0x ? "0x" : "0x"}${hexOnly}`;
+      }
+
+      if (!/^0x[a-fA-F0-9]{40}$/.test(normalized)) {
         throw new Error("Invalid address format");
       }
 
-      const walletAddress = rawAddr.toLowerCase();
+      const walletAddress = normalized.toLowerCase();
       await handleWalletConnection(walletAddress);
 
     } catch (error: any) {
