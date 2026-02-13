@@ -95,6 +95,17 @@ export function SiweLoginButton() {
         return;
       }
 
+      // Verify the SIWE nonce cookie was set by the server (helps debug cookie/SameSite issues)
+      try {
+        const hasCookie = typeof document !== 'undefined' && document.cookie.includes('siwe-nonce=');
+        if (!hasCookie) {
+          toast.error('Cookies appear to be blocked — SIWE nonce cookie was not set. Open the site in your wallet browser or enable cookies and try again.');
+          return;
+        }
+      } catch (e) {
+        // Ignore cookie-check errors in restrictive environments
+      }
+
       // Get chain ID
       const chainId = await window.ethereum.request({
         method: "eth_chainId",
@@ -119,18 +130,24 @@ export function SiweLoginButton() {
         params: [messageToSign, address],
       });
 
-      // Sign in with the signature
+      // Sign in with the signature (do not redirect so we can show server error messages)
       const result = await signIn("siwe", {
         message: messageToSign,
         signature: signature,
-        redirect: true,
+        redirect: false,
         callbackUrl: "/dashboard",
       });
 
       if (!result?.ok) {
-        toast.error("Sign in failed", {
-          description: "Please try again.",
-        });
+        // NextAuth returns an `error` string when authorize() fails — surface it to the user
+        const errMsg = (result as any)?.error || "Sign in failed. Please try again.";
+        toast.error("Sign in failed", { description: errMsg });
+        return;
+      }
+
+      // Redirect on success
+      if (result.url) {
+        window.location.href = result.url;
       }
     } catch (error) {
       const info = getBlockchainErrorInfo(error);

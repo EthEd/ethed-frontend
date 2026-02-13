@@ -134,15 +134,24 @@ export async function saveENSToDatabase(params: {
     });
   } else {
     // Create new wallet address entry
-    return await prisma.walletAddress.create({
-      data: {
-        userId,
-        address: address || "0x0000000000000000000000000000000000000000",
-        chainId: AMOY_CHAIN_ID,
-        ensName,
-        isPrimary: true,
-      },
-    });
+    try {
+      return await prisma.walletAddress.create({
+        data: {
+          userId,
+          address: address || "0x0000000000000000000000000000000000000000",
+          chainId: AMOY_CHAIN_ID,
+          ensName,
+          isPrimary: true,
+        },
+      });
+    } catch (err: any) {
+      // Ignore unique constraint races and return the existing record instead
+      if (err?.code === 'P2002') {
+        const existing = await prisma.walletAddress.findFirst({ where: { userId, ensName } });
+        if (existing) return existing;
+      }
+      throw err;
+    }
   }
 }
 

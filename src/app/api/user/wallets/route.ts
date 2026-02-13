@@ -92,21 +92,42 @@ export async function POST(request: NextRequest) {
         where: { userId: session.user.id }
       });
 
-      const wallet = await prisma.walletAddress.create({
-        data: {
-          userId: session.user.id,
-          address: normalizedAddress,
-          chainId: chainId,
-          isPrimary: walletCount === 0, // First wallet becomes primary
-          ensName: ensName || null,
-          ensAvatar: ensAvatar || null
-        }
-      });
+      try {
+        const wallet = await prisma.walletAddress.create({
+          data: {
+            userId: session.user.id,
+            address: normalizedAddress,
+            chainId: chainId,
+            isPrimary: walletCount === 0, // First wallet becomes primary
+            ensName: ensName || null,
+            ensAvatar: ensAvatar || null
+          }
+        });
 
-      return NextResponse.json({
-        message: "Wallet connected successfully",
-        wallet
-      });
+        return NextResponse.json({
+          message: "Wallet connected successfully",
+          wallet
+        });
+      } catch (err: any) {
+        // Handle unique-constraint race: wallet may have been created concurrently
+        if (err?.code === 'P2002') {
+          const existing = await prisma.walletAddress.findFirst({
+            where: { address: normalizedAddress, chainId }
+          });
+          if (existing) {
+            return NextResponse.json(
+              { error: "Wallet already connected" },
+              { status: 409 }
+            );
+          }
+        }
+
+        // Unexpected error
+        return NextResponse.json(
+          { error: "Failed to connect wallet" },
+          { status: 500 }
+        );
+      }
 
     } catch (error) {
       return NextResponse.json(

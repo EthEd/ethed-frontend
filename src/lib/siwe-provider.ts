@@ -71,9 +71,13 @@ export function SiweProvider() {
           throw new Error("Invalid SIWE nonce");
         }
 
-        await siweMessage.verify({
-          signature: credentials.signature,
-        });
+        try {
+          await siweMessage.verify({ signature: credentials.signature });
+        } catch (verifyErr: any) {
+          // Log server-side for debugging and return a clear message to client
+          console.error("SIWE verification failed:", verifyErr?.message ?? verifyErr);
+          throw new Error("Signature verification failed — please ensure you signed the exact message in your wallet and try again.");
+        }
 
         // result is a SiweResponse, check if it has a success flag or just throw on error
         // If verify doesn't throw, it's valid
@@ -120,14 +124,23 @@ export function SiweProvider() {
               where: { userId: user.id }
             });
 
-            await prisma.walletAddress.create({
-              data: {
-                userId: user.id,
-                address,
-                chainId,
-                isPrimary: walletCount === 0,
+            try {
+              await prisma.walletAddress.create({
+                data: {
+                  userId: user.id,
+                  address,
+                  chainId,
+                  isPrimary: walletCount === 0,
+                }
+              });
+            } catch (err: any) {
+              // If another concurrent request created the same wallet, ignore the unique constraint error
+              if (err?.code === 'P2002') {
+                // wallet already exists — proceed
+              } else {
+                throw err;
               }
-            });
+            }
           }
         }
 

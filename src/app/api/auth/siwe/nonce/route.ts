@@ -15,6 +15,9 @@ export async function GET(req: NextRequest) {
       path: "/",
     });
 
+    // Log for diagnostics (helps debug missing-cookie/SameSite issues)
+    console.info('[siwe/nonce] nonce generated and cookie set');
+
     return response;
   } catch (error) {
     return NextResponse.json(
