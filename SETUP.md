@@ -46,6 +46,17 @@
    - Open http://localhost:3001
    - Use the demo login with any email/name for testing
 
+### Vercel / CI troubleshooting
+
+If `pnpm install` or the Vercel build fails with registry errors such as `ERR_INVALID_THIS` or `Value of "this" must be of type URLSearchParams`, this is usually an environment mismatch (Node / pnpm) or transient registry problem. Recommended fixes:
+
+- Ensure Vercel is using Node 18+ (set **Node Version** to 18.x or 20.x in Project Settings). The project `engines.node` requires Node >= 18.
+- Ensure the project uses `pnpm` as the package manager (Vercel detects `packageManager` in package.json). We set `packageManager: pnpm@8.8.0` to pin a compatible pnpm version.
+- Clear Vercel build cache and redeploy (Dashboard → Redeploy → Clear cache).
+- If errors persist, try switching the package registry or retry later (sometimes the npm registry has transient errors).
+
+If you want, I can add a CI check that validates Node/pnpm versions during PRs to catch this earlier.
+
 ### Dev: CSP warnings (eval / SES / lockdown-install)
 
 - If you see a DevTools console warning about `unsafe-eval` or `lockdown-install.js`, it is most often caused by a browser extension injecting SES/lockdown scripts (not the app itself).
