@@ -2,6 +2,10 @@
   "name": "ethed-frontend",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@8.8.0",
+  "engines": {
+    "node": ">=18"
+  }
   "scripts": {
     "dev": "next dev",
     "build": "next build",
