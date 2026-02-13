@@ -1,0 +1,54 @@
+name: CI — Verify Environment & Lockfile
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-node-pnpm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable Corepack + activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@8.8.0 --activate
+
+      - name: Print versions
+        run: |
+          echo "node: $(node -v)"
+          echo "npm:  $(npm -v)"
+          echo "pnpm: $(pnpm -v)"
+
+      - name: Verify packageManager matches pnpm
+        run: |
+          pm=$(node -e "console.log(require('./package.json').packageManager || '')")
+          if [ -z "$pm" ]; then
+            echo "packageManager not set in package.json"; exit 1;
+          fi
+          echo "packageManager in package.json: $pm"
+          case "$pm" in
+            pnpm@*) expected=${pm#pnpm@};;
+            *) echo "packageManager is not pnpm@..."; exit 1;;
+          esac
+          actual=$(pnpm -v)
+          if [ "$actual" != "$expected" ]; then
+            echo "pnpm version mismatch: expected $expected but got $actual"; exit 1;
+          fi
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || '' }}
+
+      - name: Success notice
+        run: echo "Environment validated — Node and pnpm versions match, lockfile is fresh."
