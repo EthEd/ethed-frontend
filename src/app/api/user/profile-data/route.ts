@@ -106,6 +106,7 @@ export async function GET() {
         role: user.role,
         createdAt: user.createdAt,
         ensName: user.wallets.find(w => w.ensName)?.ensName || null,
+        ensAvatar: user.wallets.find(w => w.ensAvatar)?.ensAvatar || null,
         walletAddress: user.wallets[0]?.address || null,
         stats,
         courses: coursesWithDetails,

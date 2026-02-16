@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           available: true,
           ensName,
+          ensAvatar: null,
           message: "This ENS name is available!"
         });
       }
@@ -39,6 +40,7 @@ export async function GET(request: NextRequest) {
         available: false,
         ensName,
         address: wallet.address,
+        ensAvatar: wallet.ensAvatar || null,
         user: wallet.user,
         message: "This ENS name is already registered"
       });
@@ -80,6 +82,7 @@ export async function GET(request: NextRequest) {
       if (!wallet?.ensName) {
         return NextResponse.json({
           ensName: null,
+          ensAvatar: null,
           address: cleanAddress,
           user: null
         });
@@ -87,6 +90,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         ensName: wallet.ensName,
+        ensAvatar: wallet.ensAvatar || null,
         address: cleanAddress,
         user: wallet.user
       });

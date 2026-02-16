@@ -6,10 +6,41 @@
 import { prisma } from "@/lib/prisma-client";
 import { AMOY_CHAIN_ID } from "./contracts";
 
+/**
+ * Best-effort ENS avatar resolver.
+ * Uses the ENS metadata avatar endpoint as a fallback; returns a resolvable URL or null.
+ */
+async function resolveEnsAvatar(ensName: string): Promise<string | null> {
+  try {
+    if (!ensName) return null;
+    const name = ensName.trim();
+    // ENS metadata avatar proxy (best-effort — works for many mainnet names)
+    const url = `https://metadata.ens.domains/mainnet/avatar/${encodeURIComponent(name)}`;
+    const res = await fetch(url, { method: 'GET' });
+    if (!res.ok) return null;
+
+    // If the endpoint redirects to an image or IPFS gateway, `res.url` will contain it
+    if (res.url && res.url !== url) return res.url;
+
+    // Otherwise attempt to parse JSON body for `image` or `avatar` fields
+    const text = await res.text();
+    try {
+      const json = JSON.parse(text || '{}');
+      return json.image || json.avatar || null;
+    } catch {
+      // Not JSON — cannot determine avatar
+      return null;
+    }
+  } catch (err) {
+    return null;
+  }
+}
+
 export interface ENSRegistrationParams {
   userId: string;
   subdomain: string;
   walletAddress?: string;
+  rootDomain?: string; // e.g. 'ethed.eth' or 'ayushetty.eth'
 }
 
 /**
@@ -71,13 +102,14 @@ export function validateSubdomain(subdomain: string): {
 /**
  * Check if ENS subdomain is available (in database)
  */
-export async function checkAvailability(subdomain: string): Promise<boolean> {
+export async function checkAvailability(subdomain: string, rootDomain = 'ethed.eth'): Promise<boolean> {
   const cleaned = subdomain.trim().toLowerCase();
+  const fullName = `${cleaned}.${rootDomain}`;
   
   // Check if already registered in database
   const existing = await prisma.walletAddress.findFirst({
     where: {
-      ensName: `${cleaned}.ethed.eth`,
+      ensName: fullName,
     },
   });
 
@@ -159,19 +191,19 @@ export async function saveENSToDatabase(params: {
  * Full ENS registration pipeline
  */
 export async function registerENS(params: ENSRegistrationParams) {
-  const { userId, subdomain, walletAddress } = params;
+  const { userId, subdomain, walletAddress, rootDomain = 'ethed.eth' } = params;
 
-  // Validate subdomain
+  // Validate subdomain label
   const validation = validateSubdomain(subdomain);
   if (!validation.valid) {
     throw new Error(validation.error);
   }
 
   const cleaned = subdomain.trim().toLowerCase();
-  const ensName = `${cleaned}.ethed.eth`;
+  const ensName = `${cleaned}.${rootDomain}`;
 
-  // Check availability
-  const available = await checkAvailability(cleaned);
+  // Check availability (pass the requested root domain)
+  const available = await checkAvailability(cleaned, rootDomain);
   if (!available) {
     throw new Error("This ENS name is already registered");
   }
@@ -199,6 +231,23 @@ export async function registerENS(params: ENSRegistrationParams) {
       where: { id: walletRecord.id },
       data: { isPrimary: true }
     });
+  }
+
+  // Best-effort: resolve ENS avatar (non-blocking but update DB if found)
+  try {
+    const avatar = await resolveEnsAvatar(ensName);
+    if (avatar) {
+      await prisma.walletAddress.update({
+        where: { id: walletRecord.id },
+        data: { ensAvatar: avatar }
+      });
+      // Reflect the avatar in the returned wallet object
+      (walletRecord as any).ensAvatar = avatar;
+    }
+  } catch (err) {
+    // Non-fatal — avatar resolution should not block registration
+    // eslint-disable-next-line no-console
+    console.debug('[ens] avatar resolution failed', err?.message ?? err);
   }
 
   return {

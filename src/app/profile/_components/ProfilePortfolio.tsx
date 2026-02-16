@@ -65,13 +65,16 @@ export default function ProfilePortfolio({ handle }: Props) {
         const profileData = await profileResponse.json();
 
         if (profileData.user) {
+          const dbUser = profileData.user;
+          const avatarFromEns = (data as any)?.ensAvatar || dbUser?.wallets?.find((w: any) => w.ensAvatar)?.ensAvatar || null;
+
           setProfile({
-            ...profileData.user,
-            ensName: data.ensName,
-            displayName: data.user?.name || handle,
-            avatar: data.user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${handle}`,
+            ...dbUser,
+            ensName: data.ensName || dbUser?.wallets?.find((w: any) => w.ensName)?.ensName || null,
+            displayName: dbUser?.name || handle,
+            avatar: avatarFromEns || dbUser?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${handle}`,
             bio: `Web3 learner on eth.ed`,
-            verified: !!data.ensName,
+            verified: !!(data.ensName || dbUser?.wallets?.find((w: any) => w.ensName)),
           });
         }
       } catch (err) {
@@ -249,18 +252,20 @@ export default function ProfilePortfolio({ handle }: Props) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {mockNFTs.slice(0, 3).map((nft) => (
+                  {(profile?.nfts || []).slice(0, 3).map((nft: any) => (
                     <div key={nft.id} className="flex items-center gap-4 p-3 rounded-xl bg-slate-950/40 border border-white/5 group hover:border-cyan-400/20 transition-all duration-300">
-                      <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 group-hover:scale-110 transition-all duration-300">
-                        <Award className="w-6 h-6 text-cyan-400" />
+                      <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 group-hover:scale-110 transition-all duration-300 overflow-hidden">
+                        {nft.image ? (
+                          <img src={nft.image} alt={nft.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Award className="w-6 h-6 text-cyan-400" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-white text-sm truncate">{nft.name}</div>
-                        <div className="text-xs text-slate-500">{nft.earned}</div>
+                        <div className="text-xs text-slate-500">{nft.createdAt ? new Date(nft.createdAt).toLocaleDateString() : ''}</div>
                       </div>
-                      <Badge variant="outline" className={rarityColors[nft.rarity as keyof typeof rarityColors]}>
-                        {nft.rarity}
-                      </Badge>
+                      <Badge variant="outline" className="text-slate-300 border-slate-400/30">NFT</Badge>
                     </div>
                   ))}
                 </CardContent>
@@ -324,22 +329,24 @@ export default function ProfilePortfolio({ handle }: Props) {
               transition={{ duration: 0.5 }}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {mockNFTs.map((nft) => (
+              {(profile?.nfts || []).map((nft: any) => (
                 <Card key={nft.id} className="bg-slate-800/40 backdrop-blur-xl border border-white/10 hover:border-emerald-400/30 transition-colors group">
                   <CardContent className="p-4">
-                    <div className="aspect-square rounded-lg bg-gradient-to-br from-emerald-400/20 via-cyan-400/20 to-purple-400/20 mb-4 flex items-center justify-center group-hover:from-emerald-400/30 group-hover:via-cyan-400/30 group-hover:to-purple-400/30 transition-colors">
-                      <Award className="w-12 h-12 text-emerald-400" />
+                    <div className="aspect-square rounded-lg bg-gradient-to-br from-emerald-400/20 via-cyan-400/20 to-purple-400/20 mb-4 flex items-center justify-center group-hover:from-emerald-400/30 group-hover:via-cyan-400/30 group-hover:to-purple-400/30 transition-colors overflow-hidden">
+                      {nft.image ? (
+                        <img src={nft.image} alt={nft.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Award className="w-12 h-12 text-emerald-400" />
+                      )}
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-white truncate">{nft.name}</h3>
-                        <Badge variant="outline" className={rarityColors[nft.rarity as keyof typeof rarityColors]}>
-                          {nft.rarity}
-                        </Badge>
+                        <Badge variant="outline" className="text-slate-300 border-slate-400/30">NFT</Badge>
                       </div>
-                      <p className="text-sm text-slate-400 line-clamp-2">{nft.description}</p>
+                      <p className="text-sm text-slate-400 line-clamp-2">{nft.description || (nft.metadata?.description ?? '')}</p>
                       <div className="flex items-center justify-between text-xs text-slate-500">
-                        <span>Earned: {nft.earned}</span>
+                        <span>Minted: {nft.createdAt ? new Date(nft.createdAt).toLocaleDateString() : ''}</span>
                         <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                           <ExternalLink className="w-3 h-3" />
                         </Button>

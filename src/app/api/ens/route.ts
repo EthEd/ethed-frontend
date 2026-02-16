@@ -15,18 +15,39 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { subdomain, walletAddress } = body;
+    let { subdomain, walletAddress } = body;
 
-    // Validate subdomain format
-    const validation = validateSubdomain(subdomain);
-    if (!validation.valid) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 400 }
-      );
+    if (!subdomain || typeof subdomain !== 'string') {
+      return NextResponse.json({ error: 'Missing subdomain parameter' }, { status: 400 });
     }
 
-    const cleanSubdomain = subdomain.trim().toLowerCase();
+    // Accept either a label ("alice") or a full name ("alice.ayushetty.eth")
+    const input = subdomain.trim().toLowerCase();
+    let label = input;
+    let rootDomain = 'ethed.eth';
+
+    if (input.includes('.')) {
+      // If user passed a full name, extract label and root
+      const parts = input.split('.');
+      label = parts[0];
+      const suffix = parts.slice(1).join('.');
+      if (suffix === 'ayushetty.eth' || suffix.endsWith('.ayushetty.eth')) {
+        rootDomain = 'ayushetty.eth';
+      } else if (suffix === 'ethed.eth' || suffix.endsWith('.ethed.eth')) {
+        rootDomain = 'ethed.eth';
+      } else {
+        // disallow other roots for now
+        return NextResponse.json({ error: 'Unsupported ENS root domain' }, { status: 400 });
+      }
+    }
+
+    // Validate label format
+    const validation = validateSubdomain(label);
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
+    }
+
+    const cleanSubdomain = label;
 
     // Validate provided wallet address if present
     if (walletAddress) {
@@ -42,13 +63,21 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+      walletAddress = cleanAddress;
     }
 
-    // Register ENS using the service
+    // Check availability for the requested root domain
+    const available = await checkAvailability(cleanSubdomain, rootDomain);
+    if (!available) {
+      return NextResponse.json({ error: 'This ENS name is already registered' }, { status: 409 });
+    }
+
+    // Register ENS using the service (keeps the same registerENS API — it will build the full name using default root)
     const result = await registerENS({
       userId: session.user.id,
       subdomain: cleanSubdomain,
       walletAddress,
+      rootDomain,
     });
 
     return NextResponse.json({
