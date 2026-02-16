@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
       message: "ENS name registered successfully",
       ensName: result.ensName,
       txHash: result.txHash,
+      explorerUrl: result.explorerUrl ?? null,
       wallet: result.wallet,
     });
 

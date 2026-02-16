@@ -3,18 +3,23 @@
  * Handles IPFS uploads, metadata generation, and blockchain minting
  */
 
-import { pinata } from "./pinata-config";
+import { pinFile, pinJSON } from "./pinata-config";
 import { prisma } from "@/lib/prisma-client";
 import { GENESIS_PIONEER_IMAGE_URI, GENESIS_PIONEER_METADATA_URI } from "@/lib/genesis-assets";
+import {
+  getContractAddress,
+  AMOY_CHAIN_ID,
+  NFT_CONTRACT_ABI,
+  getExplorerTxUrl,
+} from "@/lib/contracts";
+import {
+  getPublicClient,
+  getWalletClient,
+  isOnChainEnabled,
+} from "@/lib/viem-client";
+import { logger } from "@/lib/monitoring";
 import fs from "fs";
 import path from "path";
-
-// Add proper type definitions for Pinata SDK
-type PinataUploadResponse = {
-  IpfsHash: string;
-  PinSize: number;
-  Timestamp: string;
-};
 
 export interface NFTMetadata {
   name: string;
@@ -50,9 +55,7 @@ export async function uploadImageToIPFS(
     const blob = new Blob([arrayBuffer], { type: "image/png" });
     const file = new File([blob], filename, { type: "image/png" });
     
-    // Pinata SDK v2 upload method - cast to any for now due to SDK type mismatch
-    const upload = (await (pinata as any).upload.file(file)) as PinataUploadResponse;
-    return `ipfs://${upload.IpfsHash}`;
+    return await pinFile(file);
   } catch (error) {
     throw new Error("Failed to upload image to IPFS");
   }
@@ -66,51 +69,39 @@ import { env } from '@/env';
 export async function uploadMetadataToIPFS(
   metadata: NFTMetadata
 ): Promise<string> {
-  // IPFS-first: prefer Pinata when configured. If missing, provide a dev fallback to a public local file.
+  // IPFS-first: prefer Pinata when configured. If missing, provide a dev fallback.
   if (!env.PINATA_JWT) {
     if (env.NODE_ENV === 'production') {
-      throw new Error('Pinata not configured');
+      throw new Error('Pinata not configured — PINATA_JWT is required in production');
     }
 
-    // Development fallback: write metadata JSON to public/local-metadata and return a local URL
+    // Development fallback: write metadata JSON to public/local-metadata
     try {
       const outDir = `${process.cwd()}/public/local-metadata`;
       const filename = `metadata-${Date.now()}.json`;
-      // ensure directory exists
-      // Use synchronous fs here because this runs on server side during dev workflow
-      // and simplifies error handling.
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const fs = require('fs');
       if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
       fs.writeFileSync(`${outDir}/${filename}`, JSON.stringify(metadata, null, 2));
-      // log a dev-time warning
-      // eslint-disable-next-line no-console
-      console.warn(`[dev-fallback] Saved metadata to /local-metadata/${filename} (Pinata not configured)`);
+      logger.warn(`Saved metadata to /local-metadata/${filename} (Pinata not configured)`, "nft-service");
       return `/local-metadata/${filename}`;
-    } catch (err) {
+    } catch {
       throw new Error('Failed to write local metadata fallback');
     }
   }
 
   try {
-    // Pinata SDK v2 upload method for JSON - cast to any for now due to SDK type mismatch
-    const upload = (await (pinata as any).upload.json(metadata)) as PinataUploadResponse;
-    return `ipfs://${upload.IpfsHash}`;
+    return await pinJSON(metadata as unknown as Record<string, unknown>);
   } catch (error) {
     // If Pinata fails in dev, fallback to local file; in prod propagate error
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const fs = require('fs');
     if (env.NODE_ENV !== 'production') {
       try {
         const outDir = `${process.cwd()}/public/local-metadata`;
         const filename = `metadata-${Date.now()}.json`;
         if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
         fs.writeFileSync(`${outDir}/${filename}`, JSON.stringify(metadata, null, 2));
-        // eslint-disable-next-line no-console
-        console.warn(`[dev-fallback] Pinata upload failed, saved metadata to /local-metadata/${filename}`);
+        logger.warn(`Pinata upload failed, saved to /local-metadata/${filename}`, "nft-service");
         return `/local-metadata/${filename}`;
-      } catch (err) {
-        // fall through to throw the original error
+      } catch {
+        // fall through
       }
     }
 
@@ -167,8 +158,21 @@ export async function mintNFTAndSave(
     // Upload metadata to IPFS
     const metadataUri = await uploadMetadataToIPFS(metadata);
 
-    // Generate unique token ID
-    const tokenId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Mint on-chain if user has a wallet address
+    const recipientAddress = userAddress || "0x0000000000000000000000000000000000000000";
+    let tokenId: string;
+    let txHash: string | null = null;
+    let contractAddr: string | null = null;
+
+    if (recipientAddress !== "0x0000000000000000000000000000000000000000" && isOnChainEnabled()) {
+      const mintResult = await mintOnChain(recipientAddress, metadataUri, "pioneer");
+      tokenId = mintResult.tokenId;
+      txHash = mintResult.txHash;
+      contractAddr = mintResult.contractAddress;
+    } else {
+      // Off-chain record only
+      tokenId = `off-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }
 
     // Save NFT record to database
     const nft = await prisma.nFT.create({
@@ -178,11 +182,11 @@ export async function mintNFTAndSave(
         description: metadata.description,
         image: GENESIS_PIONEER_IMAGE_URI,
         metadata: metadataUri,
-        contractAddress: "0x0000000000000000000000000000000000000000", // Update with actual contract
-        tokenId: tokenId,
-        chainId: 80002, // Polygon Amoy
+        contractAddress: contractAddr,
+        tokenId,
+        chainId: AMOY_CHAIN_ID,
         ownerAddress: userAddress || null,
-        transactionHash: null, // Update after actual blockchain call
+        transactionHash: txHash,
         mintedAt: new Date(),
       },
     });
@@ -200,7 +204,7 @@ export async function mintNFTAndSave(
 /**
  * Get user's NFTs
  */
-export async function getUserNFTs(userId: string): Promise<typeof prisma.nFT.findMany> {
+export async function getUserNFTs(userId: string) {
   try {
     return await prisma.nFT.findMany({
       where: { userId },
@@ -213,22 +217,83 @@ export async function getUserNFTs(userId: string): Promise<typeof prisma.nFT.fin
 export async function mintOnChain(
   recipientAddress: string,
   metadataUri: string,
-  nftType: "pioneer" | "course-completion"
-): Promise<{ tokenId: string; txHash: string }> {
-  // TODO: Replace with actual smart contract interaction
-  // Example using ethers.js:
-  // const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, ABI, signer);
-  // const tx = await contract.mint(recipientAddress, metadataUri);
-  // const receipt = await tx.wait();
-  // return { tokenId: receipt.events[0].args.tokenId.toString(), txHash: receipt.transactionHash };
+  _nftType: "pioneer" | "course-completion"
+): Promise<{ tokenId: string; txHash: string; contractAddress: string }> {
+  const contractAddress = getContractAddress(AMOY_CHAIN_ID, "NFT_CONTRACT") as `0x${string}`;
 
-  // Simulate blockchain transaction
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  // If on-chain operations are not available, fall back to mock (dev only)
+  if (!isOnChainEnabled()) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("On-chain minting unavailable: AMOY_RPC_URL and DEPLOYER_PRIVATE_KEY must be set.");
+    }
+    logger.warn("On-chain minting disabled (missing env vars) — using dev mock", "nft-service");
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const mockTokenId = `mock-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    const mockTxHash = `0x${"0".repeat(64)}`;
+    return { tokenId: mockTokenId, txHash: mockTxHash, contractAddress };
+  }
 
-  const tokenId = `${nftType}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-  const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
+  const publicClient = getPublicClient();
+  const walletClient = getWalletClient();
 
-  return { tokenId, txHash };
+  logger.info(`Minting NFT to ${recipientAddress}`, "nft-service", { metadataUri });
+
+  try {
+    // Send the mint transaction via the server relayer wallet
+    const txHash = await walletClient.writeContract({
+      address: contractAddress,
+      abi: NFT_CONTRACT_ABI,
+      functionName: "mint",
+      args: [recipientAddress as `0x${string}`, metadataUri],
+    });
+
+    logger.info(`Mint tx sent: ${txHash}`, "nft-service");
+
+    // Wait for confirmation
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    if (receipt.status === "reverted") {
+      throw new Error(`Mint transaction reverted: ${txHash}`);
+    }
+
+    // Try to extract the tokenId from the Minted event log
+    let tokenId = `${Date.now()}`;
+    try {
+      for (const log of receipt.logs) {
+        try {
+          // The Minted event has indexed `to` and indexed `tokenId`
+          if (log.topics.length >= 3) {
+            // tokenId is the second indexed param (topics[2])
+            const raw = BigInt(log.topics[2]!);
+            tokenId = raw.toString();
+            break;
+          }
+        } catch {
+          // Not our event, continue
+        }
+      }
+    } catch {
+      // Fallback tokenId is fine
+    }
+
+    logger.info(`Mint confirmed: tokenId=${tokenId}, tx=${txHash}`, "nft-service");
+
+    return {
+      tokenId,
+      txHash,
+      contractAddress,
+    };
+  } catch (error) {
+    logger.error(
+      "On-chain mint failed",
+      "nft-service",
+      { recipientAddress, metadataUri },
+      error
+    );
+    throw new Error(
+      `On-chain mint failed: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
 }
 
 /**
@@ -240,6 +305,10 @@ export async function saveNFTToDatabase(params: {
   name: string;
   image: string;
   metadata: NFTMetadata;
+  contractAddress?: string;
+  transactionHash?: string;
+  ownerAddress?: string;
+  chainId?: number;
 }) {
   return await prisma.nFT.create({
     data: {
@@ -247,7 +316,12 @@ export async function saveNFTToDatabase(params: {
       tokenId: params.tokenId,
       name: params.name,
       image: params.image,
-      metadata: params.metadata as any,
+      metadata: params.metadata as Record<string, unknown>,
+      contractAddress: params.contractAddress ?? null,
+      transactionHash: params.transactionHash ?? null,
+      ownerAddress: params.ownerAddress ?? null,
+      chainId: params.chainId ?? AMOY_CHAIN_ID,
+      mintedAt: new Date(),
     },
   });
 }
@@ -280,19 +354,32 @@ export async function mintGenesisNFTs(params: MintNFTParams) {
     "pioneer"
   );
   
-  // Save to database
+  // Save to database with on-chain data
   const genesisNFT = await saveNFTToDatabase({
     userId,
     tokenId: genesisResult.tokenId,
     name: "eth.ed Pioneer NFT",
     image: genesisImageUri,
     metadata: genesisMetadata,
+    contractAddress: genesisResult.contractAddress,
+    transactionHash: genesisResult.txHash,
+    ownerAddress: defaultAddress !== "0x0000000000000000000000000000000000000000" ? defaultAddress : undefined,
+    chainId: AMOY_CHAIN_ID,
   });
+
+  const explorerUrl = genesisResult.txHash && !genesisResult.txHash.startsWith("0x" + "0".repeat(64))
+    ? getExplorerTxUrl(AMOY_CHAIN_ID, genesisResult.txHash)
+    : null;
 
   return {
     nfts: [genesisNFT],
     transactions: [
-      { type: "pioneer", txHash: genesisResult.txHash, tokenId: genesisResult.tokenId },
+      {
+        type: "pioneer",
+        txHash: genesisResult.txHash,
+        tokenId: genesisResult.tokenId,
+        explorerUrl,
+      },
     ],
   };
 }
@@ -308,9 +395,8 @@ export async function uploadCourseSproutToIPFS(): Promise<string> {
 
     // If Pinata not configured, return local asset path (dev fallback)
     if (!env.PINATA_JWT) {
-      // eslint-disable-next-line no-console
-      console.warn('Pinata JWT not configured — using local GIF at /nft-learning-sprout.gif');
-      return '/nft-learning-sprout.gif';
+      logger.warn("Pinata JWT not configured — using local GIF at /nft-learning-sprout.gif", "nft-service");
+      return "/nft-learning-sprout.gif";
     }
 
     // Convert to File for Pinata
@@ -321,12 +407,11 @@ export async function uploadCourseSproutToIPFS(): Promise<string> {
     const blob = new Blob([arrayBuffer], { type: "image/gif" });
     const file = new File([blob], "learning-sprout.gif", { type: "image/gif" });
     
-    const upload = (await (pinata as any).upload.file(file)) as PinataUploadResponse;
-    return `ipfs://${upload.IpfsHash}`;
-  } catch (error) {
+    return await pinFile(file);
+  } catch (error: unknown) {
     // Fallback to local URL if IPFS fails in dev
-    // eslint-disable-next-line no-console
-    console.warn('uploadCourseSproutToIPFS failed, falling back to local GIF:', error?.message || error);
+    const msg = error instanceof Error ? error.message : String(error);
+    logger.warn(`uploadCourseSproutToIPFS failed, falling back to local GIF: ${msg}`, "nft-service");
     return "/nft-learning-sprout.gif";
   }
 }
@@ -380,14 +465,22 @@ export async function mintCourseCompletionNFT(params: {
   const recipientAddress = userAddress || "0x0000000000000000000000000000000000000000";
   const mintResult = await mintOnChain(recipientAddress, metadataUri, "course-completion");
   
-  // Save to database
+  // Save to database with on-chain data
   const nft = await saveNFTToDatabase({
     userId,
     tokenId: mintResult.tokenId,
     name: `${courseName} - Learning Sprout`,
     image: imageUri,
     metadata,
+    contractAddress: mintResult.contractAddress,
+    transactionHash: mintResult.txHash,
+    ownerAddress: recipientAddress !== "0x0000000000000000000000000000000000000000" ? recipientAddress : undefined,
+    chainId: AMOY_CHAIN_ID,
   });
+
+  const explorerUrl = mintResult.txHash && !mintResult.txHash.startsWith("0x" + "0".repeat(64))
+    ? getExplorerTxUrl(AMOY_CHAIN_ID, mintResult.txHash)
+    : null;
 
   return {
     nft,
@@ -396,7 +489,8 @@ export async function mintCourseCompletionNFT(params: {
       txHash: mintResult.txHash, 
       tokenId: mintResult.tokenId,
       courseSlug,
-      courseName
+      courseName,
+      explorerUrl,
     },
   };
 }

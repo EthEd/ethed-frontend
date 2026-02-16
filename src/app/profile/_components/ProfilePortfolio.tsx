@@ -268,6 +268,9 @@ export default function ProfilePortfolio({ handle }: Props) {
                       <Badge variant="outline" className="text-slate-300 border-slate-400/30">NFT</Badge>
                     </div>
                   ))}
+                  {(profile?.nfts || []).length === 0 && (
+                    <p className="text-sm text-slate-500">No achievements yet. Complete a course to earn your first NFT!</p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -280,24 +283,28 @@ export default function ProfilePortfolio({ handle }: Props) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {(profile?.courses?.slice(0, 3) || mockCourses.slice(0, 3)).map((uc: any, idx: number) => {
-                    const course = uc.course || uc;
-                    const progress = uc.progress ?? (course.progress ?? 0);
-                    return (
-                      <div key={uc.id || idx} className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-slate-300 truncate">{course.title}</span>
-                          <span className="text-xs font-bold text-cyan-400">{progress}%</span>
+                  {(profile?.courses?.slice(0, 3) || []).length > 0 ? (
+                    (profile.courses.slice(0, 3)).map((uc: any, idx: number) => {
+                      const course = uc.course || uc;
+                      const progress = uc.progress ?? (course.progress ?? 0);
+                      return (
+                        <div key={uc.id || idx} className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-slate-300 truncate">{course.title}</span>
+                            <span className="text-xs font-bold text-cyan-400">{progress}%</span>
+                          </div>
+                          <div className="w-full bg-slate-950 rounded-full h-2 border border-white/5">
+                            <div
+                              className="bg-gradient-to-r from-cyan-400 to-teal-400 h-full rounded-full transition-all duration-500 shadow-cyan- glow"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="w-full bg-slate-950 rounded-full h-2 border border-white/5">
-                          <div
-                            className="bg-gradient-to-r from-cyan-400 to-teal-400 h-full rounded-full transition-all duration-500 shadow-cyan- glow"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  ) : (
+                    <p className="text-sm text-slate-500">No courses started yet. Begin your learning journey!</p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -347,14 +354,33 @@ export default function ProfilePortfolio({ handle }: Props) {
                       <p className="text-sm text-slate-400 line-clamp-2">{nft.description || (nft.metadata?.description ?? '')}</p>
                       <div className="flex items-center justify-between text-xs text-slate-500">
                         <span>Minted: {nft.createdAt ? new Date(nft.createdAt).toLocaleDateString() : ''}</span>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                          <ExternalLink className="w-3 h-3" />
-                        </Button>
+                        {nft.explorerUrl || nft.transactionHash ? (
+                          <a
+                            href={nft.explorerUrl || `https://amoy.polygonscan.com/tx/${nft.transactionHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <ExternalLink className="w-3 h-3" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
+              {(profile?.nfts || []).length === 0 && (
+                <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10 col-span-full">
+                  <CardContent className="p-8 text-center">
+                    <Award className="w-10 h-10 text-slate-500 mx-auto mb-3" />
+                    <p className="text-slate-400">No NFTs earned yet. Complete courses to mint your first credential!</p>
+                  </CardContent>
+                </Card>
+              )}
             </motion.div>
           </TabsContent>
 
@@ -366,7 +392,7 @@ export default function ProfilePortfolio({ handle }: Props) {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              {(profile?.courses || mockCourses).map((uc: any, idx: number) => {
+              {(profile?.courses || []).length > 0 ? (profile.courses).map((uc: any, idx: number) => {
                 const course = uc.course || uc;
                 const progress = uc.progress ?? (course.progress ?? 0);
                 return (
@@ -406,7 +432,17 @@ export default function ProfilePortfolio({ handle }: Props) {
                     </CardContent>
                   </Card>
                 );
-              })}
+              }) : (
+                <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
+                  <CardContent className="p-8 text-center">
+                    <BookOpen className="w-10 h-10 text-slate-500 mx-auto mb-3" />
+                    <p className="text-slate-400">No courses enrolled yet.</p>
+                    <Button asChild variant="outline" size="sm" className="mt-4 border-cyan-400/20 text-cyan-400 hover:bg-cyan-400/5">
+                      <a href="/courses">Browse Courses</a>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </motion.div>
           </TabsContent>
 
@@ -418,7 +454,7 @@ export default function ProfilePortfolio({ handle }: Props) {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              {mockActivity.map((activity, index) => (
+              {buildActivity(profile).length > 0 ? buildActivity(profile).map((activity, index) => (
                 <Card key={index} className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
@@ -435,7 +471,14 @@ export default function ProfilePortfolio({ handle }: Props) {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )) : (
+                <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10">
+                  <CardContent className="p-8 text-center">
+                    <Calendar className="w-10 h-10 text-slate-500 mx-auto mb-3" />
+                    <p className="text-slate-400">No activity yet. Start learning to build your timeline!</p>
+                  </CardContent>
+                </Card>
+              )}
             </motion.div>
           </TabsContent>
         </Tabs>
@@ -443,17 +486,76 @@ export default function ProfilePortfolio({ handle }: Props) {
     </div>
   );
 }
-const mockNFTs = [
-  { id: 1, name: "Early Adopter", description: "Joined eth.ed during alpha", rarity: "Legendary", earned: "Feb 2025" },
-  { id: 2, name: "ENS Pioneer", description: "Registered an .ethed.eth subdomain", rarity: "Epic", earned: "Feb 2025" },
-];
+/**
+ * Build a timeline of activities from real profile data (NFTs + courses).
+ */
+function buildActivity(profile: any): Array<{ title: string; date: string; type: string; icon: string }> {
+  const activities: Array<{ title: string; date: string; type: string; icon: string; ts: number }> = [];
 
-const mockCourses = [
-  { id: 1, title: "Ethereum Basics", difficulty: "Beginner", progress: 100, totalLessons: 5, completedAt: "Feb 2025" },
-  { id: 2, title: "Smart Contract Safety", difficulty: "Intermediate", progress: 40, totalLessons: 10 },
-];
+  // NFT achievements
+  if (profile?.nfts) {
+    for (const nft of profile.nfts) {
+      activities.push({
+        title: `Earned ${nft.name}`,
+        date: nft.createdAt ? formatRelativeDate(new Date(nft.createdAt)) : "",
+        type: "award",
+        icon: "🏆",
+        ts: nft.createdAt ? new Date(nft.createdAt).getTime() : 0,
+      });
+    }
+  }
 
-const mockActivity = [
-  { title: "Completed Ethereum Basics", date: "2 hours ago", type: "course", icon: "📚" },
-  { title: "Earned Early Adopter NFT", date: "5 hours ago", type: "award", icon: "🏆" },
-];
+  // Course enrollments / completions
+  if (profile?.courses) {
+    for (const uc of profile.courses) {
+      const course = uc.course || uc;
+      if (uc.completed || uc.progress === 100) {
+        activities.push({
+          title: `Completed ${course.title}`,
+          date: uc.completedAt ? formatRelativeDate(new Date(uc.completedAt)) : (uc.finishedAt ? formatRelativeDate(new Date(uc.finishedAt)) : ""),
+          type: "course",
+          icon: "📚",
+          ts: uc.completedAt ? new Date(uc.completedAt).getTime() : (uc.finishedAt ? new Date(uc.finishedAt).getTime() : 0),
+        });
+      } else {
+        activities.push({
+          title: `Started ${course.title}`,
+          date: uc.startedAt ? formatRelativeDate(new Date(uc.startedAt)) : "",
+          type: "course",
+          icon: "🎓",
+          ts: uc.startedAt ? new Date(uc.startedAt).getTime() : 0,
+        });
+      }
+    }
+  }
+
+  // ENS registration
+  if (profile?.ensName) {
+    activities.push({
+      title: `Registered ${profile.ensName}`,
+      date: profile.createdAt ? formatRelativeDate(new Date(profile.createdAt)) : "",
+      type: "ens",
+      icon: "🌐",
+      ts: profile.createdAt ? new Date(profile.createdAt).getTime() : 0,
+    });
+  }
+
+  // Sort newest first
+  activities.sort((a, b) => b.ts - a.ts);
+
+  return activities;
+}
+
+function formatRelativeDate(date: Date): string {
+  const now = Date.now();
+  const diff = now - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min ago`;
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  if (days < 30) return `${days} day${days > 1 ? "s" : ""} ago`;
+  return date.toLocaleDateString();
+}

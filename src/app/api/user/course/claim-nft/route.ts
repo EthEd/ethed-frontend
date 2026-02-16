@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
         message: "NFT claimed successfully! 🎉",
         nft: mintResult.nft,
         transaction: mintResult.transaction,
+        explorerUrl: mintResult.transaction.explorerUrl ?? null,
       },
       { status: 201 }
     );
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest) {
 
     const message = error instanceof Error ? error.message : "Internal server error";
 
-    if (message.includes('Pinata not configured')) {
+    if (message.includes('Pinata not configured') || message.includes('On-chain minting unavailable')) {
       return NextResponse.json({ error: message }, { status: 503 });
     }
 

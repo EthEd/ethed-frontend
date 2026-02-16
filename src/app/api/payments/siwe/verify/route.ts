@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { SiweMessage } from "siwe";
 import { prisma } from "@/lib/prisma-client";
+import { AMOY_CHAIN_ID, getExplorerTxUrl } from "@/lib/contracts";
+import { logger } from "@/lib/monitoring";
 
 /**
  * POST /api/payments/siwe/verify
@@ -27,38 +29,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
     }
 
-    const cookieHeader = request.headers.get('cookie') || undefined;
-    const nonceCookie = cookieHeader?.split(';').map(p => p.trim()).find(p => p.startsWith('siwe-nonce='))?.split('=')[1];
+    // Read nonce from the payment-specific cookie
+    const nonceCookie = request.cookies.get("siwe-payment-nonce")?.value;
 
     if (!nonceCookie) {
-      return NextResponse.json({ error: 'Missing SIWE nonce cookie' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing SIWE payment nonce cookie — challenge may have expired' }, { status: 400 });
     }
 
     let siweMessage: SiweMessage;
     try {
       siweMessage = new SiweMessage(message);
-    } catch (err) {
+    } catch {
       return NextResponse.json({ error: 'Invalid SIWE message format' }, { status: 400 });
     }
 
     if (siweMessage.nonce !== nonceCookie) {
-      return NextResponse.json({ error: 'Invalid SIWE nonce' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid SIWE nonce — request a new challenge' }, { status: 400 });
     }
 
     try {
       await siweMessage.verify({ signature });
-    } catch (err: any) {
+    } catch {
       return NextResponse.json({ error: 'SIWE signature verification failed' }, { status: 400 });
     }
 
     const payerAddress = siweMessage.address?.toLowerCase();
+
+    logger.info(`SIWE payment verified from ${payerAddress}`, "payments", { amount, courseSlug });
 
     // Create or find the course
     let course = null;
     if (courseSlug) {
       course = await prisma.course.findUnique({ where: { slug: courseSlug } });
       if (!course) {
-        course = await prisma.course.create({ data: { slug: courseSlug, title: courseSlug, status: 'PUBLISHED' } });
+        return NextResponse.json({ error: `Course "${courseSlug}" not found` }, { status: 404 });
       }
     }
 
@@ -66,28 +70,47 @@ export async function POST(request: NextRequest) {
     const purchase = await prisma.purchase.create({
       data: {
         userId: session.user.id,
-        courseId: course?.id ?? undefined,
+        courseId: course?.id ?? "",
         amount: Math.floor(amount),
         status: 'PENDING',
         txHash: null,
       }
     });
 
-    // Optionally create a Payment record to track the authorization
-    await prisma.payment.create({
+    // Create a Payment record to track the authorization
+    const payment = await prisma.payment.create({
       data: {
         userId: session.user.id,
         amount: Math.floor(amount),
-        chainId: 80002, // record Amoy as default for now
-        txHash: '',
+        chainId: AMOY_CHAIN_ID,
+        txHash: `siwe-auth:${siweMessage.nonce}`, // Authorization reference (not on-chain yet)
         type: 'MICROPAYMENT',
         status: 'PENDING',
       }
     });
 
-    return NextResponse.json({ message: 'Payment authorization accepted', purchase });
+    // Clear the nonce cookie
+    const response = NextResponse.json({
+      message: 'Payment authorization accepted',
+      purchase: {
+        id: purchase.id,
+        amount: purchase.amount,
+        status: purchase.status,
+        courseSlug,
+      },
+      paymentId: payment.id,
+      payerAddress,
+    });
+
+    response.cookies.set("siwe-payment-nonce", "", {
+      httpOnly: true,
+      maxAge: 0,
+      path: "/",
+    });
+
+    return response;
   } catch (err) {
-    console.error('SIWE payment verify error:', err);
+    logger.error('SIWE payment verify error', 'payments', {}, err);
     return NextResponse.json({ error: 'Failed to verify SIWE payment' }, { status: 500 });
   }
 }

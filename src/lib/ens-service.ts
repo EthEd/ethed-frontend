@@ -4,7 +4,18 @@
  */
 
 import { prisma } from "@/lib/prisma-client";
-import { AMOY_CHAIN_ID } from "./contracts";
+import {
+  AMOY_CHAIN_ID,
+  ENS_REGISTRAR_ABI,
+  getContractAddress,
+  getExplorerTxUrl,
+} from "./contracts";
+import {
+  getPublicClient,
+  getWalletClient,
+  isOnChainEnabled,
+} from "./viem-client";
+import { logger } from "./monitoring";
 
 /**
  * Best-effort ENS avatar resolver.
@@ -117,27 +128,72 @@ export async function checkAvailability(subdomain: string, rootDomain = 'ethed.e
 }
 
 /**
- * Register ENS subdomain on-chain (mock implementation)
- * In production, this would interact with ENS registrar contract
+ * Register ENS subdomain on-chain via the deployed ENS registrar contract.
+ * Falls back to a dev mock when on-chain env vars are not set.
  */
 export async function registerOnChain(
   subdomain: string,
-  ownerAddress: string
-): Promise<{ txHash: string; ensName: string }> {
-  // TODO: Replace with actual ENS contract interaction
-  // Example using ethers.js:
-  // const ensRegistrar = new ethers.Contract(REGISTRAR_ADDRESS, ABI, signer);
-  // const tx = await ensRegistrar.register(subdomain, ownerAddress, duration);
-  // const receipt = await tx.wait();
-  // return { txHash: receipt.transactionHash, ensName: `${subdomain}.ethed.eth` };
+  ownerAddress: string,
+  rootDomain = "ethed.eth"
+): Promise<{ txHash: string; ensName: string; explorerUrl: string | null }> {
+  const ensName = `${subdomain}.${rootDomain}`;
 
-  // Simulate blockchain transaction
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  if (!isOnChainEnabled()) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "On-chain ENS registration unavailable: AMOY_RPC_URL and DEPLOYER_PRIVATE_KEY must be set."
+      );
+    }
+    logger.warn(
+      "On-chain ENS registration disabled (missing env vars) — using dev mock",
+      "ens-service"
+    );
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const mockTxHash = `0x${"0".repeat(64)}`;
+    return { txHash: mockTxHash, ensName, explorerUrl: null };
+  }
 
-  const txHash = `0x${Math.random().toString(16).substring(2, 66)}`;
-  const ensName = `${subdomain}.ethed.eth`;
+  const contractAddress = getContractAddress(AMOY_CHAIN_ID, "ENS_REGISTRAR") as `0x${string}`;
+  const walletClient = getWalletClient();
+  const publicClient = getPublicClient();
 
-  return { txHash, ensName };
+  logger.info(`Registering ENS subdomain "${ensName}" for ${ownerAddress}`, "ens-service");
+
+  try {
+    const duration = BigInt(365 * 24 * 60 * 60); // 1 year in seconds
+
+    const txHash = await walletClient.writeContract({
+      address: contractAddress,
+      abi: ENS_REGISTRAR_ABI,
+      functionName: "register",
+      args: [subdomain, ownerAddress as `0x${string}`, duration],
+    });
+
+    logger.info(`ENS register tx sent: ${txHash}`, "ens-service");
+
+    // Wait for confirmation
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    if (receipt.status === "reverted") {
+      throw new Error(`ENS registration transaction reverted: ${txHash}`);
+    }
+
+    const explorerUrl = getExplorerTxUrl(AMOY_CHAIN_ID, txHash);
+
+    logger.info(`ENS registration confirmed: ${ensName}, tx=${txHash}`, "ens-service");
+
+    return { txHash, ensName, explorerUrl };
+  } catch (error) {
+    logger.error(
+      "On-chain ENS registration failed",
+      "ens-service",
+      { subdomain, ownerAddress },
+      error
+    );
+    throw new Error(
+      `On-chain ENS registration failed: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
 }
 
 /**
@@ -176,9 +232,9 @@ export async function saveENSToDatabase(params: {
           isPrimary: true,
         },
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Ignore unique constraint races and return the existing record instead
-      if (err?.code === 'P2002') {
+      if (err && typeof err === 'object' && 'code' in err && (err as { code: string }).code === 'P2002') {
         const existing = await prisma.walletAddress.findFirst({ where: { userId, ensName } });
         if (existing) return existing;
       }
@@ -211,7 +267,7 @@ export async function registerENS(params: ENSRegistrationParams) {
   // Register on-chain (requires wallet address in production)
   const defaultAddress = walletAddress || "0x0000000000000000000000000000000000000000";
   
-  const { txHash } = await registerOnChain(cleaned, defaultAddress);
+  const { txHash, explorerUrl } = await registerOnChain(cleaned, defaultAddress, rootDomain);
 
   // Save to database
   const walletRecord = await saveENSToDatabase({
@@ -246,14 +302,14 @@ export async function registerENS(params: ENSRegistrationParams) {
     }
   } catch (err) {
     // Non-fatal — avatar resolution should not block registration
-    // eslint-disable-next-line no-console
-    console.debug('[ens] avatar resolution failed', err?.message ?? err);
+    logger.debug('avatar resolution failed', 'ens-service');
   }
 
   return {
     success: true,
     ensName,
     txHash,
+    explorerUrl,
     wallet: walletRecord,
   };
 }

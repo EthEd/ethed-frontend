@@ -1,0 +1,2 @@
+-- Baseline migration: mark existing DB schema as applied
+-- This migration intentionally left blank to establish migration history for an existing database.

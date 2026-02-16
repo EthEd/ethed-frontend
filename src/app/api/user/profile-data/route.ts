@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
+import { getExplorerTxUrl, AMOY_CHAIN_ID } from "@/lib/contracts";
 
 export async function GET() {
   try {
@@ -62,21 +63,34 @@ export async function GET() {
       };
     });
 
-    // Get NFTs with metadata
-    const nftsWithDetails = user.nfts.map(nft => ({
-      id: nft.id,
-      name: nft.name,
-      description: nft.metadata && typeof nft.metadata === 'object' && 'description' in nft.metadata 
-        ? String(nft.metadata.description) 
-        : null,
-      image: nft.image,
-      tokenId: nft.tokenId,
-      metadata: nft.metadata,
-      createdAt: nft.createdAt,
-      type: nft.metadata && typeof nft.metadata === 'object' && 'courseSlug' in nft.metadata 
-        ? 'course-completion' 
-        : 'achievement'
-    }));
+    // Get NFTs with metadata and explorer links
+    const nftsWithDetails = user.nfts.map(nft => {
+      const txHash = (nft as any).transactionHash as string | null;
+      const chainId = (nft as any).chainId as number | null;
+      const explorerUrl = txHash && chainId && !txHash.startsWith("0x" + "0".repeat(64))
+        ? getExplorerTxUrl(chainId, txHash)
+        : null;
+
+      return {
+        id: nft.id,
+        name: nft.name,
+        description: nft.metadata && typeof nft.metadata === 'object' && 'description' in nft.metadata 
+          ? String(nft.metadata.description) 
+          : null,
+        image: nft.image,
+        tokenId: nft.tokenId,
+        metadata: nft.metadata,
+        createdAt: nft.createdAt,
+        contractAddress: (nft as any).contractAddress ?? null,
+        transactionHash: txHash ?? null,
+        ownerAddress: (nft as any).ownerAddress ?? null,
+        chainId: chainId ?? null,
+        explorerUrl,
+        type: nft.metadata && typeof nft.metadata === 'object' && 'courseSlug' in nft.metadata 
+          ? 'course-completion' 
+          : 'achievement',
+      };
+    });
 
     const stats = {
       coursesEnrolled: user.courses.length,

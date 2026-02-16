@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String?
+  email          String?         @unique
+  emailVerified  Boolean         @default(false)
+  image          String?
+  role           String?
+  banned         Boolean         @default(false)
+  banReason      String?
+  banExpires     DateTime?       @db.Timestamptz(6)
+  onboardingStep Int             @default(0)
+  createdAt      DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  accounts       Account[]
+  nfts           NFT[]
+  payments       Payment[]
+  purchases      Purchase[]
+  sessions       Session[]
+  courses        UserCourse[]
+  wallets        WalletAddress[]
+}
+
+model Session {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String   @db.Uuid
+  token          String   @unique
+  expiresAt      DateTime @db.Timestamptz(6)
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @db.Timestamptz(6)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_session_user")
+}
+
+model Account {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String    @db.Uuid
+  providerId            String
+  accountId             String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime? @db.Timestamptz(6)
+  refreshTokenExpiresAt DateTime? @db.Timestamptz(6)
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime  @default(now()) @db.Timestamptz(6)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_account_user")
+
+  @@unique([providerId, accountId], map: "uniq_provider_account")
+}
+
+model WalletAddress {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  address   String
+  chainId   Int
+  isPrimary Boolean  @default(false)
+  ensName   String?
+  ensAvatar String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_wallet_user")
+
+  @@unique([address, chainId], map: "uniq_addr_chain")
+}
+
+model Course {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  description String?
+  price       Int?
+  level       CourseLevel  @default(BEGINNER)
+  slug        String       @unique
+  status      CourseStatus @default(DRAFT)
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime     @default(now()) @db.Timestamptz(6)
+  lessons     Lesson[]
+  purchases   Purchase[]
+  users       UserCourse[]
+}
+
+model Lesson {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  courseId  String   @db.Uuid
+  title     String
+  content   String
+  duration  Int?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @db.Timestamptz(6)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_lesson_course")
+}
+
+model UserCourse {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String    @db.Uuid
+  courseId         String    @db.Uuid
+  progress         Int       @default(0)
+  completedModules Json?
+  completed        Boolean   @default(false)
+  startedAt        DateTime  @default(now()) @db.Timestamptz(6)
+  finishedAt       DateTime? @db.Timestamptz(6)
+  course           Course    @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usercourse_course")
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_usercourse_user")
+
+  @@unique([userId, courseId], map: "uniq_user_course")
+}
+
+model Purchase {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String         @db.Uuid
+  courseId  String         @db.Uuid
+  amount    Int
+  status    PurchaseStatus @default(PENDING)
+  txHash    String?
+  paymentId String?
+  createdAt DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime       @default(now()) @db.Timestamptz(6)
+  course    Course         @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_purchase_course")
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_purchase_user")
+}
+
+model Payment {
+  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String        @db.Uuid
+  amount    Int
+  chainId   Int
+  txHash    String
+  type      PaymentType
+  status    PaymentStatus @default(PENDING)
+  createdAt DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime      @default(now()) @db.Timestamptz(6)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_payment_user")
+}
+
+model NFT {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  tokenId   String
+  name      String
+  image     String
+  metadata  Json?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_nft_user")
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PurchaseStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum PaymentType {
+  MICROPAYMENT
+  SUBSCRIPTION
+}
+
+

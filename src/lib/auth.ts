@@ -37,50 +37,54 @@ export const authOptions: NextAuthOptions = {
   providers: [
     // Sign In With Ethereum
     SiweProvider(),
-    // Demo/Test credentials provider
-    CredentialsProvider({
-      id: "demo",
-      name: "Demo Account",
-      credentials: {
-        email: { label: "Email", type: "email", placeholder: "demo@ethed.app" },
-        name: { label: "Name", type: "text", placeholder: "Demo User" }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email) {
-          return null;
-        }
-        
-        try {
-          // Create or find user in database
-          const { prisma } = await import("@/lib/prisma-client");
-          
-          let dbUser = await prisma.user.findUnique({
-            where: { email: credentials.email }
-          });
-          
-          if (!dbUser) {
-            dbUser = await prisma.user.create({
-              data: {
-                email: credentials.email,
-                name: credentials.name || "Demo User",
-                image: null,
+    // Demo/Test credentials provider – ONLY available in development/test
+    ...(env.NODE_ENV !== "production"
+      ? [
+          CredentialsProvider({
+            id: "demo",
+            name: "Demo Account",
+            credentials: {
+              email: { label: "Email", type: "email", placeholder: "demo@ethed.app" },
+              name: { label: "Name", type: "text", placeholder: "Demo User" },
+            },
+            async authorize(credentials) {
+              if (!credentials?.email) {
+                return null;
               }
-            });
-          }
-          
-          const user = {
-            id: dbUser.id,
-            email: dbUser.email,
-            name: dbUser.name,
-            image: dbUser.image,
-          };
-          
-          return user;
-        } catch (error) {
-          return null;
-        }
-      }
-    }),
+
+              try {
+                // Create or find user in database
+                const { prisma } = await import("@/lib/prisma-client");
+
+                let dbUser = await prisma.user.findUnique({
+                  where: { email: credentials.email },
+                });
+
+                if (!dbUser) {
+                  dbUser = await prisma.user.create({
+                    data: {
+                      email: credentials.email,
+                      name: credentials.name || "Demo User",
+                      image: null,
+                    },
+                  });
+                }
+
+                const user = {
+                  id: dbUser.id,
+                  email: dbUser.email,
+                  name: dbUser.name,
+                  image: dbUser.image,
+                };
+
+                return user;
+              } catch (error) {
+                return null;
+              }
+            },
+          }),
+        ]
+      : []),
     ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? [
       GoogleProvider({ 
         clientId: env.GOOGLE_CLIENT_ID, 
