@@ -162,15 +162,20 @@ model Payment {
 }
 
 model NFT {
-  id        String   @id @default(uuid())
-  userId    String
-  tokenId   String
-  name      String
-  image     String
-  metadata  Json?
-  createdAt DateTime @default(now())
+  id              String   @id @default(uuid())
+  userId          String
+  tokenId         String
+  name            String
+  image           String
+  metadata        Json?
+  contractAddress String?
+  ownerAddress    String?
+  transactionHash String?
+  chainId         Int?
+  mintedAt        DateTime?
+  createdAt       DateTime @default(now())
 
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum CourseLevel {
