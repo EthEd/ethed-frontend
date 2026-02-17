@@ -91,7 +91,7 @@ export default function EthEdFeatures() {
               Built for <span className="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">Web3 Learners</span>
             </h3>
             <p className="font-geist text-slate-400 mt-3 text-lg">
-              EIPSInsight combines on-chain rewards, AI support, and ENS identity to help everyone master blockchain—securely and transparently.
+              EthEd combines on-chain rewards, AI support, and ENS identity to help everyone master blockchain—securely and transparently.
             </p>
           </motion.div>
           <div

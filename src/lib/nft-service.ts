@@ -58,7 +58,7 @@ export async function uploadImageToIPFS(
     const file = new File([blob], filename, { type: "image/png" });
     
     return await pinFile(file);
-  } catch (error) {
+  } catch {
     throw new Error("Failed to upload image to IPFS");
   }
 }
@@ -92,7 +92,7 @@ export async function uploadMetadataToIPFS(
 
   try {
     return await pinJSON(metadata as unknown as Record<string, unknown>);
-  } catch (error) {
+  } catch {
     // If Pinata fails in dev, fallback to local file; in prod propagate error
     if (env.NODE_ENV !== 'production') {
       try {
@@ -220,6 +220,7 @@ export async function mintOnChain(
   metadataUri: string,
   _nftType: "pioneer" | "course-completion"
 ): Promise<{ tokenId: string; txHash: string; contractAddress: string }> {
+  void _nftType;
   const contractAddress = getContractAddress(AMOY_CHAIN_ID, "NFT_CONTRACT") as `0x${string}`;
 
   // If on-chain operations are not available, fall back to mock (dev only)
@@ -335,8 +336,15 @@ export async function saveNFTToDatabase(params: {
 export async function mintGenesisNFTs(params: MintNFTParams) {
   const { userId, ensName, userAddress } = params;
 
-  // For now, using placeholder URIs
-  const genesisImageUri = GENESIS_PIONEER_IMAGE_URI;
+  // Development-friendly fallback: if the genesis image is still the placeholder
+  // and Pinata is not configured, use a bundled local image so the UI works offline.
+  const placeholderCid = "ipfs://QmEthEdPioneer1";
+  // Use OG PNG fallback in development instead of the animated GIFs
+  const devLocalImage = "/og-image.png";
+  const genesisImageUri =
+    GENESIS_PIONEER_IMAGE_URI === placeholderCid && !env.PINATA_JWT
+      ? devLocalImage
+      : GENESIS_PIONEER_IMAGE_URI;
 
   // Generate metadata
   const genesisMetadata = generateGenesisScholarMetadata(
@@ -396,10 +404,10 @@ export async function uploadCourseSproutToIPFS(): Promise<string> {
     const sproutPath = path.join(process.cwd(), "public", "nft-learning-sprout.gif");
     const imageBuffer = fs.readFileSync(sproutPath);
 
-    // If Pinata not configured, return local asset path (dev fallback)
+    // If Pinata not configured, return OG PNG (we don't need the course GIFs right now)
     if (!env.PINATA_JWT) {
-      logger.warn("Pinata JWT not configured — using local GIF at /nft-learning-sprout.gif", "nft-service");
-      return "/nft-learning-sprout.gif";
+      logger.warn("Pinata JWT not configured — using OG PNG at /og-image.png", "nft-service");
+      return "/og-image.png";
     }
 
     // Convert to File for Pinata
@@ -412,10 +420,10 @@ export async function uploadCourseSproutToIPFS(): Promise<string> {
     
     return await pinFile(file);
   } catch (error: unknown) {
-    // Fallback to local URL if IPFS fails in dev
+    // Fallback to OG PNG if IPFS fails in dev
     const msg = error instanceof Error ? error.message : String(error);
-    logger.warn(`uploadCourseSproutToIPFS failed, falling back to local GIF: ${msg}`, "nft-service");
-    return "/nft-learning-sprout.gif";
+    logger.warn(`uploadCourseSproutToIPFS failed, falling back to OG PNG: ${msg}`, "nft-service");
+    return "/og-image.png";
   }
 }
 

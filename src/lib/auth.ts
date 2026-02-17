@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import EmailProvider from "next-auth/providers/email";
-import { env } from "@/env";
+
 import { SiweProvider } from "./siwe-provider";
 
 declare module "next-auth" {
@@ -38,7 +38,7 @@ export const authOptions: NextAuthOptions = {
     // Sign In With Ethereum
     SiweProvider(),
     // Demo/Test credentials provider – ONLY available in development/test
-    ...(env.NODE_ENV !== "production"
+    ...(process.env.NODE_ENV !== "production"
       ? [
           CredentialsProvider({
             id: "demo",
@@ -78,41 +78,41 @@ export const authOptions: NextAuthOptions = {
                 };
 
                 return user;
-              } catch (error) {
+              } catch {
                 return null;
               }
             },
           }),
         ]
       : []),
-    ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? [
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
       GoogleProvider({ 
-        clientId: env.GOOGLE_CLIENT_ID, 
-        clientSecret: env.GOOGLE_CLIENT_SECRET 
+        clientId: process.env.GOOGLE_CLIENT_ID, 
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET 
       })
     ] : []),
-    ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET ? [
+    ...(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET ? [
       GitHubProvider({ 
-        clientId: env.GITHUB_CLIENT_ID, 
-        clientSecret: env.GITHUB_CLIENT_SECRET 
+        clientId: process.env.GITHUB_CLIENT_ID, 
+        clientSecret: process.env.GITHUB_CLIENT_SECRET 
       })
     ] : []),
-    ...(env.EMAIL_HOST && env.EMAIL_PORT && env.EMAIL_USERNAME && env.EMAIL_PASSWORD && env.EMAIL_FROM ? [
+    ...(process.env.EMAIL_HOST && process.env.EMAIL_PORT && process.env.EMAIL_USERNAME && process.env.EMAIL_PASSWORD && process.env.EMAIL_FROM ? [
       EmailProvider({
         server: { 
-          host: env.EMAIL_HOST, 
-          port: env.EMAIL_PORT, 
+          host: process.env.EMAIL_HOST, 
+          port: Number(process.env.EMAIL_PORT), 
           auth: { 
-            user: env.EMAIL_USERNAME, 
-            pass: env.EMAIL_PASSWORD 
+            user: process.env.EMAIL_USERNAME, 
+            pass: process.env.EMAIL_PASSWORD 
           } 
         },
-        from: env.EMAIL_FROM,
+        from: process.env.EMAIL_FROM,
       })
     ] : []),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user }) {
       if (!user.email) {
         return false;
       }
@@ -151,7 +151,7 @@ export const authOptions: NextAuthOptions = {
         }
         
         return true;
-      } catch (error) {
+      } catch {
         return false;
       }
     },
@@ -189,6 +189,6 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: { signIn: "/login", error: "/auth/error", verifyRequest: "/verify-request" },
-  debug: env.NODE_ENV === "development",
-  secret: env.NEXTAUTH_SECRET ?? undefined,
+  debug: process.env.NODE_ENV === "development",
+  secret: process.env.NEXTAUTH_SECRET ?? undefined,
 };

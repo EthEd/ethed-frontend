@@ -65,7 +65,7 @@ export const coursesWithPath: EnhancedCourse[] = [
   {
     id: 'eips-101',
     title: 'EIPs 101: From First Principles to First Proposal',
-    description: 'Master Ethereum Improvement Proposals from basics to writing your first EIP using EIPsInsight\'s tools.',
+    description: 'Master Ethereum Improvement Proposals from basics to writing your first EIP using EthEd\'s tools.',
     level: 'Beginner',
     learningPath: 'Fundamentals',
     duration: '2-3 hours',

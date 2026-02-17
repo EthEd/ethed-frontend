@@ -6,9 +6,9 @@ import { toast } from "sonner";
 
 type Props = {
   posterSrc: string;      // "/pause.png" or "/media/poster.png"
-  p1Src: string;          // "/p1.gif" (3s peek/emerge animation)
-  p2Src: string;          // "/p2.gif" (2s retreat/idle animation)
-  p3Src?: string;         // "/p3.gif" (2.2s click animation)
+  p1Src?: string;         // optional "/p1.gif" (peek/emerge animation)
+  p2Src?: string;         // optional "/p2.gif" (retreat/idle animation)
+  p3Src?: string;         // optional "/p3.gif" (click animation)
   pause2Src?: string;     // "/pause 2.png" (clicked state)
   size?: number;          // px 
   offset?: { right: number; bottom: number };
@@ -18,7 +18,7 @@ export default function AgentHover({
   posterSrc,
   p1Src,
   p2Src,
-  p3Src = "/p3.gif",
+  p3Src,
   pause2Src = "/pause 2.png",
   size = 128,
   offset = { right: 16, bottom: 16 },
@@ -102,15 +102,21 @@ export default function AgentHover({
     setIsClicked(true);
     isPlayingP3Ref.current = true;
     clearTimer();
-    
-    // Play p3.gif for 2.2 seconds (22 * 0.1s)
-    playGif(p3Src, 2200, () => {
-      // After p3 completes, ALWAYS show pause2.png and dialog regardless of hover state
+
+    if (p3Src) {
+      // Play p3.gif for 2.2 seconds (22 * 0.1s)
+      playGif(p3Src, 2200, () => {
+        // After p3 completes, ALWAYS show pause2.png and dialog regardless of hover state
+        isPlayingP3Ref.current = false;
+        setSrc(pause2Src);
+        setShowDialog(true);
+      });
+    } else {
+      // No GIF available — immediately show dialog/poster
       isPlayingP3Ref.current = false;
       setSrc(pause2Src);
       setShowDialog(true);
-      // Agent stays visible and dialog remains open until user clicks elsewhere
-    });
+    }
   };
 
   const playGif = (gifSrc: string, duration: number, onComplete?: () => void) => {
@@ -140,13 +146,17 @@ export default function AgentHover({
     setIsVisible(true);
     clearTimer();
     
-    // Start p1.gif briefly, then switch to pause1
-    playGif(p1Src, 1800, () => {
-      // After brief p1 animation, show pause1 image while hovering
-      if (hoveredRef.current) {
-        setSrc(posterSrc); // Show pause1.png (posterSrc)
-      }
-    });
+    // Start p1.gif briefly (if provided), otherwise just show poster
+    if (p1Src) {
+      playGif(p1Src, 1800, () => {
+        // After brief p1 animation, show pause1 image while hovering
+        if (hoveredRef.current) {
+          setSrc(posterSrc); // Show pause1.png (posterSrc)
+        }
+      });
+    } else {
+      setSrc(posterSrc);
+    }
   };
 
   const onLeave = () => {

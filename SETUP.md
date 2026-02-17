@@ -90,6 +90,14 @@ node scripts/smoke-amoy.mjs
 
 After deployment, update `NFT_CONTRACT_ADDRESS` and `ENS_REGISTRAR_ADDRESS` in your `.env.local`.
 
+---
+
+## Staging checklist (short)
+See `docs/STAGING_CHECKLIST.md` for a full staging deploy checklist: required env vars, CI flags, pre-deploy and post-deploy verification steps.
+
+## Production release checklist (short)
+See `docs/RELEASE_CHECKLIST.md` for the production launch & rollback checklist.
+
 ## Development
 
 1. **Install dependencies:**

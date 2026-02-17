@@ -85,7 +85,7 @@ export default function ENS101Course() {
           <Button 
             variant="ghost" 
             className="mb-4 text-cyan-400 hover:text-cyan-300"
-            onClick={() => window.location.href = '/courses'}
+            onClick={() => window.location.href = '/learn'}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Courses

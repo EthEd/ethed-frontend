@@ -27,9 +27,9 @@ export default function Navbar() {
       <div className="flex justify-between items-center px-6 py-4">
         {/* Left Menu */}
         <div className="flex space-x-6 font-medium text-sm text-slate-200">
-          <Link href="#" className="hover:text-emerald-400 transition">Explore</Link>
-          <Link href="#" className="hover:text-emerald-400 transition">How It Works</Link>
-          <Link href="#" className="hover:text-emerald-400 transition">Milestones</Link>
+          <Link href="/learn" className="hover:text-emerald-400 transition">Explore</Link>
+          <Link href="/how-it-works" className="hover:text-emerald-400 transition">How It Works</Link>
+          <Link href="/dashboard" className="hover:text-emerald-400 transition">Milestones</Link>
         </div>
 
         {/* Center Logo */}
@@ -46,8 +46,8 @@ export default function Navbar() {
 
         {/* Right Menu */}
         <div className="flex space-x-6 font-medium text-sm items-center relative text-slate-200">
-          <Link href="#" className="hover:text-emerald-400 transition">About</Link>
-          <Link href="#" className="hover:text-emerald-400 transition">Start Learning</Link>
+          <Link href="/about" className="hover:text-emerald-400 transition">About</Link>
+          <Link href="/learn" className="hover:text-emerald-400 transition">Start Learning</Link>
 
           {/* User/Login Section */}
           <div className="relative select-none">

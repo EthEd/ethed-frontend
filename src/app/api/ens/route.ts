@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    let { subdomain, walletAddress } = body;
+    const { subdomain, walletAddress: rawWalletAddress } = body;
+    let walletAddress = rawWalletAddress;
 
     if (!subdomain || typeof subdomain !== 'string') {
       return NextResponse.json({ error: 'Missing subdomain parameter' }, { status: 400 });

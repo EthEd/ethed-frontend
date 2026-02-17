@@ -15,15 +15,12 @@ import {
   http,
   type PublicClient,
   type WalletClient,
-  type Chain,
-  type Transport,
   type Account,
   decodeEventLog,
   type Log,
 } from "viem";
 import { polygonAmoy } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { logger } from "./monitoring";
 
 // ---------------------------------------------------------------------------
 // Environment helpers

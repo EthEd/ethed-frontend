@@ -609,7 +609,7 @@ Let's apply this framework to EIP-1559:
     content: `
 # Draft Your First EIP: Hands-On Workshop
 
-Now it's time to put everything together and draft your first EIP using EIPsInsight's Proposal Builder.
+Now it's time to put everything together and draft your first EIP using EthEd's Proposal Builder.
 
 ## Workshop Overview
 
@@ -668,7 +668,7 @@ In this hands-on session, we'll:
 
 ## Step 4: Writing Your EIP (10 minutes)
 
-### Using EIPsInsight's Proposal Builder
+### Using EthEd's Proposal Builder
 
 The Proposal Builder provides:
 - **Template Generation**: Automatically creates proper EIP structure
@@ -748,7 +748,7 @@ You've mastered:
 - ✅ Understanding Ethereum's architecture and EIP system
 - ✅ Reading and analyzing existing EIPs
 - ✅ Writing well-structured proposals
-- ✅ Using EIPsInsight's tools for EIP development
+- ✅ Using EthEd's tools for EIP development
 - ✅ Engaging with the Ethereum community
 
 **Ready to claim your EIP Expert NFT badge!**

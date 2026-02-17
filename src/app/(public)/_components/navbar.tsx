@@ -57,7 +57,6 @@ export default function Navbar() {
     if (session?.user?.image) {
       return session.user.image;
     }
-
     // Fallback to Vercel avatar
     const identifier = session?.user?.email || session?.address || "default";
     return `https://avatar.vercel.sh/${encodeURIComponent(identifier)}`;
@@ -99,27 +98,24 @@ export default function Navbar() {
           {/* Left Section - Navigation Links */}
           <div className="absolute left-0 flex items-center space-x-6">
             <div className="hidden md:flex items-center space-x-6">
-              <Link 
-                href="/courses" 
+              <Link
+                href="/learn"
                 className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Courses
               </Link>
-              <Link 
-                href="/learn" 
+              <Link
+                href="/how-it-works"
                 className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
-              >
-                Learn
-              </Link>
-              <Link 
-                href="/how-it-works" 
-                className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 How It Works
               </Link>
-              <Link 
-                href="/community" 
+              <Link
+                href="/community"
                 className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Community
               </Link>

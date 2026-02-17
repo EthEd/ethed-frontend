@@ -43,7 +43,7 @@ export default function EthEdHero() {
                 New
               </span>
               <span>
-                EIPSInsight Platform launched!
+                EthEd Platform launched!
               </span>
               <ChevronRight className="text-cyan-400/70 h-3 w-3" />
             </div>
@@ -58,7 +58,7 @@ export default function EthEdHero() {
           >
             Get Rewarded for Learning <br />
             <span className="from-cyan-400 via-teal-400 to-blue-500 bg-gradient-to-r bg-clip-text text-transparent">
-              On EIPSInsight, your progress is owned by you.
+              On EthEd, your progress is owned by you.
             </span>
           </motion.h1>
 
@@ -69,7 +69,7 @@ export default function EthEdHero() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-slate-300 mx-auto mt-6 max-w-2xl text-center text-lg leading-relaxed"
           >
-            EIPSInsight helps you master blockchain from scratch—guided by AI, powered by real rewards. Earn points, NFT badges, and on-chain certificates as you learn. Sign up instantly (no wallet needed) and claim your unique ENS identity!
+            EthEd helps you master blockchain from scratch—guided by AI, powered by real rewards. Earn points, NFT badges, and on-chain certificates as you learn. Sign up instantly (no wallet needed) and claim your unique ENS identity!
           </motion.p>
 
           {/* CTA Buttons */}
@@ -84,9 +84,7 @@ export default function EthEdHero() {
               asChild
               size="lg"
               className="group bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 hover:from-blue-500 hover:to-cyan-600 hover:text-white relative overflow-hidden rounded-full px-8 shadow-lg shadow-cyan-500/20 transition-all duration-300 h-14 text-lg font-bold"
-              onClick={() => window.location.href = '/login'}
             >
-            
               <Link href="/onboarding">
                 <span className="relative z-10 flex items-center">
                   Start Your Journey
@@ -101,11 +99,12 @@ export default function EthEdHero() {
               variant="outline"
               size="lg"
               className="border-cyan-400/70 bg-black/30 flex items-center gap-2 rounded-full text-cyan-100 hover:bg-emerald-400/10 hover:text-white backdrop-blur-sm"
-              onClick={() => window.location.href = '/courses'}
             >
-              <Link href="/courses">
-                <GraduationCap className="h-4 w-4" />
-                Browse Courses
+              <Link href="/learn">
+                <span className="flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4" />
+                  Browse Courses
+                </span>
               </Link>
             </Button>
           </motion.div>
@@ -131,7 +130,7 @@ export default function EthEdHero() {
                     <div className="h-2.5 w-2.5 rounded-full bg-green-400/60"></div>
                   </div>
                   <div className="bg-slate-950/50 text-slate-400 text-[10px] font-mono rounded-md px-3 py-1 border border-white/5">
-                    https://eipsinsight.app
+                    https://ethed.app
                   </div>
                   <div className="w-12"></div>
                 </div>
@@ -144,7 +143,7 @@ export default function EthEdHero() {
                           <GraduationCap className="w-10 h-10 text-slate-900" />
                         </div>
                       </div>
-                      <h3 className="text-2xl font-bold text-white tracking-tight">EIPSInsight Learning Platform</h3>
+                      <h3 className="text-2xl font-bold text-white tracking-tight">EthEd Learning Platform</h3>
                       <p className="text-slate-400 text-sm max-w-xs mx-auto">Master Ethereum standards with AI-guided precision and verifiable rewards.</p>
                       
                       <div className="flex items-center justify-center gap-2 mt-6">
@@ -174,7 +173,7 @@ export default function EthEdHero() {
               </div>
             </div>
 
-            {/* Floaties updated to match EIPsInsight style */}
+            {/* Floaties updated to match EthEd style */}
             <div className="absolute -top-6 -right-6 h-14 w-14 rounded-2xl border border-cyan-400/20 bg-slate-950/80 p-3 shadow-cyan-glow backdrop-blur-md animate-bounce" style={{ animationDuration: '4s' }}>
               <div className="bg-gradient-to-br from-cyan-400 to-blue-500 h-full w-full rounded-lg opacity-40"></div>
             </div>

@@ -27,6 +27,13 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  async redirects() {
+    return [
+      { source: '/courses', destination: '/learn', permanent: true },
+      { source: '/courses/:path*', destination: '/learn/:path*', permanent: true },
+    ];
+  },
+
   async headers() {
     if (process.env.NODE_ENV === 'production') return [];
 

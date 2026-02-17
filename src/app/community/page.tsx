@@ -82,7 +82,7 @@ export default function CommunityPage() {
     {
       date: "March 2024",
       title: "The Spark of an Idea",
-      description: "EIPSInsight was born at ETHGlobal London, where our founder realized that Web3 education needed a more personalized, AI-driven approach.",
+      description: "EthEd was born at ETHGlobal London, where our founder realized that Web3 education needed a more personalized, AI-driven approach.",
       icon: Lightbulb,
       color: "emerald",
       ethGlobalEvent: "ETHGlobal London 2024",
@@ -109,7 +109,7 @@ export default function CommunityPage() {
     {
       date: "May 2024",
       title: "European Expansion", 
-      description: "ETHGlobal Brussels was where EIPSInsight truly came alive. We launched our ENS integration and saw our first real user growth.",
+      description: "ETHGlobal Brussels was where EthEd truly came alive. We launched our ENS integration and saw our first real user growth.",
       icon: Globe,
       color: "blue",
       ethGlobalEvent: "ETHGlobal Brussels 2024",
@@ -123,7 +123,7 @@ export default function CommunityPage() {
     {
       date: "July 2024",
       title: "Community Growth",
-      description: "Summer brought incredible growth as word spread through the Web3 community. Developers from around the world started joining EIPSInsight.",
+      description: "Summer brought incredible growth as word spread through the Web3 community. Developers from around the world started joining EthEd.",
       icon: Users,
       color: "purple",
       achievements: [
@@ -144,13 +144,13 @@ export default function CommunityPage() {
         "🥇 Winner - Best Educational Platform",
         "💰 $15,000 prize + $500K Series A",
         "📰 Featured in TechCrunch & CoinDesk",
-        "🚀 Launched EIPSInsight free learning platform"
+        "🚀 Launched EthEd free learning platform"
       ]
     },
     {
       date: "Present Day",
       title: "Building the Future",
-      description: "Today, EIPSInsight is the leading Web3 education platform. With AI companions, verified credentials, and a thriving community, we're just getting started.",
+      description: "Today, EthEd is the leading Web3 education platform. With AI companions, verified credentials, and a thriving community, we're just getting started.",
       icon: Star,
       color: "purple",
       achievements: [
@@ -332,7 +332,7 @@ export default function CommunityPage() {
           </div>
           
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
-            The EIPSInsight Journey
+            The EthEd Journey
           </h1>
           
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">

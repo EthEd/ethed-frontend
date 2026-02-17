@@ -259,7 +259,7 @@ export default function ProfileClient() {
                       <BookOpen className="h-12 w-12 text-slate-600 mx-auto mb-4" />
                       <p className="text-slate-400 mb-4">No courses enrolled yet</p>
                       <Button asChild className="bg-cyan-600 hover:bg-cyan-500">
-                        <Link href="/courses">Browse Courses</Link>
+                        <Link href="/learn">Browse Courses</Link>
                       </Button>
                     </div>
                   ) : (
@@ -345,7 +345,7 @@ export default function ProfileClient() {
                       Explore more courses and earn exclusive NFT badges
                     </p>
                     <Button asChild className="w-full bg-cyan-600 hover:bg-cyan-500">
-                      <Link href="/courses">
+                      <Link href="/learn">
                         Browse Courses
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </Link>
@@ -365,7 +365,7 @@ export default function ProfileClient() {
                   <h3 className="text-xl font-bold text-white mb-2">No Courses Yet</h3>
                   <p className="text-slate-400 mb-6">Start your learning journey today!</p>
                   <Button asChild className="bg-cyan-600 hover:bg-cyan-500">
-                    <Link href="/courses">Browse All Courses</Link>
+                    <Link href="/learn">Browse All Courses</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -442,7 +442,7 @@ export default function ProfileClient() {
                   <h3 className="text-xl font-bold text-white mb-2">No NFTs Yet</h3>
                   <p className="text-slate-400 mb-6">Complete courses to earn exclusive NFT badges!</p>
                   <Button asChild className="bg-purple-600 hover:bg-purple-500">
-                    <Link href="/courses">Start Learning</Link>
+                    <Link href="/learn">Start Learning</Link>
                   </Button>
                 </CardContent>
               </Card>

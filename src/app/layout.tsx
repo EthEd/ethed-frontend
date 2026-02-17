@@ -28,9 +28,37 @@ const merriweather = Merriweather({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ethed.com";
+
 export const metadata: Metadata = {
-  title: "EIPSInsight - Master blockchain and Web3",
-  description: "EIPSInsight makes blockchain and Web3 education fun, verifiable, and rewarding. Earn NFTs, badges, and real progress while learning with a built-in AI tutor!",
+  metadataBase: new URL(siteUrl),
+  title: "EthEd - Master Blockchain and Web3",
+  description: "EthEd makes blockchain and Web3 education fun, verifiable, and rewarding. Earn NFTs, badges, and real progress while learning with a built-in AI tutor!",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "EthEd - Master Blockchain and Web3",
+    description: "EthEd makes blockchain and Web3 education fun, verifiable, and rewarding. Earn NFTs, badges, and real progress while learning with a built-in AI tutor!",
+    url: siteUrl,
+    siteName: "EthEd",
+    images: [
+      {
+        url: `${siteUrl}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: "EthEd - Master Blockchain and Web3",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EthEd - Master Blockchain and Web3",
+    description: "EthEd makes blockchain and Web3 education fun, verifiable, and rewarding. Earn NFTs, badges, and real progress while learning with a built-in AI tutor!",
+    images: [`${siteUrl}/og-image.png`],
+  },
 };
 
 export default function RootLayout({

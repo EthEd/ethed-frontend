@@ -76,6 +76,10 @@ pnpm pin:genesis      # Pin Genesis NFT assets/metadata to Pinata (writes src/li
 - Set `PINATA_JWT` in `.env.local`.
 - Run `pnpm pin:genesis` to upload the Genesis image + metadata template and update `src/lib/genesis-assets.ts` with the resulting `ipfs://` URIs.
 
+> Dev note: if you haven't pinned assets, the app will fall back to a bundled local image (`/p1.gif`) so the UI and local mint flows remain functional without Pinata.
+
+> ⚠️ Test / CI note: the test suite enforces that `PINATA_JWT` or a real `ipfs://` CID is present only for CI/production. Local development uses the bundled fallback image.
+
 ## 🚀 Deploying to Polygon Amoy Testnet
 
 1. **Setup environment variables:**

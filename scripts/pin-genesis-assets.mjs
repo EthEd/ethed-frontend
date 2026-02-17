@@ -8,7 +8,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function parseArgs(argv) {
-  const args = { image: "public/p1.gif", write: true };
+  // default to the canonical OG PNG (no GIFs by default)
+  const args = { image: "public/og-image.png", write: true };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--image") args.image = argv[++i];

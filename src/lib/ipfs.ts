@@ -11,6 +11,14 @@ export function ipfsToGatewayUrl(
 
   if (uri.startsWith("ipfs://")) {
     const cidAndPath = uri.replace(/^ipfs:\/\//, "");
+
+    // Developer convenience: if the repo still contains the placeholder genesis CID,
+    // show the bundled local preview in development so the UI works without IPFS.
+    if (process.env.NODE_ENV !== 'production' && cidAndPath.startsWith('QmEthEdPioneer1')) {
+      // Use OG image fallback in dev instead of animated GIFs
+      return '/og-image.png';
+    }
+
     return `${gatewayBase.replace(/\/$/, "")}/ipfs/${cidAndPath}`;
   }
 

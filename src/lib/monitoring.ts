@@ -31,21 +31,17 @@ function capture(entry: LogEntry) {
 
   switch (entry.level) {
     case "error":
-      // eslint-disable-next-line no-console
       console.error(formatted, entry.error ?? "");
       break;
     case "warn":
-      // eslint-disable-next-line no-console
       console.warn(formatted);
       break;
     case "debug":
       if (process.env.NODE_ENV === "development") {
-        // eslint-disable-next-line no-console
         console.debug(formatted);
       }
       break;
     default:
-      // eslint-disable-next-line no-console
       console.log(formatted);
   }
 }

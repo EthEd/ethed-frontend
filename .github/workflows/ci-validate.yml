@@ -21,7 +21,7 @@ jobs:
       - name: Enable Corepack + activate pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@8.8.0 --activate
+          corepack prepare pnpm@9.15.4 --activate
 
       - name: Print versions
         run: |

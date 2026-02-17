@@ -683,7 +683,7 @@ export default function LearnPage() {
 
                       {/* Action Button */}
                       <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl shadow-lg shadow-cyan-900/20" asChild>
-                        <Link href={`/courses/${course.id}`}>
+                        <Link href={`/learn/${course.id}`}>
                           {course.progress !== undefined && course.progress > 0 ? (
                             <>
                               Continue Learning

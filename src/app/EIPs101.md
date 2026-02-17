@@ -16,7 +16,7 @@ Students, early-career developers, product-minded builders, and Web3 enthusiasts
 
 ### Learning outcomes
 
-By the end, learners will be able to explain what an EIP is, trace how an idea becomes a standard, recognize EIP types, read real proposals with confidence, and draft a credible first EIP using EIPsInsight’s Proposal Builder.
+By the end, learners will be able to explain what an EIP is, trace how an idea becomes a standard, recognize EIP types, read real proposals with confidence, and draft a credible first EIP using EthEd’s Proposal Builder.
 
 ***
 
@@ -189,9 +189,9 @@ Each example follows the same pattern: one clear pain point, one carefully scope
 
 ***
 
-## 8. Following the process with EIPsInsight
+## 8. Following the process with EthEd
 
-EIPsInsight is a purpose-built companion for tracking, understanding, and drafting EIPs. A practical way to learn with it:
+EthEd is a purpose-built companion for tracking, understanding, and drafting EIPs. A practical way to learn with it:
 
 - Open the dashboard and glance at status distributions. This sets expectations: not every idea becomes Final, and that is healthy.
 - Choose one EIP—say, EIP‑4844—and scroll its status history. Notice how many conversations and iterations precede acceptance.
@@ -202,7 +202,7 @@ This habit—scan, pick, read, compare—turns a massive repository into a focus
 
 ***
 
-## 9. Drafting a first EIP with EIPsInsight’s Proposal Builder
+## 9. Drafting a first EIP with EthEd’s Proposal Builder
 
 The Proposal Builder transforms a daunting process into a guided writing session. A credible first draft emerges naturally by moving section by section.
 
@@ -274,7 +274,7 @@ Good etiquette is simple: be specific, be kind, and be ready to change one’s m
 
 ## 13. Final guidance
 
-A strong EIP feels inevitable when read: the problem was real, the solution was the smallest that could work, and every sharp edge has a guardrail. Starting small, writing precisely, and iterating publicly are the reliable ingredients. With EIPsInsight as the compass—for tracking, comparing, and drafting—beginners become credible contributors far sooner than expected.
+A strong EIP feels inevitable when read: the problem was real, the solution was the smallest that could work, and every sharp edge has a guardrail. Starting small, writing precisely, and iterating publicly are the reliable ingredients. With EthEd as the compass—for tracking, comparing, and drafting—beginners become credible contributors far sooner than expected.
 
 ![Key principles of on-chain governance in blockchain, illustrating decentralization, transparency, inclusivity, immutability, and responsiveness.](https://pplx-res.cloudinary.com/image/upload/v1755619457/pplx_project_search_images/3b5d847eecdfd6aab705f3de83f682c09ad2aa69.png)
 
@@ -288,7 +288,7 @@ Students, early‑career developers, product‑minded builders, and Web3 enthusi
 
 ### Learning outcomes
 
-Explain what an EIP is; trace how an idea becomes a standard; recognize EIP types; read real proposals with confidence; and draft a credible first EIP using EIPsInsight’s Proposal Builder.
+Explain what an EIP is; trace how an idea becomes a standard; recognize EIP types; read real proposals with confidence; and draft a credible first EIP using EthEd’s Proposal Builder.
 
 ***
 
@@ -355,13 +355,13 @@ Read Abstract and Motivation together to confirm the problem and shape of the fi
 
 ***
 
-### Following the process with EIPsInsight
+### Following the process with EthEd
 
 A practical habit that works: scan the dashboard to calibrate expectations about status distribution, pick one proposal and read its status history, check editor activity to understand review load, and filter for similar EIPs to compare patterns before drafting.
 
 ***
 
-### Drafting a first EIP with EIPsInsight’s Proposal Builder
+### Drafting a first EIP with EthEd’s Proposal Builder
 
 Start with the smallest real integration problem; write a two‑sentence abstract anyone can parse; tell a specific motivation story with concrete failures; specify exact names, types, events, and revert rules; use rationale to justify each sharp edge; capture backwards‑compatibility and security in actionable terms; preview and validate; export and open a pull request to begin iterative review.
 

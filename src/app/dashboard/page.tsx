@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { authClient } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,7 +41,7 @@ interface UserProfile {
 }
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = authClient.useSession();
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -121,7 +121,7 @@ export default function DashboardPage() {
         <div className="mb-12 flex items-center justify-between">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent mb-4">
-              Welcome back, {session.user.name || 'Learner'}! 👋
+              Welcome back, {session?.user?.name || 'Learner'}! 👋
             </h1>
             <p className="text-lg text-muted-foreground">
               Track your progress and continue your journey into the world of EIPs.
@@ -310,7 +310,7 @@ export default function DashboardPage() {
                   <h3 className="text-xl font-bold text-white mb-2">Advance your Skills</h3>
                   <p className="text-slate-400 text-sm mb-6">Master complex EIPs and earn exclusive on-chain certifications.</p>
                   <Button asChild className="w-full bg-slate-800 hover:bg-slate-700 text-white rounded-xl">
-                    <Link href="/courses">
+                    <Link href="/learn">
                       Browse More Courses
                     </Link>
                   </Button>

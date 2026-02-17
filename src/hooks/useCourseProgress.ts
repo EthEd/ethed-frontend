@@ -32,7 +32,7 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
         // 2. Fallback to localStorage
         const saved = localStorage.getItem(storageKey(courseSlug));
         if (saved) setCompletedModules(new Set(JSON.parse(saved)));
-      } catch (e) {
+      } catch {
         setCompletedModules(new Set());
       } finally {
         setLoading(false);
@@ -47,16 +47,16 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
         try {
           const saved = localStorage.getItem(storageKey(courseSlug));
           if (saved) setCompletedModules(new Set(JSON.parse(saved)));
-        } catch (err) { /* ignore */ }
+        } catch { /* ignore */ }
       }
     };
 
     const onCustom = (e: Event) => {
       try {
-        // @ts-ignore
+        // @ts-expect-error: pending type from courseProgress API response
         const d: ProgressEventDetail = e.detail;
         if (d?.courseSlug === courseSlug) load();
-      } catch (err) { /* ignore */ }
+      } catch { /* ignore */ }
     };
 
     window.addEventListener('storage', onStorage);
@@ -92,7 +92,7 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
           })
         });
       }
-    } catch (err) {
+    } catch {
       // sync error — progress saved locally, DB sync will retry
     }
   }, [courseSlug, totalModules]);
@@ -120,7 +120,7 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
           })
         });
       }
-    } catch (err) {
+    } catch {
       // sync error — progress saved locally, DB sync will retry
     }
   }, [courseSlug, totalModules]);
@@ -142,7 +142,7 @@ export function useCourseProgress(courseSlug: string, totalModules?: number) {
                 totalModules: totalModules || 1
             })
         });
-    } catch (err) {
+    } catch {
       // reset sync error — local state is already cleared
     }
   }, [courseSlug, totalModules]);
