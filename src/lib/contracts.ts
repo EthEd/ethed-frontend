@@ -6,6 +6,8 @@
  *   ENS_REGISTRAR_ADDRESS     – deployed ENS registrar mock (overrides testnet default)
  */
 
+import { logger } from "./monitoring";
+
 export const AMOY_CHAIN_ID = 80002;
 
 // ---------------------------------------------------------------------------
@@ -193,8 +195,10 @@ if (process.env.NODE_ENV === "production") {
   if (amoy) {
     for (const [name, addr] of Object.entries(amoy)) {
       if (addr === "0x0000000000000000000000000000000000000000") {
-        // eslint-disable-next-line no-console
-        console.warn(`[contracts] WARNING: ${name} on Amoy uses placeholder address 0x000...000. Set NFT_CONTRACT_ADDRESS / ENS_REGISTRAR_ADDRESS env vars.`);
+        logger.warn(
+          `${name} on Amoy uses placeholder address 0x000...000. Set NFT_CONTRACT_ADDRESS / ENS_REGISTRAR_ADDRESS env vars.`,
+          "contracts"
+        );
       }
     }
   }

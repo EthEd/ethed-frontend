@@ -108,7 +108,7 @@ export const CourseCreateSchema = z.preprocess((val) => {
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"], {
     message: "Please select a valid publication status"
   }),
-});
+}));
 
 // Draft schema with more lenient validation
 export const CourseDraftSchema = z.preprocess((val) => {
@@ -130,7 +130,7 @@ export const CourseDraftSchema = z.preprocess((val) => {
   smallDescription: z.string().optional().default(""),
   slug: z.string().optional().default(""),
   status: z.literal("DRAFT").default("DRAFT"),
-});
+}));
 
 export type CourseCreateInput = z.infer<typeof CourseCreateSchema>;
 export type CourseDraftInput = z.infer<typeof CourseDraftSchema>;

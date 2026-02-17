@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
 import { mintCourseCompletionNFT } from "@/lib/nft-service";
+import { logger } from "@/lib/monitoring";
 
 export async function POST(request: NextRequest) {
   try {
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
     // Fetch user data (including ENS name if available)
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { WalletAddress: { where: { isPrimary: true } } },
+      include: { wallets: { where: { isPrimary: true } } },
     });
 
     if (!user) {
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's wallet address if available
-    const primaryWallet = user.WalletAddress?.[0];
+    const primaryWallet = user.wallets?.[0];
     const walletAddress = userAddress || primaryWallet?.address || undefined;
 
     // Mint course completion NFT (Learning Sprout GIF)
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("NFT claim error:", error);
+    logger.error("NFT claim error", "api/claim-nft", undefined, error);
 
     const message = error instanceof Error ? error.message : "Internal server error";
 

@@ -10,6 +10,7 @@ import { Loader2, Wallet, ExternalLink, CheckCircle, Smartphone } from "lucide-r
 import { toast } from "sonner";
 import { useENSLookup } from "@/hooks/use-ens-lookup";
 import { getBlockchainErrorInfo } from "@/lib/blockchain-errors";
+import { logger } from "@/lib/monitoring";
 
 // Ethereum provider type declaration
 declare global {
@@ -96,10 +97,12 @@ export default function WalletConnectionForm({
 
       // Dev-only diagnostic to help capture provider anomalies (invisible chars, formatting)
       if (process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console
-        console.debug("[wallet-connect] provider account raw:", JSON.stringify(accounts[0]));
-        // eslint-disable-next-line no-console
-        console.debug("[wallet-connect] sanitized:", JSON.stringify(rawAddr));
+        logger.debug("wallet-connect provider account raw", "WalletConnectionForm", {
+          raw: JSON.stringify(accounts[0]),
+        });
+        logger.debug("wallet-connect sanitized account", "WalletConnectionForm", {
+          sanitized: JSON.stringify(rawAddr),
+        });
       }
 
       // Primary validation: expect a standard 0x-prefixed 40-hex char address

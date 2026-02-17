@@ -14,6 +14,8 @@ const REQUIRED_VARS = [
 const RECOMMENDED_VARS = [
   { name: "AMOY_RPC_URL", critical: false, description: "Polygon Amoy RPC for on-chain operations" },
   { name: "DEPLOYER_PRIVATE_KEY", critical: false, description: "Server relayer wallet key" },
+  { name: "NFT_CONTRACT_ADDRESS", critical: false, description: "Deployed NFT contract address" },
+  { name: "ENS_REGISTRAR_ADDRESS", critical: false, description: "Deployed ENS registrar contract address" },
   { name: "PINATA_JWT", critical: false, description: "Pinata IPFS uploads" },
   { name: "OPENAI_API_KEY", critical: false, description: "AI agent backend" },
   { name: "GOOGLE_CLIENT_ID", critical: false, description: "Google OAuth" },
@@ -63,10 +65,6 @@ for (const v of RECOMMENDED_VARS) {
 console.log("");
 console.log("── Security Checks ────────────────────────────────────");
 
-// Check for private key in common unsafe locations
-const unsafeKeyPatterns = [
-  /PRIVATE_KEY.*=.*[0-9a-fA-F]{64}/,
-];
 // We can't easily check files from this script, so just note the guidance
 console.log("  ℹ️  Ensure no secrets are committed to version control");
 console.log("  ℹ️  Use .env.local (gitignored) or a secrets manager");

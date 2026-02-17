@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateNonce } from "siwe";
+import { logger } from "@/lib/monitoring";
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Log for diagnostics (helps debug missing-cookie/SameSite issues)
-    console.info('[siwe/nonce] nonce generated and cookie set');
+    logger.info('SIWE nonce generated and cookie set', 'api/siwe/nonce');
 
     return response;
   } catch (error) {

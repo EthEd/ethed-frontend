@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import Link from 'next/link';
+import { logger } from '@/lib/monitoring';
 
 export default function ProfileError({
   error,
@@ -15,7 +16,7 @@ export default function ProfileError({
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error('Profile page error:', error);
+    logger.error('Profile page error', 'profile-error', undefined, error);
   }, [error]);
 
   return (

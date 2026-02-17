@@ -7,7 +7,7 @@ vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
 import BlockchainErrorBoundary from '@/components/BlockchainErrorBoundary';
 import { toast } from 'sonner';
 
-function Bomb() {
+function Bomb(): React.ReactElement {
   throw new Error('boom');
 }
 

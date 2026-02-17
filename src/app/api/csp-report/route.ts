@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/monitoring';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,14 +16,14 @@ export async function POST(request: NextRequest) {
       'column-number': report['column-number'],
     };
 
-    console.warn('CSP report received:', JSON.stringify(summary));
+    logger.warn('CSP report received', 'api/csp-report', { summary });
 
     // Optionally persist reports or forward to an external monitoring service here
 
     // 204 must not include a response body — use NextResponse for an empty response
     return new NextResponse(null, { status: 204 });
   } catch (err) {
-    console.error('Failed to process CSP report:', err);
+    logger.error('Failed to process CSP report', 'api/csp-report', undefined, err);
     return NextResponse.json({ error: 'Failed to process CSP report' }, { status: 500 });
   }
 }

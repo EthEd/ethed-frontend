@@ -42,3 +42,11 @@ next-env.d.ts
 
 /src/generated/prisma
 old_node_modules/
+
+# Ignore generated / dev artifacts
+package-lock.json
+pnpm-lock 2.yaml
+public/local-metadata/
+*.tsbuildinfo
+.DS_Store
+.kiro/

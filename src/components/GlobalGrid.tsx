@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { logger } from '@/lib/monitoring';
 
 interface Particle {
   x: number;
@@ -91,7 +92,9 @@ export default function GlobalGrid({
         }
       }
     } catch (error) {
-      console.warn('Content detection error:', error);
+      logger.warn('Content detection error', 'GlobalGrid', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
     
     return false;

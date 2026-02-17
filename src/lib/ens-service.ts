@@ -11,6 +11,7 @@ import {
   getExplorerTxUrl,
 } from "./contracts";
 import {
+  getDeployerAddress,
   getPublicClient,
   getWalletClient,
   isOnChainEnabled,
@@ -42,7 +43,7 @@ async function resolveEnsAvatar(ensName: string): Promise<string | null> {
       // Not JSON — cannot determine avatar
       return null;
     }
-  } catch (err) {
+  } catch {
     return null;
   }
 }
@@ -167,6 +168,8 @@ export async function registerOnChain(
       abi: ENS_REGISTRAR_ABI,
       functionName: "register",
       args: [subdomain, ownerAddress as `0x${string}`, duration],
+      account: getDeployerAddress(),
+      chain: undefined,
     });
 
     logger.info(`ENS register tx sent: ${txHash}`, "ens-service");
@@ -252,7 +255,7 @@ export async function registerENS(params: ENSRegistrationParams) {
   // Validate subdomain label
   const validation = validateSubdomain(subdomain);
   if (!validation.valid) {
-    throw new Error(validation.error);
+    throw new Error(validation.error ?? "Invalid ENS subdomain");
   }
 
   const cleaned = subdomain.trim().toLowerCase();
@@ -270,7 +273,7 @@ export async function registerENS(params: ENSRegistrationParams) {
   const { txHash, explorerUrl } = await registerOnChain(cleaned, defaultAddress, rootDomain);
 
   // Save to database
-  const walletRecord = await saveENSToDatabase({
+  let walletRecord = await saveENSToDatabase({
     userId,
     ensName,
     address: walletAddress,
@@ -283,7 +286,7 @@ export async function registerENS(params: ENSRegistrationParams) {
 
   if (existingWallets.length === 1) {
     // This is the first wallet, make it primary
-    await prisma.walletAddress.update({
+    walletRecord = await prisma.walletAddress.update({
       where: { id: walletRecord.id },
       data: { isPrimary: true }
     });
@@ -293,16 +296,17 @@ export async function registerENS(params: ENSRegistrationParams) {
   try {
     const avatar = await resolveEnsAvatar(ensName);
     if (avatar) {
-      await prisma.walletAddress.update({
+      walletRecord = await prisma.walletAddress.update({
         where: { id: walletRecord.id },
         data: { ensAvatar: avatar }
       });
-      // Reflect the avatar in the returned wallet object
-      (walletRecord as any).ensAvatar = avatar;
     }
   } catch (err) {
     // Non-fatal — avatar resolution should not block registration
-    logger.debug('avatar resolution failed', 'ens-service');
+    logger.warn("avatar resolution failed", "ens-service", {
+      ensName,
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
   }
 
   return {

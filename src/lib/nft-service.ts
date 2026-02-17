@@ -5,6 +5,7 @@
 
 import { pinFile, pinJSON } from "./pinata-config";
 import { prisma } from "@/lib/prisma-client";
+import type { Prisma } from "@/generated/prisma";
 import { GENESIS_PIONEER_IMAGE_URI, GENESIS_PIONEER_METADATA_URI } from "@/lib/genesis-assets";
 import {
   getContractAddress,
@@ -13,6 +14,7 @@ import {
   getExplorerTxUrl,
 } from "@/lib/contracts";
 import {
+  getDeployerAddress,
   getPublicClient,
   getWalletClient,
   isOnChainEnabled,
@@ -179,7 +181,6 @@ export async function mintNFTAndSave(
       data: {
         userId,
         name: `eth.ed Genesis Pioneer - ${ensName || user.name || "Scholar"}`,
-        description: metadata.description,
         image: GENESIS_PIONEER_IMAGE_URI,
         metadata: metadataUri,
         contractAddress: contractAddr,
@@ -245,6 +246,8 @@ export async function mintOnChain(
       abi: NFT_CONTRACT_ABI,
       functionName: "mint",
       args: [recipientAddress as `0x${string}`, metadataUri],
+      account: getDeployerAddress(),
+      chain: undefined,
     });
 
     logger.info(`Mint tx sent: ${txHash}`, "nft-service");
@@ -316,7 +319,7 @@ export async function saveNFTToDatabase(params: {
       tokenId: params.tokenId,
       name: params.name,
       image: params.image,
-      metadata: params.metadata as Record<string, unknown>,
+      metadata: params.metadata as unknown as Prisma.InputJsonValue,
       contractAddress: params.contractAddress ?? null,
       transactionHash: params.transactionHash ?? null,
       ownerAddress: params.ownerAddress ?? null,

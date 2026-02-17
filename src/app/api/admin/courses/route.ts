@@ -4,33 +4,23 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import getServerSession from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
 import { CourseCreateSchema } from "@/lib/zodSchemas";
 import { sanitizeSlug } from "@/lib/zodSchemas";
+import { requireAdmin } from "@/lib/middleware/requireAdmin";
+import { logger } from "@/lib/monitoring";
 
-// Check if user is admin (implement role-based auth as needed)
-async function isAdmin(userId: string): Promise<boolean> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
-  return user?.email?.endsWith("@admin.ethed.app") ?? false;
-}
 
 /**
  * GET: Fetch all courses or a specific course
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!(await isAdmin(session.user.id))) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const adminCheck = await requireAdmin();
+    if (adminCheck instanceof Response) return adminCheck as any;
+    const userId = adminCheck as string;
 
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get("id");
@@ -65,14 +55,9 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!(await isAdmin(session.user.id))) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const adminCheck = await requireAdmin();
+    if (adminCheck instanceof Response) return adminCheck as any;
+    const userId = adminCheck as string;
 
     const body = await request.json();
 
@@ -114,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(course, { status: 201 });
   } catch (error) {
-    console.error("Course creation error:", error);
+    logger.error("Course creation error", "api/admin/courses", undefined, error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -127,14 +112,9 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!(await isAdmin(session.user.id))) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const adminCheck = await requireAdmin();
+    if (adminCheck instanceof Response) return adminCheck as any;
+    const userId = adminCheck as string;
 
     const body = await request.json();
     const { courseId, title, description, level, category, fileKey, status } = body;
@@ -170,14 +150,9 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!(await isAdmin(session.user.id))) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const adminCheck = await requireAdmin();
+    if (adminCheck instanceof Response) return adminCheck as any;
+    const userId = adminCheck as string;
 
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get("id");

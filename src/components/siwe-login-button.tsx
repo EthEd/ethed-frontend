@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { AMOY_CHAIN_ID, getChainConfig } from "@/lib/contracts";
 import { getBlockchainErrorInfo } from "@/lib/blockchain-errors";
 import { ensureAmoyChain, getWalletChainId } from "@/lib/wallet-client";
+import { logger } from "@/lib/monitoring";
 
 /**
  * Strip zero-width characters, smart quotes, non-ASCII whitespace that
@@ -103,8 +104,7 @@ export function SiweLoginButton() {
           // Non-blocking diagnostic for developers; proceed regardless because the server will
           // verify the nonce from the HttpOnly cookie set by `/api/auth/siwe/nonce`.
           // (Avoid showing a toast here to prevent confusing end users.)
-          // eslint-disable-next-line no-console
-          console.warn('siwe-login: `siwe-nonce` not visible to document.cookie (expected for HttpOnly). Proceeding.');
+          logger.warn('`siwe-nonce` not visible to document.cookie (expected for HttpOnly). Proceeding.', 'SiweLoginButton');
         }
       } catch (e) {
         // Ignore cookie-check errors in restrictive environments

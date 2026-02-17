@@ -109,7 +109,7 @@ export const coursesWithPath: EnhancedCourse[] = [
           { id: 6, title: 'Anatomy of an EIP', type: 'reading', duration: 20, difficulty: 'Medium', xpReward: 120, hasQuiz: false, estimatedTime: '20 min', keyTakeaways: ['Preamble, abstract, motivation, specification, rationale'] },
           { id: 7, title: 'Famous EIP Case Studies', type: 'reading', duration: 25, difficulty: 'Medium', xpReward: 140, hasQuiz: false, estimatedTime: '25 min', keyTakeaways: ['ERC-20, EIP-1559, EIP-4844—what changed and why'] },
           { id: 8, title: 'Reading EIPs Like a Pro', type: 'reading', duration: 15, difficulty: 'Easy', xpReward: 90, hasQuiz: false, estimatedTime: '15 min', keyTakeaways: ['How to skim, understand motivation, and evaluate specification'] },
-          { id: 9, title: 'Draft Your First EIP', type: 'interactive', duration: 45, difficulty: 'Hard', xpReward: 200, hasQuiz: false, estimatedTime: '45 min', keyTakeaways: ['Hands-on drafting, proposal builder, submission checklist'] }
+          { id: 9, title: 'Draft Your First EIP', type: 'project', duration: 45, difficulty: 'Hard', xpReward: 200, hasQuiz: false, estimatedTime: '45 min', keyTakeaways: ['Hands-on drafting, proposal builder, submission checklist'] }
         ]
       }
     ]

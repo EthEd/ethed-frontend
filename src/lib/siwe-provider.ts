@@ -7,6 +7,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { SiweMessage } from "siwe";
 import { prisma } from "@/lib/prisma-client";
 import { AMOY_CHAIN_ID } from "./contracts";
+import { logger } from "./monitoring";
 
 function getCookieValue(cookieHeader: string | undefined, name: string): string | undefined {
   if (!cookieHeader) return undefined;
@@ -67,8 +68,12 @@ export function SiweProvider() {
         // Development-only diagnostic logs to help reproduce verification/nonce issues
         if (process.env.NODE_ENV !== "production") {
           // Avoid logging signatures or sensitive tokens; log only nonce/cookie/header presence and message fields.
-          // eslint-disable-next-line no-console
-          console.info("[siwe] incoming authorize — message.nonce=", siweMessage.nonce, "cookieHeader=", cookieHeader ? "<present>" : "<missing>", "nonceCookie=", nonceCookie ? "<present>" : "<missing>", "address=", address);
+          logger.info("SIWE authorize request", "siwe-provider", {
+            address,
+            cookieHeader: cookieHeader ? "<present>" : "<missing>",
+            nonceCookie: nonceCookie ? "<present>" : "<missing>",
+            nonceInMessage: siweMessage.nonce,
+          });
         }
 
         if (!nonceCookie) {
@@ -83,8 +88,12 @@ export function SiweProvider() {
           await siweMessage.verify({ signature: credentials.signature });
         } catch (verifyErr: any) {
           // Log server-side for debugging and return a clear message to client
-          // eslint-disable-next-line no-console
-          console.error("SIWE verification failed:", verifyErr?.message ?? verifyErr);
+          logger.error(
+            "SIWE verification failed",
+            "siwe-provider",
+            { address },
+            verifyErr
+          );
           throw new Error("Signature verification failed — please ensure you signed the exact message in your wallet and try again.");
         }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma-client';
+import { logger } from '@/lib/monitoring';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
       completed: userCourse?.completed || false
     });
   } catch (err) {
-    console.error('GET /api/user/course/progress error:', err);
+    logger.error('GET /api/user/course/progress error', 'api/user/course/progress', undefined, err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ message: 'Progress updated', userCourse });
   } catch (err) {
-    console.error('POST /api/user/course/progress error:', err);
+    logger.error('POST /api/user/course/progress error', 'api/user/course/progress', undefined, err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
