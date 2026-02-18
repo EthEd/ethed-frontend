@@ -116,15 +116,39 @@ export default function CoursePage() {
         return <div>Course not found</div>;
     }
 
-    const courseModules = Array.from({ length: course.lessons }, (_, i) => ({
-        id: `${i + 1}`,
+    const lessonsArray = Array.from({ length: course.lessons }, (_, i) => ({
+        id: `lesson-${i + 1}`,
         title: `Lesson ${i + 1}: Introduction to ${course.title}`,
-        type: "video" as "video" | "reading" | "quiz",
-        duration: Math.floor(Math.random() * 15) + 5,
-        isCompleted: i < (course.progress || 0) / (100/course.lessons),
-        isLocked: i > (course.progress || 0) / (100/course.lessons),
-        content: `This is the content for lesson ${i + 1}. It's currently a placeholder.`
+        content: `This is the content for lesson ${i + 1}. It's currently a placeholder.`,
+        duration: `${Math.floor(Math.random() * 15) + 5} min`,
+        type: 'video' as const,
+        xpReward: 10 + Math.floor(Math.random() * 30),
+        difficulty: (i % 3 === 0 ? 'Beginner' : i % 3 === 1 ? 'Intermediate' : 'Advanced') as 'Beginner' | 'Intermediate' | 'Advanced',
+        keyTakeaways: [
+          'Core concept overview',
+          'Implementation detail',
+          'Next steps'
+        ]
     }));
 
-    return <CourseModulePage course={course} modules={courseModules} />;
+    const modules = [
+      {
+        id: 'module-1',
+        title: 'All Lessons',
+        description: course.description || '',
+        estimatedTime: course.duration || '',
+        lessons: lessonsArray,
+        rewardBadge: course.nftReward || undefined,
+        icon: '📚'
+      }
+    ];
+
+    return (
+      <CourseModulePage
+        courseId={course.id}
+        courseName={course.title}
+        modules={modules}
+        totalLessons={lessonsArray.length}
+      />
+    );
 }

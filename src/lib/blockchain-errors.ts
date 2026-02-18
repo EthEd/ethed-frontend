@@ -55,10 +55,13 @@ export function getBlockchainErrorInfo(error: unknown): BlockchainErrorInfo {
 
     // Normalize and present common address/formatting errors to users more clearly
     if (lower.includes("eip-55") || lower.includes("checksum") || lower.includes("invalid address")) {
+      // If it's a code-level error (not user manual entry), give a slightly more technical hint
+      const isManualEntry = lower.includes("format") || lower.includes("invalid address");
       return {
         title: "Invalid address",
-        description:
-          "The address looks invalid — remove extra spaces or invisible characters, ensure it starts with `0x`, or use an ENS name (e.g. `vitalik.eth`). You can also click **Connect Current Wallet** to import the address from your wallet.",
+        description: isManualEntry
+          ? "The address looks invalid — remove extra spaces or invisible characters, or ensure it starts with `0x`. If you're using a wallet, try clicking **Connect Current Wallet** again."
+          : "The wallet returned an invalid address format. Please try reconnecting your wallet.",
       };
     }
 

@@ -25,6 +25,12 @@ jobs:
           corepack enable
           corepack prepare pnpm@9.15.4 --activate
 
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -81,6 +87,12 @@ jobs:
           corepack enable
           corepack prepare pnpm@9.15.4 --activate
 
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -89,6 +101,12 @@ jobs:
           CI: true
           PINATA_JWT: ${{ secrets.PINATA_JWT || '' }}
         run: pnpm test --reporter=dot
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-coverage
+          path: coverage
 
   e2e:
     name: Playwright E2E (optional)
@@ -107,6 +125,12 @@ jobs:
         run: |
           corepack enable
           corepack prepare pnpm@9.15.4 --activate
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

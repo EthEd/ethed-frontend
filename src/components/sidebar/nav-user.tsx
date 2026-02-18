@@ -31,12 +31,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { authClient } from "@/lib/auth-client";
+import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { useSignOut } from "@/hooks/use-signout"
 
 export function NavUser() {
-  const { data : session, isPending } = authClient.useSession();
+  const { data : session, status } = useSession();
+  const isPending = status === "loading";
   const { isMobile } = useSidebar();
   const handleSignOut = useSignOut();
 

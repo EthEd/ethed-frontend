@@ -7,9 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  Play,
-  Pause,
-  RotateCcw,
   ArrowRight,
   CheckCircle,
   Sparkles,
@@ -17,17 +14,11 @@ import {
   Award,
   Users,
   Zap,
-  Heart,
   Globe,
-  Gift,
   Crown,
   Star,
-  Brain,
   Target,
-  TrendingUp,
   Wallet,
-  PawPrint,
-  MessageCircle,
   Code,
   ChevronRight,
   ChevronDown,
@@ -160,7 +151,6 @@ const keyFeatures: Feature[] = [
 
 export default function HowItWorksPage() {
   const [activeStep, setActiveStep] = useState(1);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [expandedFeature, setExpandedFeature] = useState<number | null>(null);
 
   const currentStep = learningSteps.find(step => step.id === activeStep);

@@ -25,7 +25,7 @@ export async function GET() {
       total: nfts.length
     });
 
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       nft
     });
 
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
       { error: "Please provide either 'name' or 'address' query parameter" },
       { status: 400 }
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to check ENS. Please try again." },
       { status: 500 }

@@ -13,7 +13,6 @@ import {
   Users,
   Star,
   Trophy,
-  Zap,
   Target,
   ArrowRight,
   Search,
@@ -21,30 +20,16 @@ import {
   ChevronDown,
   ChevronRight,
   CheckCircle,
-  Lock,
-  Unlock,
   Code,
-  Globe,
   Coins,
   Shield,
-  Lightbulb,
-  Rocket,
   Brain,
-  PawPrint,
   Award,
-  TrendingUp,
-  Heart,
   Sparkles,
-  Crown,
   Flame,
   Gift,
-  Calendar,
-  MapPin,
-  ExternalLink,
-  Info,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 
 interface Course {
   id: string;

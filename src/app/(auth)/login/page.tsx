@@ -47,7 +47,7 @@ export default function LoginPage() {
       } else {
         toast.error('Login failed. Please try again.');
       }
-    } catch (error) {
+    } catch {
       toast.error('Login failed. Please try again.');
     } finally {
       setIsLoading(false);

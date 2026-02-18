@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { SiweMessage } from "siwe";
 import { prisma } from "@/lib/prisma-client";
-import { AMOY_CHAIN_ID, getExplorerTxUrl } from "@/lib/contracts";
+import { AMOY_CHAIN_ID } from "@/lib/contracts";
 import { logger } from "@/lib/monitoring";
 
 /**

@@ -1,6 +1,6 @@
 'use client';
 
-import { authClient } from '@/lib/auth-client';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,8 +13,7 @@ import {
   TrendingUp, 
   Users, 
   Star,
-  ArrowRight,
-  PawPrint
+  ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -41,13 +40,14 @@ interface UserProfile {
 }
 
 export default function DashboardPage() {
-  const { data: session, status } = authClient.useSession();
+  const { data: session, status } = useSession();
+  const isPending = status === "loading";
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "loading") return;
+    if (isPending) return;
     
     if (!session) {
       router.push("/login");
@@ -58,15 +58,15 @@ export default function DashboardPage() {
     fetch('/api/user/profile')
       .then(res => res.json())
       .then(data => {
-        setProfile(data);
+        setProfile(data.user || data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch(() => {
         setLoading(false);
       });
-  }, [session, status, router]);
+  }, [session, isPending, router]);
 
-  if (status === "loading" || loading) {
+  if (isPending || loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">

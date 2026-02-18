@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,36 +10,21 @@ import {
   Rocket,
   Trophy,
   Zap,
-  Heart,
   Star,
   ArrowRight,
   ExternalLink,
   Calendar,
-  MapPin,
   Award,
   Building,
   Handshake,
-  Target,
-  ChevronRight,
-  Github,
-  Twitter,
-  Linkedin,
-  MessageSquare,
   Code,
-  BookOpen,
-  Sparkles,
   Crown,
-  TrendingUp,
   Lightbulb,
   PawPrint,
   Globe,
-  Gift,
   CheckCircle,
-  Wallet,
-  Brain,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { FaDiscord as Discord } from "react-icons/fa";
 import { getFormattedMetrics } from "@/lib/metrics";
 
@@ -75,7 +60,6 @@ interface PlatformFeature {
 export default function CommunityPage() {
   const formattedMetrics = getFormattedMetrics();
   
-  const [selectedMilestone, setSelectedMilestone] = useState<number>(0);
   const [mounted, setMounted] = useState(false);
 
   const milestones: Milestone[] = [

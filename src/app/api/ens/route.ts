@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { registerENS, validateSubdomain, checkAvailability } from "@/lib/ens-service";
+import aj, { slidingWindow } from "@/lib/arcjet";
+
+// Rate limiting for ENS registration - expensive on-chain operation
+const ensRateLimit = aj.withRule(
+  slidingWindow({
+    mode: "LIVE",
+    interval: "1h",
+    max: 5, // 5 registrations per hour per user
+  })
+);
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +21,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Unauthorized - Please sign in to register ENS" },
         { status: 401 }
+      );
+    }
+
+    // Apply rate limiting
+    const decision = await ensRateLimit.protect(request, {
+      fingerprint: session.user.id,
+    });
+
+    if (decision.isDenied()) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please try again later." },
+        { status: 429 }
       );
     }
 
@@ -127,7 +149,7 @@ export async function GET(request: NextRequest) {
       fullName: `${subdomain.trim().toLowerCase()}.ethed.eth`,
     });
 
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

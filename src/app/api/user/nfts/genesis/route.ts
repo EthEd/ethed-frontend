@@ -3,6 +3,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { mintGenesisNFTs } from "@/lib/nft-service";
 import { getUserENS } from "@/lib/ens-service";
+import aj, { slidingWindow } from "@/lib/arcjet";
+
+// Rate limiting for NFT minting - expensive on-chain operation
+const nftRateLimit = aj.withRule(
+  slidingWindow({
+    mode: "LIVE",
+    interval: "1d",
+    max: 3, // 3 mint attempts per day per user
+  })
+);
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +22,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Unauthorized - Please sign in to mint NFTs" },
         { status: 401 }
+      );
+    }
+
+    // Apply rate limiting
+    const decision = await nftRateLimit.protect(request, {
+      fingerprint: session.user.id,
+    });
+
+    if (decision.isDenied()) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. You can mint up to 3 NFTs per day." },
+        { status: 429 }
       );
     }
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import { useCourseProgress } from '@/hooks/useCourseProgress';
 import { useClaimNFT } from '@/hooks/use-claim-nft';
-import { ArrowLeft, ArrowRight, Play, FileText, Code, CheckCircle, Clock, Award, Users } from 'lucide-react';
+import { ArrowLeft, Play, FileText, Code, Clock, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';

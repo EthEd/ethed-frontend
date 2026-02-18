@@ -13,17 +13,14 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  User,
   Award,
   BookOpen,
   Calendar,
   TrendingUp,
   Trophy,
   Loader2,
-  ExternalLink,
   ArrowRight,
   BarChart3,
-  Target,
   Sparkles,
   CheckCircle2,
   Clock,
@@ -90,31 +87,29 @@ export default function ProfileClient() {
       return;
     }
 
-    fetchProfile();
-  }, [session, status, router]);
+    (async () => {
+      try {
+        const response = await fetch('/api/user/profile-data');
+        const data = await response.json();
 
-  const fetchProfile = async () => {
-    try {
-      const response = await fetch('/api/user/profile-data');
-      const data = await response.json();
-
-      if (!data.success) {
-        if (data.error === 'Unauthorized') {
-          router.push('/login');
+        if (!data.success) {
+          if (data.error === 'Unauthorized') {
+            router.push('/login');
+            return;
+          }
+          const errText = typeof data.error === 'string' ? data.error : (data.error ? JSON.stringify(data.error) : null);
+          toast.error(errText || 'Failed to load profile');
           return;
         }
-        const errText = typeof data.error === 'string' ? data.error : (data.error ? JSON.stringify(data.error) : null);
-        toast.error(errText || 'Failed to load profile');
-        return;
-      }
 
-      setProfile(data.profile);
-    } catch (error) {
-      toast.error('Failed to load profile');
-    } finally {
-      setLoading(false);
-    }
-  };
+        setProfile(data.profile);
+      } catch {
+        toast.error('Failed to load profile');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [session, status, router]);
 
   if (status === 'loading' || loading) {
     return (

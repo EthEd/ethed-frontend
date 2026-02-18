@@ -7,19 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import Confetti from "react-confetti";
 import {
   Sparkles,
-  PawPrint,
   BadgeCheck,
   ArrowRight,
-  Heart,
   Globe,
   Gift,
-  MessageCircle,
-  Wallet,
   Crown,
   Star,
   Zap,
@@ -29,12 +23,10 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useENSLookup } from "@/hooks/use-ens-lookup";
 
 export default function Onboarding() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { lookupByAddress } = useENSLookup();
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -58,7 +50,7 @@ export default function Onboarding() {
         if (data.user?.onboardingStep) {
           setStep(data.user.onboardingStep);
         }
-      } catch (error) {
+      } catch {
         // onboarding step fetch failed — default to step 0
       }
     };
@@ -73,18 +65,16 @@ export default function Onboarding() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ onboardingStep: newStep }),
       });
-    } catch (error) {
+    } catch {
       // step persist failed — non-blocking
     }
   };
   const [ensName, setEnsName] = useState("");
-  const [ensAvailable, setEnsAvailable] = useState<boolean | null>(null);
-  const [ensChecking, setEnsChecking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [nftsMinted, setNftsMinted] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
-  const [userProfile, setUserProfile] = useState<any>(null);
+
 
   // Auto-generate initial ENS name
   useEffect(() => {
@@ -140,19 +130,13 @@ export default function Onboarding() {
   useEffect(() => {
     const checkENSAvailability = async () => {
       if (ensName.length < 3) {
-        setEnsAvailable(null);
         return;
       }
 
-      setEnsChecking(true);
       try {
-        const response = await fetch(`/api/ens/lookup?name=${encodeURIComponent(ensName)}`);
-        const data = await response.json();
-        setEnsAvailable(true);
-      } catch (error) {
-        setEnsAvailable(null);
-      } finally {
-        setEnsChecking(false);
+        await fetch(`/api/ens/lookup?name=${encodeURIComponent(ensName)}`);
+      } catch {
+        // ignore lookup errors
       }
     };
 

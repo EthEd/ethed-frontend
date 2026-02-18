@@ -9,9 +9,10 @@ export function useSignOut() {
   
   const handleSignOut = async function signOutBut() {
     try {
-      await signOut();
+      await signOut({ redirect: false });
       toast.success("Signed out successfully!");
       router.push("/");
+      router.refresh();
     } catch (error: any) {
       toast.error(`Sign-out error: ${error.message || "Unknown error"}`);
     }

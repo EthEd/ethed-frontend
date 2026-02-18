@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useCourseProgress } from '@/hooks/useCourseProgress';
 import { ArrowLeft, ArrowRight, Clock, Play, FileText, Code, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -195,8 +195,8 @@ export default function ZeroGLessonClient({ lessonId }: { lessonId: string }) {
         body: JSON.stringify({ courseSlug: '0g-101' })
       });
       if (res.ok) toast.success('Course completed! 🎉');
-      try { router.refresh(); } catch (e) {}
-    } catch (err) {
+      try { router.refresh(); } catch { }
+    } catch {
       // finish course API error — silently handled
     }
   };
@@ -215,7 +215,7 @@ export default function ZeroGLessonClient({ lessonId }: { lessonId: string }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ courseSlug: '0g-101', completedCount: newCount, totalModules: modules.length })
         });
-      } catch (err) { /* ignore */ }
+      } catch { /* ignore */ }
     }
   };
 

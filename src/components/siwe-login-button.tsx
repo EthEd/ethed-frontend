@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Wallet, Smartphone } from "lucide-react";
 import { SiweMessage } from "siwe";
 import { toast } from "sonner";
+import { isAddress, getAddress } from "viem";
 import { AMOY_CHAIN_ID, getChainConfig } from "@/lib/contracts";
 import { getBlockchainErrorInfo } from "@/lib/blockchain-errors";
 import { ensureAmoyChain, getWalletChainId } from "@/lib/wallet-client";
@@ -62,14 +63,35 @@ export function SiweLoginButton() {
         method: "eth_requestAccounts",
       })) as string[];
 
-      if (!accounts.length) {
+      if (!accounts || !accounts[0]) {
         toast.error("No accounts found", {
           description: "Please unlock your wallet and try again.",
         });
         return;
       }
 
-      const address = sanitizeAddress(String(accounts[0]));
+      const rawAddr = sanitizeAddress(String(accounts[0]));
+
+      // Defensive normalization: extract the hex part and ensure valid 0x prefix.
+      // This handles cases like "eip155:1:0x...", " 0x...", or addresses with invisible chars.
+      let addr = rawAddr.trim();
+      if (addr.includes(":")) {
+        addr = addr.split(":").pop() || addr;
+      }
+      
+      // Strip everything except hex characters
+      const hexOnly = addr.replace(/^0x/i, "").replace(/[^a-fA-F0-9]/g, "");
+      const normalizedAddress = `0x${hexOnly}`;
+
+      if (!isAddress(normalizedAddress)) {
+        logger.error("Invalid address after normalization", "SiweLoginButton", { 
+          raw: rawAddr, 
+          normalized: normalizedAddress 
+        });
+        throw new Error("Invalid address format");
+      }
+
+      const address = getAddress(normalizedAddress);
 
       const currentChainId = await getWalletChainId();
       if (currentChainId !== AMOY_CHAIN_ID) {
@@ -106,14 +128,19 @@ export function SiweLoginButton() {
           // (Avoid showing a toast here to prevent confusing end users.)
           logger.warn('`siwe-nonce` not visible to document.cookie (expected for HttpOnly). Proceeding.', 'SiweLoginButton');
         }
-      } catch (e) {
+      } catch {
         // Ignore cookie-check errors in restrictive environments
       }
 
-      // Get chain ID
-      const chainId = await window.ethereum.request({
+      // Re-check chain ID after potential switch
+      const chainIdRaw = await window.ethereum.request({
         method: "eth_chainId",
       });
+      const chainId = typeof chainIdRaw === 'string' ? parseInt(chainIdRaw, 16) : Number(chainIdRaw);
+
+      if (isNaN(chainId)) {
+        throw new Error("Invalid chain ID received from wallet.");
+      }
 
       // Create SIWE message
       const message = new SiweMessage({
@@ -122,7 +149,7 @@ export function SiweLoginButton() {
         statement: "Sign in with Ethereum to eth.ed",
         uri: window.location.origin,
         version: "1",
-        chainId: parseInt(chainId as string, 16),
+        chainId: chainId,
         nonce: nonce,
       });
 
@@ -143,10 +170,16 @@ export function SiweLoginButton() {
       });
 
       if (!result?.ok) {
-        // NextAuth returns an `error` (string or object) when authorize() fails — surface a safe string to the user
+        // NextAuth returns an `error` (string or object) when authorize() fails — prefer a
+        // normalized blockchain-friendly message when possible, otherwise fall back to a
+        // generic "Sign in failed" toast to avoid leaking raw objects to the UI.
         const rawErr = (result as any)?.error;
-        const errMsg = typeof rawErr === 'string' ? rawErr : (rawErr ? JSON.stringify(rawErr) : "Sign in failed. Please try again.");
-        toast.error("Sign in failed", { description: errMsg });
+        if (rawErr) {
+          const info = getBlockchainErrorInfo(rawErr);
+          toast.error(info.title, { description: info.description || (typeof rawErr === 'string' ? rawErr : JSON.stringify(rawErr)) });
+        } else {
+          toast.error("Sign in failed", { description: "Sign in failed. Please try again." });
+        }
         return;
       }
 

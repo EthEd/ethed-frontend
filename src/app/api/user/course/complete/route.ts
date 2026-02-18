@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ message: "Course marked complete", userCourse });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

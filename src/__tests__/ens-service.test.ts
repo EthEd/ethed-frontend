@@ -1,7 +1,23 @@
-import { describe, it, expect } from 'vitest';
-import { validateSubdomain } from '@/lib/ens-service';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mock prisma for the availability checks
+const prismaMocks = vi.hoisted(() => ({
+  walletAddress: {
+    findFirst: vi.fn(),
+    create: vi.fn(),
+  },
+}));
+
+vi.mock('@/lib/prisma-client', () => ({ prisma: prismaMocks }));
+
+import { validateSubdomain, checkAvailability, registerOnChain } from '@/lib/ens-service';
+import { prisma } from '@/lib/prisma-client';
 
 describe('ens-service', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe('validateSubdomain', () => {
     it('rejects empty subdomain', () => {
       const result = validateSubdomain('');
@@ -57,6 +73,25 @@ describe('ens-service', () => {
     it('rejects consecutive hyphens', () => {
       const result = validateSubdomain('na--me');
       expect(result.valid).toBe(false);
+    });
+  });
+
+  describe('availability & on-chain fallbacks', () => {
+    it('checkAvailability returns true when not found and false when exists', async () => {
+      (prisma.walletAddress.findFirst as any).mockResolvedValueOnce(null);
+      const available = await checkAvailability('alice', 'ethed.eth');
+      expect(available).toBe(true);
+
+      (prisma.walletAddress.findFirst as any).mockResolvedValueOnce({ id: 'w1' });
+      const notAvailable = await checkAvailability('alice', 'ethed.eth');
+      expect(notAvailable).toBe(false);
+    });
+
+    it('registerOnChain returns dev-mock tx when on-chain env not configured', async () => {
+      const res = await registerOnChain('bob', '0x0000000000000000000000000000000000000001', 'ethed.eth');
+      expect(res.ensName).toBe('bob.ethed.eth');
+      expect(res.txHash).toMatch(/^0x0+/);
+      expect(res.explorerUrl).toBeNull();
     });
   });
 });

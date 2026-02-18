@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -14,16 +13,11 @@ import {
   BookOpen,
   Calendar,
   ExternalLink,
-  Share2,
   Copy,
   Check,
   Trophy,
-  Zap,
   Users,
-  GitBranch,
-  Star,
   Target,
-  PawPrint,
   Sparkles,
   Loader2,
 } from "lucide-react";
@@ -33,12 +27,7 @@ interface Props {
   handle: string;
 }
 
-const rarityColors = {
-  Common: "text-gray-400 border-gray-400/30",
-  Rare: "text-blue-400 border-blue-400/30",
-  Epic: "text-purple-400 border-purple-400/30",
-  Legendary: "text-yellow-400 border-yellow-400/30",
-};
+
 
 export default function ProfilePortfolio({ handle }: Props) {
   const [copied, setCopied] = useState(false);
@@ -77,7 +66,7 @@ export default function ProfilePortfolio({ handle }: Props) {
             verified: !!(data.ensName || dbUser?.wallets?.find((w: any) => w.ensName)),
           });
         }
-      } catch (err) {
+      } catch {
         setError("Failed to load profile");
       } finally {
         setLoading(false);

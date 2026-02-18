@@ -4,14 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, LogOut, LogIn } from "lucide-react";
 import Image from "next/image";
+import { useSession, signOut } from "next-auth/react";
 
-// Import your actual Better Auth client
-import { authClient } from "@/lib/auth-client";
-
-// Use Better Auth's session hook
 export default function Navbar() {
-  // This hook gives session, loading state, errors, refetch
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session, status } = useSession();
+  const isPending = status === "loading";
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const user = session?.user;
@@ -124,14 +121,9 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={async () => {
-                    await authClient.signOut({
-                      fetchOptions: {
-                        onSuccess: () => {
-                          setDropdownOpen(false);
-                          router.push("/login");
-                        },
-                      },
-                    });
+                    await signOut({ redirect: false });
+                    setDropdownOpen(false);
+                    router.push("/login");
                   }}
                   className="w-full text-left px-4 py-2 flex items-center space-x-2 text-slate-200 hover:bg-emerald-400/10 hover:text-emerald-300 transition"
                 >

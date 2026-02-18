@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
+import aj, { slidingWindow } from "@/lib/arcjet";
+
+// Rate limiting for wallet connections
+const walletRateLimit = aj.withRule(
+  slidingWindow({
+    mode: "LIVE",
+    interval: "1h",
+    max: 10, // 10 wallet operations per hour
+  })
+);
 
 export async function GET() {
   try {
@@ -24,7 +34,7 @@ export async function GET() {
 
     return NextResponse.json({ wallets });
 
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -40,6 +50,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
+      );
+    }
+
+    // Apply rate limiting
+    const decision = await walletRateLimit.protect(request, {
+      fingerprint: session.user.id,
+    });
+
+    if (decision.isDenied()) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please try again later." },
+        { status: 429 }
       );
     }
 
@@ -129,14 +151,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { error: "Invalid address format" },
         { status: 400 }
       );
     }
 
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

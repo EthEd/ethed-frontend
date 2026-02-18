@@ -1,13 +1,12 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { ArrowRight, ChevronRight, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
 import EthEdFeatures from './_components/features';
 import Link from 'next/link';
-import { Rocket, Wallet, MessageCircle, ShieldCheck, Globe } from 'lucide-react';
+import { Rocket, Globe } from 'lucide-react';
 import HowItWorks from './_components/how-it-works';
 import Stats from './_components/stats';
 

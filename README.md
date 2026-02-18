@@ -25,7 +25,8 @@ EthEd transforms Web3 learning with NFT achievements, AI tutoring, and gamified 
 ## 🎯 Current Goals
 
 - [ ] Complete NFT minting integration with smart contracts
-- [ ] Wire up backend API for agent interactions
+- [x] Wire up backend API for agent interactions
+- [x] Fix build & type errors (local + CI)
 - [ ] Deploy auth flows for user testing
 - [ ] Finalize founding member NFT assets
 

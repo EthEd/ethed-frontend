@@ -179,9 +179,13 @@ export default function AgentHover({
       return;
     }
     
-     playGif(p2Src, 600, () => {
-      setIsVisible(false);
-    });
+     if (p2Src) {
+       playGif(p2Src, 600, () => {
+         setIsVisible(false);
+       });
+     } else {
+       setIsVisible(false);
+     }
   };
 
   const closeDialog = () => {

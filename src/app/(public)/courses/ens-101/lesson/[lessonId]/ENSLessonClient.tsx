@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle, HelpCircle, Clock, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,7 +96,7 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
   const currentModule = modules.find(m => m.id === moduleId);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const { completedModules, completionCount, markModuleComplete } = useCourseProgress('ens-101', modules.length);
+  const { completedModules, markModuleComplete } = useCourseProgress('ens-101', modules.length);
 
   const isCompleted = completedModules.has(moduleId);
 
@@ -124,27 +124,9 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
         body: JSON.stringify({ courseSlug: 'ens-101' })
       });
       if (res.ok) toast.success('Course completed! 🎉');
-      try { router.refresh(); } catch (e) {}
-    } catch (err) {
+      try { router.refresh(); } catch { }
+    } catch {
       // finish course API error — silently handled
-    }
-  };
-
-  const markAsCompleted = () => {
-    if (completedModules.has(moduleId)) return;
-    markModuleComplete(moduleId);
-
-    const newCount = completionCount + 1;
-    if (newCount === modules.length) {
-      finishCourseBackend();
-    } else {
-      try {
-        fetch('/api/user/course/progress', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ courseSlug: 'ens-101', completedCount: newCount, totalModules: modules.length })
-        });
-      } catch (err) { /* ignore */ }
     }
   };
 

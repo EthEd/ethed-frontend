@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Failed to create payment challenge" }, { status: 500 });
   }
 }

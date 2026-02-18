@@ -3,11 +3,12 @@ import { Geist, Geist_Mono, Merriweather } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import AgentHover from "@/components/AgentHover";
 import GlobalGrid from "@/components/GlobalGrid";
 import NextAuthSessionProvider from "@/components/providers/SessionProvider";
 import DevChildrenGuard from "@/components/DevChildrenGuard";
 import Navbar from "./(public)/_components/navbar";
+import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/JsonLd";
+import { SkipToContent, MainContent } from "@/components/a11y/SkipToContent";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -66,13 +67,25 @@ export default function RootLayout({
 }: { children: React.ReactNode }) {
   return (
     <html lang="en" style={{ scrollBehavior: "smooth" }} suppressHydrationWarning>
+      <head>
+        <OrganizationJsonLd
+          sameAs={[
+            'https://twitter.com/ethed',
+            'https://github.com/ethed',
+          ]}
+        />
+        <WebsiteJsonLd />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${merriweather.variable} font-sans antialiased`} suppressHydrationWarning>
         <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
           <NextAuthSessionProvider>
+          <SkipToContent />
           <GlobalGrid enabled={true} adaptiveGlow={true} />
           <Navbar/>
           {/* Dev-only children guard: throws (with stack) if a non-primitive React child is rendered */}
-          <DevChildrenGuard>{children}</DevChildrenGuard>
+          <MainContent>
+            <DevChildrenGuard>{children}</DevChildrenGuard>
+          </MainContent>
           <Toaster />
           {/* <AgentHover
             posterSrc="/pause.png"

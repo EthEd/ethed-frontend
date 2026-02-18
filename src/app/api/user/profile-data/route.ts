@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
-import { getExplorerTxUrl, AMOY_CHAIN_ID } from "@/lib/contracts";
+import { getExplorerTxUrl } from "@/lib/contracts";
 
 export async function GET() {
   try {
@@ -128,7 +128,7 @@ export async function GET() {
       }
     });
 
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowRight, Clock, Star, Users, Award, Lock, CheckCircle, Zap, BookOpen, Target, Flame } from 'lucide-react';
+import { ArrowRight, Clock, Star, Users, Award, Lock, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'motion/react';

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { generateNonce } from "siwe";
 import { logger } from "@/lib/monitoring";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const nonce = generateNonce();
     const response = NextResponse.json({ nonce });
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     logger.info('SIWE nonce generated and cookie set', 'api/siwe/nonce');
 
     return response;
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to generate nonce" },
       { status: 500 }

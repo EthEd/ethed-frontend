@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { validateSubdomain } from '@/lib/ens-service';
 
 // Note: Full SIWE provider testing requires mocking NextAuth internals

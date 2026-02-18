@@ -4,8 +4,6 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import getServerSession from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
 import { CourseCreateSchema } from "@/lib/zodSchemas";
 import { sanitizeSlug } from "@/lib/zodSchemas";
@@ -20,7 +18,6 @@ export async function GET(request: NextRequest) {
   try {
     const adminCheck = await requireAdmin();
     if (adminCheck instanceof Response) return adminCheck as any;
-    const userId = adminCheck as string;
 
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get("id");
@@ -42,7 +39,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ courses });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -57,7 +54,6 @@ export async function POST(request: NextRequest) {
   try {
     const adminCheck = await requireAdmin();
     if (adminCheck instanceof Response) return adminCheck as any;
-    const userId = adminCheck as string;
 
     const body = await request.json();
 
@@ -70,7 +66,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, description, level, category, fileKey } = validation.data;
+    const { title, description, level } = validation.data;
     const slug = sanitizeSlug(body.slug || title);
 
     // Check if slug is unique
@@ -114,10 +110,9 @@ export async function PUT(request: NextRequest) {
   try {
     const adminCheck = await requireAdmin();
     if (adminCheck instanceof Response) return adminCheck as any;
-    const userId = adminCheck as string;
 
     const body = await request.json();
-    const { courseId, title, description, level, category, fileKey, status } = body;
+    const { courseId, title, description, level, status } = body;
 
     if (!courseId) {
       return NextResponse.json({ error: "Course ID required" }, { status: 400 });
@@ -152,7 +147,6 @@ export async function DELETE(request: NextRequest) {
   try {
     const adminCheck = await requireAdmin();
     if (adminCheck instanceof Response) return adminCheck as any;
-    const userId = adminCheck as string;
 
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get("id");
