@@ -99,7 +99,7 @@ export default function CommunityPage() {
       ethGlobalEvent: "ETHGlobal Brussels 2024",
       achievements: [
         "🥈 2nd Place - Best Infrastructure Tool",
-        "🌐 ENS .ethed.eth subdomain system launched",
+        "🌐 ENS .ayushetty.eth subdomain system launched",
         "📈 First 1,000 registered learners",
         "🏅 NFT credential system beta"
       ]
@@ -242,7 +242,7 @@ export default function CommunityPage() {
     },
     {
       title: "ENS Integration", 
-      description: "Every learner gets their own .ethed.eth subdomain for Web3 identity",
+      description: "Every learner gets their own .ayushetty.eth subdomain for Web3 identity",
       icon: Globe,
       developedAt: "ETHGlobal Brussels 2024",
       inspiration: "Built during the hackathon after seeing ENS's potential for education"

@@ -60,11 +60,11 @@ const learningSteps: Step[] = [
   {
     id: 2,
     title: "Claim Your ENS Identity",
-    description: "Get your unique eth.ed subdomain for your permanent blockchain identity",
+    description: "Get your unique subdomain for your permanent blockchain identity",
     icon: Globe,
     color: "blue",
     details: [
-      "Receive a free yourname.ethed.eth subdomain",
+      "Receive a free yourname.ayushetty.eth subdomain",
       "Use it across the entire Web3 ecosystem",
       "Build your decentralized reputation",
       "Own your digital identity forever"
@@ -324,7 +324,7 @@ export default function HowItWorksPage() {
                                   className="w-full px-4 py-3 bg-slate-900/60 border border-cyan-400/10 rounded-xl text-white outline-none focus:border-cyan-400/30 transition-all"
                                   defaultValue="alex-dev"
                                 />
-                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-sm">.ethed.eth</span>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-sm">.ayushetty.eth</span>
                               </div>
                             </div>
                             <div className="p-6 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-2xl shadow-inner">
@@ -333,7 +333,7 @@ export default function HowItWorksPage() {
                                   <Globe className="w-6 h-6 text-cyan-400" />
                                 </div>
                                 <div>
-                                  <p className="text-cyan-100 font-bold text-lg">alex-dev.ethed.eth</p>
+                                  <p className="text-cyan-100 font-bold text-lg">alex-dev.ayushetty.eth</p>
                                   <p className="text-slate-400 text-sm">Global Web3 Identifier</p>
                                 </div>
                               </div>

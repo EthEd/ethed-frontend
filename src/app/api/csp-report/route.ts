@@ -1,9 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/monitoring';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => null);
+    // CSP reports can have 'application/csp-report' or 'application/json'
+    const contentType = request.headers.get('content-type');
+    let body;
+    
+    if (contentType?.includes('application/csp-report') || contentType?.includes('application/json')) {
+      body = await request.json().catch(() => null);
+    } else {
+      // Fallback for other content types
+      const text = await request.text().catch(() => '');
+      try {
+        body = JSON.parse(text);
+      } catch {
+        body = { raw: text };
+      }
+    }
 
     // Nicely format important fields when available
     const report = body?.['csp-report'] || body?.['CSP-Report'] || body || {};

@@ -6,6 +6,12 @@
   "engines": {
     "node": ">=18"
   },
+  "pnpm": {
+    "publicHoistPattern": [
+      "*tailwindcss*",
+      "@tailwindcss/*"
+    ]
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -59,7 +65,6 @@
     "@tiptap/react": "^3.6.1",
     "@tiptap/starter-kit": "^3.6.1",
     "@types/nodemailer": "^7.0.1",
-    "better-auth": "^1.3.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "input-otp": "^1.4.2",

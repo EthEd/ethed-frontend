@@ -2,17 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
+import { getSessionOrUnauthorized } from "@/lib/api-auth";
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    const { session, errorResponse } = await getSessionOrUnauthorized();
+    if (errorResponse) return errorResponse;
 
     // Fetch real user data from database
     const user = await prisma.user.findUnique({
@@ -44,7 +39,10 @@ export async function GET() {
       nftsOwned: user.nfts.length,
       walletConnected: user.wallets.length > 0,
       ensName: user.wallets.find(w => w.ensName)?.ensName || null,
-      joinedDate: user.createdAt
+      joinedDate: user.createdAt,
+      xp: user.xp,
+      level: user.level,
+      streak: user.streak
     };
 
     return NextResponse.json({
@@ -57,6 +55,9 @@ export async function GET() {
         onboardingStep: user.onboardingStep,
         createdAt: user.createdAt,
         wallets: user.wallets,
+        xp: user.xp,
+        level: user.level,
+        streak: user.streak,
         // pet data intentionally omitted from the response for MVP
         courses: user.courses,
         nfts: user.nfts,
@@ -74,14 +75,8 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    const { session, errorResponse } = await getSessionOrUnauthorized();
+    if (errorResponse) return errorResponse;
 
     const body = await request.json();
     const { onboardingStep, name, image } = body;

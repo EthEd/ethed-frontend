@@ -55,15 +55,15 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={session?.user.image ?? `https://avatar.vercel.sh/${session?.user.email}`} alt={session?.user.name ?? session?.user.email.split("@")[0]} />
+                <AvatarImage src={session?.user.image ?? `https://avatar.vercel.sh/${session?.user.email ?? 'user'}`} alt={session?.user.name ?? session?.user.email?.split("@")[0] ?? 'User'} />
                 <AvatarFallback className="rounded-lg">
-                  {session?.user.name && session.user.name.length > 0 ? session?.user.name.charAt(0).toUpperCase() : session?.user.email.charAt(0).toUpperCase()}
+                  {session?.user.name && session.user.name.length > 0 ? session?.user.name.charAt(0).toUpperCase() : session?.user.email?.charAt(0).toUpperCase() ?? 'U'}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{session?.user.name && session.user.name.length > 0 ? session?.user.name.charAt(0).toUpperCase() : session?.user.email.split("@")[0].charAt(0).toUpperCase()}</span>
+                <span className="truncate font-medium">{session?.user.name && session.user.name.length > 0 ? session?.user.name.charAt(0).toUpperCase() : session?.user.email?.split("@")[0]?.charAt(0).toUpperCase() ?? 'U'}</span>
                 <span className="text-muted-foreground truncate text-xs">
-                  {session?.user.email}
+                  {session?.user.email ?? 'No email'}
                 </span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
@@ -78,15 +78,15 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={session?.user.image ?? `https://avatar.vercel.sh/${session?.user.email}`} alt={session?.user.name ?? session?.user.email.split("@")[0]} />
+                <AvatarImage src={session?.user.image ?? `https://avatar.vercel.sh/${session?.user.email ?? 'user'}`} alt={session?.user.name ?? session?.user.email?.split("@")[0] ?? 'User'} />
                 <AvatarFallback className="rounded-lg">
-                  {session?.user.name && session.user.name.length > 0 ? session?.user.name.charAt(0).toUpperCase() : session?.user.email.charAt(0).toUpperCase()}
+                  {session?.user.name && session.user.name.length > 0 ? session?.user.name.charAt(0).toUpperCase() : session?.user.email?.charAt(0).toUpperCase() ?? 'U'}
                 </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{session?.user.name && session.user.name.length > 0 ? session?.user.name.toUpperCase() : session?.user.email.split("@")[0]}</span>
+                  <span className="truncate font-medium">{session?.user.name && session.user.name.length > 0 ? session?.user.name.toUpperCase() : session?.user.email?.split("@")[0] ?? 'User'}</span>
                   <span className="text-muted-foreground truncate text-xs">
-                    {session?.user.email} 
+                    {session?.user.email ?? 'No email'} 
                   </span>
                 </div>
               </div>

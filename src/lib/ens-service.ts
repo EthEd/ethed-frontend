@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma-client";
 import {
   AMOY_CHAIN_ID,
   ENS_REGISTRAR_ABI,
+  ENS_ROOT_DOMAIN,
   getContractAddress,
   getExplorerTxUrl,
 } from "./contracts";
@@ -52,7 +53,7 @@ export interface ENSRegistrationParams {
   userId: string;
   subdomain: string;
   walletAddress?: string;
-  rootDomain?: string; // e.g. 'ethed.eth' or 'ayushetty.eth'
+  rootDomain?: string; // e.g. 'ayushetty.eth' or 'ayushetty.eth'
 }
 
 /**
@@ -114,7 +115,7 @@ export function validateSubdomain(subdomain: string): {
 /**
  * Check if ENS subdomain is available (in database)
  */
-export async function checkAvailability(subdomain: string, rootDomain = 'ethed.eth'): Promise<boolean> {
+export async function checkAvailability(subdomain: string, rootDomain = ENS_ROOT_DOMAIN): Promise<boolean> {
   const cleaned = subdomain.trim().toLowerCase();
   const fullName = `${cleaned}.${rootDomain}`;
   
@@ -135,7 +136,7 @@ export async function checkAvailability(subdomain: string, rootDomain = 'ethed.e
 export async function registerOnChain(
   subdomain: string,
   ownerAddress: string,
-  rootDomain = "ethed.eth"
+  rootDomain = ENS_ROOT_DOMAIN
 ): Promise<{ txHash: string; ensName: string; explorerUrl: string | null }> {
   const ensName = `${subdomain}.${rootDomain}`;
 
@@ -250,7 +251,7 @@ export async function saveENSToDatabase(params: {
  * Full ENS registration pipeline
  */
 export async function registerENS(params: ENSRegistrationParams) {
-  const { userId, subdomain, walletAddress, rootDomain = 'ethed.eth' } = params;
+  const { userId, subdomain, walletAddress, rootDomain = ENS_ROOT_DOMAIN } = params;
 
   // Validate subdomain label
   const validation = validateSubdomain(subdomain);

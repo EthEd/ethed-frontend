@@ -39,11 +39,11 @@ const nextConfig: NextConfig = {
 
     const reportOnlyPolicy = [
       "default-src 'self'",
-      "script-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https:",
-      "connect-src 'self' ws: https:",
-      "font-src 'self' data:",
+      "img-src 'self' data: https: blob:",
+      "connect-src 'self' ws: wss: https:",
+      "font-src 'self' data: https:",
       "object-src 'none'",
       "base-uri 'self'",
       "report-uri /api/csp-report"
@@ -51,7 +51,7 @@ const nextConfig: NextConfig = {
 
     return [
       {
-        source: '/(.*)',
+        source: '/((?!api).*)', // Apply to all routes EXCEPT /api
         headers: [
           {
             key: 'Content-Security-Policy-Report-Only',

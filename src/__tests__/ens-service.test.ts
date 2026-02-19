@@ -79,17 +79,17 @@ describe('ens-service', () => {
   describe('availability & on-chain fallbacks', () => {
     it('checkAvailability returns true when not found and false when exists', async () => {
       (prisma.walletAddress.findFirst as any).mockResolvedValueOnce(null);
-      const available = await checkAvailability('alice', 'ethed.eth');
+      const available = await checkAvailability('alice', 'ayushetty.eth');
       expect(available).toBe(true);
 
       (prisma.walletAddress.findFirst as any).mockResolvedValueOnce({ id: 'w1' });
-      const notAvailable = await checkAvailability('alice', 'ethed.eth');
+      const notAvailable = await checkAvailability('alice', 'ayushetty.eth');
       expect(notAvailable).toBe(false);
     });
 
     it('registerOnChain returns dev-mock tx when on-chain env not configured', async () => {
-      const res = await registerOnChain('bob', '0x0000000000000000000000000000000000000001', 'ethed.eth');
-      expect(res.ensName).toBe('bob.ethed.eth');
+      const res = await registerOnChain('bob', '0x0000000000000000000000000000000000000001', 'ayushetty.eth');
+      expect(res.ensName).toBe('bob.ayushetty.eth');
       expect(res.txHash).toMatch(/^0x0+/);
       expect(res.explorerUrl).toBeNull();
     });

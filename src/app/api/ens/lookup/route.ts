@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma-client";
+import { ENS_ROOT_DOMAIN } from "@/lib/contracts";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +11,8 @@ export async function GET(request: NextRequest) {
     // Lookup by ENS name
     if (name) {
       const cleanName = name.trim().toLowerCase();
-      const ensName = cleanName.endsWith(".ethed.eth") ? cleanName : `${cleanName}.ethed.eth`;
+      // Use dynamic root domain
+      const ensName = cleanName.includes('.') ? cleanName : `${cleanName}.${ENS_ROOT_DOMAIN}`;
 
       const wallet = await prisma.walletAddress.findFirst({
         where: { ensName },

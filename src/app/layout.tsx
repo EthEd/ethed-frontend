@@ -7,6 +7,7 @@ import GlobalGrid from "@/components/GlobalGrid";
 import NextAuthSessionProvider from "@/components/providers/SessionProvider";
 import DevChildrenGuard from "@/components/DevChildrenGuard";
 import Navbar from "./(public)/_components/navbar";
+import Footer from "./(public)/_components/footer";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/JsonLd";
 import { SkipToContent, MainContent } from "@/components/a11y/SkipToContent";
 
@@ -68,6 +69,8 @@ export default function RootLayout({
   return (
     <html lang="en" style={{ scrollBehavior: "smooth" }} suppressHydrationWarning>
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#06b6d4" />
         <OrganizationJsonLd
           sameAs={[
             'https://twitter.com/ethed',
@@ -86,6 +89,7 @@ export default function RootLayout({
           <MainContent>
             <DevChildrenGuard>{children}</DevChildrenGuard>
           </MainContent>
+          <Footer />
           <Toaster />
           {/* <AgentHover
             posterSrc="/pause.png"

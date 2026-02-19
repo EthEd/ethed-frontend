@@ -38,13 +38,15 @@ export function middleware(request: NextRequest) {
   }
   
   // Content Security Policy
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api');
+  
   const csp = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https: blob:",
-    "font-src 'self' data:",
-    "connect-src 'self' https://*.infura.io https://*.alchemy.com wss://*.walletconnect.com https://*.walletconnect.com https://api.pinata.cloud https://*.polygon.technology",
+    "img-src 'self' data: https: blob: *.pinata.cloud *.googleusercontent.com *.githubusercontent.com",
+    "font-src 'self' data: https: fonts.gstatic.com",
+    "connect-src 'self' https://*.infura.io https://*.alchemy.com wss://*.walletconnect.com https://*.walletconnect.com https://api.pinata.cloud https://*.polygon.technology https://*.supabase.co",
     "frame-src 'self' https://*.walletconnect.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -53,7 +55,9 @@ export function middleware(request: NextRequest) {
     "upgrade-insecure-requests",
   ].join('; ');
   
-  headers.set('Content-Security-Policy', csp);
+  if (!isApiRoute) {
+    headers.set('Content-Security-Policy', csp);
+  }
   
   // Prevent caching of sensitive pages
   const pathname = request.nextUrl.pathname;

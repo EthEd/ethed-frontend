@@ -13,7 +13,7 @@ contract ENSRegistryMock {
         address owner,
         uint256 /* duration */
     ) external payable {
-        string memory fullDomain = string(abi.encodePacked(subdomain, ".ethed.eth"));
+        string memory fullDomain = string(abi.encodePacked(subdomain, ".ayushetty.eth"));
         ensNames[owner] = fullDomain;
         emit SubdomainRegistered(subdomain, owner);
     }

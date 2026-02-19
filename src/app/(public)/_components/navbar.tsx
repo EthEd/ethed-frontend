@@ -21,7 +21,8 @@ import {
   Wallet,
   BookOpen,
   Menu,
-  X
+  X,
+  Trophy
 } from "lucide-react";
 import { useSignOut } from "@/hooks/use-signout";
 import Logo from "@/components/logo";
@@ -91,36 +92,39 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-cyan-400/10 bg-slate-950/60 backdrop-blur-md">
-      <div className="container mx-auto px-4">
-        <div className="relative flex h-16 items-center">
-          
-          {/* Left Section - Navigation Links */}
-          <div className="absolute left-0 flex items-center space-x-6">
-            <div className="hidden md:flex items-center space-x-6">
-              <Link
-                href="/learn"
-                className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Courses
-              </Link>
-              <Link
-                href="/how-it-works"
-                className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                How It Works
-              </Link>
-              <Link
-                href="/community"
-                className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Community
-              </Link>
+    <div className="sticky top-0 z-50 w-full shadow-lg h-auto flex flex-col pointer-events-auto">
+      {/* Tagline from EthNavbar */}
+      <div className="bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-blue-500/20 text-center font-mono font-semibold text-[10px] md:text-xs tracking-wide text-cyan-200 py-1.5 md:py-2 border-b border-emerald-400/20 backdrop-blur-md">
+        Learn on-chain. Grow your chain of knowledge.
+      </div>
+      
+      <nav className="w-full border-b border-cyan-400/10 bg-slate-950/60 backdrop-blur-md">
+        <div className="container mx-auto px-4">
+          <div className="relative flex h-16 items-center">
+            
+            {/* Left Section - Navigation Links */}
+            <div className="absolute left-0 flex items-center space-x-4 md:space-x-6">
+              <div className="hidden md:flex items-center space-x-6">
+                <Link
+                  href="/learn"
+                  className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
+                >
+                  Courses
+                </Link>
+                <Link
+                  href="/leaderboard"
+                  className="text-sm font-medium text-slate-400 hover:text-emerald-400 transition-all duration-200"
+                >
+                  Leaderboard
+                </Link>
+                <Link
+                  href="/how-it-works"
+                  className="text-sm font-medium text-slate-400 hover:text-cyan-400 transition-all duration-200"
+                >
+                  How It Works
+                </Link>
+              </div>
             </div>
-          </div>
 
           {/* Center Logo - Absolutely positioned for perfect centering */}
           <div className="absolute left-1/2 transform -translate-x-1/2">
@@ -318,6 +322,16 @@ export default function Navbar() {
               </button>
               <button
                 onClick={() => {
+                  router.push("/leaderboard");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="flex items-center space-x-2 w-full px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-emerald-50/50 rounded-lg transition-all duration-200"
+              >
+                <Trophy className="h-4 w-4" />
+                <span>Leaderboard</span>
+              </button>
+              <button
+                onClick={() => {
                   router.push("/settings");
                   setIsMobileMenuOpen(false);
                 }}
@@ -341,5 +355,6 @@ export default function Navbar() {
         </div>
       )}
     </nav>
+    </div>
   );
 }

@@ -26,7 +26,8 @@ export default function Navbar() {
         <div className="flex space-x-6 font-medium text-sm text-slate-200">
           <Link href="/learn" className="hover:text-emerald-400 transition">Explore</Link>
           <Link href="/how-it-works" className="hover:text-emerald-400 transition">How It Works</Link>
-          <Link href="/dashboard" className="hover:text-emerald-400 transition">Milestones</Link>
+          <Link href="/dashboard" className="hover:text-emerald-400 transition">Dashboard</Link>
+          <Link href="/leaderboard" className="hover:text-emerald-400 transition text-emerald-400">Leaderboard</Link>
         </div>
 
         {/* Center Logo */}

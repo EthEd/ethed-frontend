@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { registerENS, validateSubdomain, checkAvailability } from "@/lib/ens-service";
+import { ENS_ROOT_DOMAIN } from "@/lib/contracts";
 import aj, { slidingWindow } from "@/lib/arcjet";
 
 // Rate limiting for ENS registration - expensive on-chain operation
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
     // Accept either a label ("alice") or a full name ("alice.ayushetty.eth")
     const input = subdomain.trim().toLowerCase();
     let label = input;
-    let rootDomain = 'ethed.eth';
+    let rootDomain = ENS_ROOT_DOMAIN;
 
     if (input.includes('.')) {
       // If user passed a full name, extract label and root
@@ -56,8 +57,8 @@ export async function POST(request: NextRequest) {
       const suffix = parts.slice(1).join('.');
       if (suffix === 'ayushetty.eth' || suffix.endsWith('.ayushetty.eth')) {
         rootDomain = 'ayushetty.eth';
-      } else if (suffix === 'ethed.eth' || suffix.endsWith('.ethed.eth')) {
-        rootDomain = 'ethed.eth';
+      } else if (suffix === 'ayushetty.eth' || suffix.endsWith('.ayushetty.eth')) {
+        rootDomain = 'ayushetty.eth';
       } else {
         // disallow other roots for now
         return NextResponse.json({ error: 'Unsupported ENS root domain' }, { status: 400 });
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: "ENS name registered successfully",
       ensName: result.ensName,
+      fullName: `${cleanSubdomain}.${rootDomain}`,
       txHash: result.txHash,
       explorerUrl: result.explorerUrl ?? null,
       wallet: result.wallet,
@@ -146,7 +148,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       available,
       subdomain: subdomain.trim().toLowerCase(),
-      fullName: `${subdomain.trim().toLowerCase()}.ethed.eth`,
+      fullName: `${subdomain.trim().toLowerCase()}.${ENS_ROOT_DOMAIN}`,
     });
 
   } catch {

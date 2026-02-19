@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ENS_ROOT_DOMAIN } from './contracts';
 
 /**
  * Ethereum address validation schema
@@ -34,7 +35,7 @@ export const ensSubdomainSchema = z
   .transform((val) => val.toLowerCase());
 
 /**
- * ENS full name schema for names like "alice.ethed.eth"
+ * ENS full name schema for names like "alice.ayushetty.eth"
  */
 export const ensFullNameSchema = z
   .string()
@@ -47,7 +48,7 @@ export const ensFullNameSchema = z
 export const ensRegistrationSchema = z.object({
   subdomain: z.string().min(1, 'Subdomain is required'),
   walletAddress: ethereumAddressSchema.optional(),
-  rootDomain: z.enum(['ethed.eth', 'ayushetty.eth']).optional().default('ethed.eth'),
+  rootDomain: z.enum(['ayushetty.eth', 'ayushetty.eth']).optional().default(ENS_ROOT_DOMAIN as any),
 });
 
 /**

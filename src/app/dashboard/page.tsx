@@ -24,6 +24,9 @@ interface UserProfile {
   walletConnected: boolean;
   ensName: string | null;
   joinedDate: string;
+  xp: number;
+  level: number;
+  streak: number;
   courses: Array<{
     course: {
       slug: string;
@@ -31,6 +34,7 @@ interface UserProfile {
     };
     completed: boolean;
     startedAt: string;
+    progress: number;
   }>;
   nfts: Array<{
     id: string;
@@ -43,7 +47,7 @@ export default function DashboardPage() {
   const { data: session, status } = useSession();
   const isPending = status === "loading";
   const router = useRouter();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -83,21 +87,24 @@ export default function DashboardPage() {
 
   // Calculate stats from real data
   const stats = {
-    coursesEnrolled: profile.coursesEnrolled,
-    coursesCompleted: profile.coursesCompleted,
-    nftsEarned: profile.nftsOwned,
-    walletConnected: profile.walletConnected,
-    ensName: profile.ensName,
-    joinedDate: profile.joinedDate
+    coursesEnrolled: profile.stats.coursesEnrolled,
+    coursesCompleted: profile.stats.coursesCompleted,
+    nftsEarned: profile.stats.nftsOwned,
+    walletConnected: profile.stats.walletConnected,
+    ensName: profile.stats.ensName,
+    joinedDate: profile.stats.joinedDate,
+    xp: profile.xp || 0,
+    level: profile.level || 1,
+    streak: profile.streak || 0
   };
 
-  const courses = profile.courses.map(c => ({
+  const courses = profile.courses.map((c: any) => ({
     id: c.course.slug,
     title: c.course.title,
-    progress: c.completed ? 100 : 50, // Placeholder, could calculate from progress
+    progress: c.progress || (c.completed ? 100 : 0),
     status: c.completed ? 'completed' : 'in-progress',
-    nftEarned: profile.nfts.some(nft => nft.name.includes(c.course.title)),
-    lastAccessed: new Date(c.startedAt).toLocaleDateString()
+    nftEarned: profile.nfts.some((nft: any) => nft.name.includes(c.course.title)),
+    lastAccessed: new Date(c.updatedAt || c.startedAt).toLocaleDateString()
   }));
 
   const achievements = [
@@ -170,7 +177,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-400 text-sm font-medium">Study Streak</p>
-                  <p className="text-2xl font-bold text-white mt-1">N/A</p>
+                  <p className="text-2xl font-bold text-white mt-1">{stats.streak} Days</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
                   <TrendingUp className="h-6 w-6 text-cyan-400" />
@@ -183,8 +190,8 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-400 text-sm font-medium">Avg Score</p>
-                  <p className="text-2xl font-bold text-white mt-1">N/A</p>
+                  <p className="text-slate-400 text-sm font-medium">Level</p>
+                  <p className="text-2xl font-bold text-white mt-1">{stats.level}</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
                   <Star className="h-6 w-6 text-yellow-400" />
@@ -206,7 +213,7 @@ export default function DashboardPage() {
                 <CardDescription className="text-slate-400">Continue learning where you left off</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {courses.map((course) => (
+                {courses.map((course: any) => (
                   <div key={course.id} className="p-6 bg-slate-950/40 rounded-xl border border-white/5 hover:border-cyan-400/20 transition-all duration-300">
                     <div className="flex items-center justify-between mb-4">
                       <div>

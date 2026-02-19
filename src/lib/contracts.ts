@@ -10,6 +10,8 @@ import { logger } from "./monitoring";
 
 export const AMOY_CHAIN_ID = 80002;
 
+export const ENS_ROOT_DOMAIN = "ayushetty.eth";
+
 // ---------------------------------------------------------------------------
 // ABIs
 // ---------------------------------------------------------------------------

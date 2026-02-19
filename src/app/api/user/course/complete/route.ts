@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
+import { addXpAndProgress } from "@/lib/gamification";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +21,15 @@ export async function POST(request: NextRequest) {
     if (!course) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
+
+    // Award bonus XP for course completion
+    await addXpAndProgress(session.user.id); // Base XP + Streak
+    
+    // Additional bonus for completing a full course (50 XP)
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { xp: { increment: 50 } }
+    });
 
     // Upsert the UserCourse record to mark completion
     const userCourse = await prisma.userCourse.upsert({

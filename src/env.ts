@@ -53,7 +53,7 @@ export const env = createEnv({
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 
     // Blockchain / On-chain
-    AMOY_RPC_URL: z.string().url().optional(),
+    AMOY_RPC_URL: z.string().optional(),
     DEPLOYER_PRIVATE_KEY: z.string().optional(),
 
     // Contract address overrides (hex address strings)

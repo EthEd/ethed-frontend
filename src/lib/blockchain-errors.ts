@@ -86,6 +86,20 @@ export function getBlockchainErrorInfo(error: unknown): BlockchainErrorInfo {
         description: "Your wallet does not have enough balance for gas.",
       };
     }
+
+    if (lower.includes("disconnected") || lower.includes("provider is disconnected") || lower.includes("lost connection")) {
+      return {
+        title: "Wallet disconnected",
+        description: "The connection to your wallet was lost. Please reconnect and try again.",
+      };
+    }
+
+    if (lower.includes("not connected") || lower.includes("no provider")) {
+      return {
+        title: "Wallet not connected",
+        description: "Please connect your wallet before performing this action.",
+      };
+    }
   }
 
   return {

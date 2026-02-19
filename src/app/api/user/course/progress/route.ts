@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma-client';
 import { logger } from '@/lib/monitoring';
+import { addXpAndProgress } from '@/lib/gamification';
 
 export async function GET(request: NextRequest) {
   try {
@@ -51,6 +52,21 @@ export async function POST(request: NextRequest) {
                 status: 'PUBLISHED'
             }
         });
+    }
+
+    // Check if new modules were completed to award XP
+    const existingProgress = await prisma.userCourse.findUnique({
+      where: { userId_courseId: { userId: session.user.id, courseId: course.id } },
+      select: { completedModules: true }
+    });
+
+    const oldCompleted = (existingProgress?.completedModules as any[]) || [];
+    const newCompleted = (completedModules as any[]) || [];
+    
+    // If the new list has more items than the old list, award XP
+    // Simple logic: if new items added, award XP once for this update
+    if (newCompleted.length > oldCompleted.length) {
+      await addXpAndProgress(session.user.id);
     }
 
     let progress = 0;

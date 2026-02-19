@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
 import { getExplorerTxUrl } from "@/lib/contracts";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -128,7 +130,8 @@ export async function GET() {
       }
     });
 
-  } catch {
+  } catch (error) {
+    console.error("Profile Data Error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }
