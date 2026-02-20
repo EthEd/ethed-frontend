@@ -77,7 +77,59 @@ export default function ProfileClient() {
   const router = useRouter();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch('/api/user/profile-data');
+      const data = await response.json();
+
+      if (!data.success) {
+        if (data.error === 'Unauthorized') {
+          router.push('/login');
+          return;
+        }
+        const errText = typeof data.error === 'string' ? data.error : (data.error ? JSON.stringify(data.error) : null);
+        toast.error(errText || 'Failed to load profile');
+        return;
+      }
+
+      setProfile(data.profile);
+    } catch {
+      toast.error('Failed to load profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSyncNFTs = async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    
+    const toastId = toast.loading('Syncing your NFTs from blockchain...');
+    
+    try {
+      const res = await fetch('/api/user/nft-sync', { method: 'POST' });
+      const data = await res.json();
+      
+      if (data.success) {
+        if (data.synced > 0) {
+          toast.success(`Synced ${data.synced} new NFTs!`, { id: toastId });
+          fetchProfile(); // Refresh data
+        } else {
+          toast.info('Your collection is already up to date', { id: toastId });
+        }
+      } else {
+        throw new Error(data.error || 'Sync failed');
+      }
+    } catch (err) {
+      toast.error('Failed to sync NFTs', { id: toastId });
+      console.error(err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -87,28 +139,7 @@ export default function ProfileClient() {
       return;
     }
 
-    (async () => {
-      try {
-        const response = await fetch('/api/user/profile-data');
-        const data = await response.json();
-
-        if (!data.success) {
-          if (data.error === 'Unauthorized') {
-            router.push('/login');
-            return;
-          }
-          const errText = typeof data.error === 'string' ? data.error : (data.error ? JSON.stringify(data.error) : null);
-          toast.error(errText || 'Failed to load profile');
-          return;
-        }
-
-        setProfile(data.profile);
-      } catch {
-        toast.error('Failed to load profile');
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetchProfile();
   }, [session, status, router]);
 
   if (status === 'loading' || loading) {
@@ -177,7 +208,7 @@ export default function ProfileClient() {
                 {/* User Info */}
                 <div className="flex-1">
                   <h1 className="text-4xl font-bold text-white mb-2">
-                    {profile.name || 'Anonymous Learner'}
+                    {profile.ensName ? profile.ensName : (profile.name || 'Anonymous Learner')}
                   </h1>
                   <p className="text-slate-400 mb-4">{profile.email}</p>
                   
@@ -430,6 +461,30 @@ export default function ProfileClient() {
 
           {/* Achievements Tab */}
           <TabsContent value="achievements" className="space-y-4">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Your Achievements</h2>
+                <p className="text-slate-400">NFT badges earned through learning</p>
+              </div>
+              <Button 
+                onClick={handleSyncNFTs} 
+                className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30"
+                disabled={isSyncing}
+              >
+                {isSyncing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Sync Collections
+                  </>
+                )}
+              </Button>
+            </div>
+
             {nfts.length === 0 ? (
               <Card className="bg-slate-900/40 backdrop-blur-xl border border-cyan-400/10 rounded-2xl">
                 <CardContent className="p-12 text-center">

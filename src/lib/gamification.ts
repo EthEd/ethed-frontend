@@ -3,7 +3,7 @@ import { prisma } from "./prisma-client";
 const XP_PER_LESSON = 10;
 const XP_FOR_STREAK = 5;
 
-export async function addXpAndProgress(userId: string, lessonId?: string) {
+export async function addXpAndProgress(userId: string, lessonId?: string, customXp?: number) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { xp: true, level: true, streak: true, lastLearnedAt: true },
@@ -11,7 +11,7 @@ export async function addXpAndProgress(userId: string, lessonId?: string) {
 
   if (!user) return null;
 
-  let newXp = user.xp + XP_PER_LESSON;
+  let newXp = user.xp + (customXp || XP_PER_LESSON);
   let newStreak = user.streak;
   const now = new Date();
   const lastLearned = user.lastLearnedAt;

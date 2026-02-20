@@ -43,9 +43,24 @@ function getDeployerAccount(): Account {
       "[viem-client] DEPLOYER_PRIVATE_KEY is not set. Server-side signing will fail."
     );
   }
+
   // Ensure the key has the 0x prefix
   const prefixed = key.startsWith("0x") ? key : `0x${key}`;
-  return privateKeyToAccount(prefixed as `0x${string}`);
+  
+  // Validate length and characters (must be 64 characters of hex + 0x)
+  if (!/^0x[0-9a-fA-F]{64}$/.test(prefixed)) {
+    throw new Error(
+      "[viem-client] Invalid DEPLOYER_PRIVATE_KEY format. Expected a 64-character hex string (with or without 0x prefix)."
+    );
+  }
+
+  try {
+    return privateKeyToAccount(prefixed as `0x${string}`);
+  } catch (err) {
+    throw new Error(
+      `[viem-client] Failed to create account from DEPLOYER_PRIVATE_KEY: ${err instanceof Error ? err.message : 'Unknown error'}`
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -91,10 +106,19 @@ export function getDeployerAddress(): `0x${string}` {
 }
 
 /**
- * Check whether on-chain operations are available (env vars present).
+ * Check whether on-chain operations are available (env vars present and valid).
  */
 export function isOnChainEnabled(): boolean {
-  return !!(process.env.AMOY_RPC_URL && process.env.DEPLOYER_PRIVATE_KEY);
+  const url = process.env.AMOY_RPC_URL;
+  const key = process.env.DEPLOYER_PRIVATE_KEY;
+  
+  if (!url || !key) return false;
+
+  // Basic hex validation for the private key
+  const normalized = key.startsWith("0x") ? key.slice(2) : key;
+  const isHex = /^[0-9a-fA-F]{64}$/.test(normalized);
+  
+  return isHex;
 }
 
 // ---------------------------------------------------------------------------

@@ -25,10 +25,44 @@ function validateDatabaseUrl() {
 
 validateDatabaseUrl();
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+const dbUrl = process.env.DATABASE_URL?.trim().replace(/^['"]|['"]$/g, "");
 
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient();
+const prismaClientSingleton = () => {
+  return new PrismaClient({
+    datasources: {
+      db: {
+        url: dbUrl,
+      },
+    },
+    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+  }).$extends({
+    query: {
+      async $allOperations({ operation, model, args, query }) {
+        const start = performance.now();
+        try {
+          const result = await query(args);
+          const end = performance.now();
+          const duration = end - start;
+          
+          if (process.env.DEBUG_PRISMA === "true" || process.env.NODE_ENV === "development") {
+            console.log(`[Prisma] ${model}.${operation} took ${duration.toFixed(2)}ms`);
+          }
+          
+          return result;
+        } catch (error) {
+          const end = performance.now();
+          console.error(`[Prisma Error] ${model}.${operation} failed after ${(end - start).toFixed(2)}ms:`, error);
+          throw error;
+        }
+      },
+    },
+  });
+};
+
+type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
+
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClientSingleton | undefined };
+
+export const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;

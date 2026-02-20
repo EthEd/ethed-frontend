@@ -38,16 +38,44 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { walletAddress } = body;
+    const { walletAddress: providedAddress, ensName: bodyEnsName } = body;
 
-    // Get user's ENS name if they have one
-    const ensName = await getUserENS(session.user.id);
+    const { prisma } = await import("@/lib/prisma-client");
+    
+    // Fetch user with primary wallet
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        wallets: {
+          where: { isPrimary: true },
+          take: 1
+        }
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Determine recipient address: provided in body -> primary wallet -> session address
+    const recipientAddress = providedAddress || user.wallets[0]?.address || session.address;
+
+    if (!recipientAddress) {
+      return NextResponse.json(
+        { error: "No wallet address found. Please connect your wallet first." },
+        { status: 400 }
+      );
+    }
+
+    // Get user's ENS name from DB, use body as fallback
+    const dbEnsName = await getUserENS(session.user.id);
+    const ensName = dbEnsName || bodyEnsName;
 
     // Mint NFT using the service
     const result = await mintGenesisNFTs({
       userId: session.user.id,
       ensName: ensName || undefined,
-      userAddress: walletAddress,
+      userAddress: recipientAddress,
     });
 
     return NextResponse.json({

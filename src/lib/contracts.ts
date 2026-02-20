@@ -46,6 +46,14 @@ export const NFT_CONTRACT_ABI = [
     stateMutability: "view",
     type: "function",
   },
+  // tokenURI (standard ERC-721 metadata)
+  {
+    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+    name: "tokenURI",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 // ENS Registrar Contract ABI

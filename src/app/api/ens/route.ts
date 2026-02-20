@@ -39,7 +39,13 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { subdomain, walletAddress: rawWalletAddress } = body;
+    
+    // Fallback: if no address in body, check session (SIWE) or user's existing wallets
     let walletAddress = rawWalletAddress;
+    
+    if (!walletAddress) {
+       walletAddress = session.address;
+    }
 
     if (!subdomain || typeof subdomain !== 'string') {
       return NextResponse.json({ error: 'Missing subdomain parameter' }, { status: 400 });

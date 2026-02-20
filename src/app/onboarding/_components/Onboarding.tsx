@@ -26,7 +26,7 @@ import { useSession } from "next-auth/react";
 import { ENS_ROOT_DOMAIN } from "@/lib/contracts";
 
 export default function Onboarding() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
 
   // Redirect to login if not authenticated
@@ -159,6 +159,7 @@ export default function Onboarding() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           subdomain: ensName,
+          walletAddress: session?.address || undefined,
         }),
       });
 
@@ -167,6 +168,9 @@ export default function Onboarding() {
       if (!response.ok) {
         throw new Error(data.error || "Failed to register ENS");
       }
+
+      // Update session with new ENS name
+      await updateSession({ ensName: `${ensName}.${ENS_ROOT_DOMAIN}` });
 
       setNftsMinted((prev) => [...prev, "ens-pioneer"]);
       toast.success(`🌐 ENS ${ensName}.${ENS_ROOT_DOMAIN} registered successfully!`);
@@ -189,6 +193,7 @@ export default function Onboarding() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ensName: `${ensName}.${ENS_ROOT_DOMAIN}`,
+          walletAddress: session?.address || undefined,
         }),
       });
 

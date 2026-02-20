@@ -27,6 +27,8 @@ export interface NFTMetadata {
   name: string;
   description: string;
   image: string;
+  courseSlug?: string;
+  courseName?: string;
   attributes: Array<{
     trait_type: string;
     value: string | number;
@@ -119,8 +121,8 @@ export function generateGenesisScholarMetadata(
   ensName?: string
 ): NFTMetadata {
   return {
-    name: "eth.ed Pioneer NFT",
-    description: `Commemorates being an early eth.ed pioneer and completing the onboarding journey.`,
+    name: ensName ? `eth.ed Pioneer - ${ensName}` : "eth.ed Pioneer NFT",
+    description: `Commemorates ${ensName || 'a dedicated scholar'} being an early eth.ed pioneer and completing the onboarding journey.`,
     image: imageUri,
     attributes: [
       { trait_type: "Type", value: "Genesis Scholar" },
@@ -339,8 +341,8 @@ export async function mintGenesisNFTs(params: MintNFTParams) {
   // Development-friendly fallback: if the genesis image is still the placeholder
   // and Pinata is not configured, use a bundled local image so the UI works offline.
   const placeholderCid = "ipfs://QmEthEdPioneer1";
-  // Use OG PNG fallback in development instead of the animated GIFs
-  const devLocalImage = "/og-image.png";
+  // Use the Learning Sprout image as the default for pioneers
+  const devLocalImage = "/nft-learning-sprout.png";
   const genesisImageUri =
     GENESIS_PIONEER_IMAGE_URI === placeholderCid && !env.PINATA_JWT
       ? devLocalImage
@@ -433,17 +435,21 @@ export async function uploadCourseSproutToIPFS(): Promise<string> {
 export function generateCourseCompletionMetadata(
   imageUri: string,
   courseName: string,
-  courseSlug: string
+  courseSlug: string,
+  recipientName?: string
 ): NFTMetadata {
   return {
-    name: `${courseName} - Learning Sprout`,
-    description: `Commemorates the successful completion of ${courseName} on eth.ed. This Learning Sprout represents your growth and mastery in blockchain education.`,
+    name: `${courseName}${recipientName ? ` - ${recipientName}` : ''} - Learning Sprout`,
+    description: `Commemorates the successful completion of ${courseName} on eth.ed by ${recipientName || 'a dedicated scholar'}. This Learning Sprout represents your growth and mastery in blockchain education.`,
     image: imageUri,
     animation_url: imageUri, // GIF works as animation
+    courseSlug, // Used for UI linkage In Profile
+    courseName, // Used for UI linkage In Profile
     attributes: [
       { trait_type: "Type", value: "Course Completion" },
       { trait_type: "Course", value: courseName },
       { trait_type: "Course Slug", value: courseSlug },
+      { trait_type: "Recipient", value: recipientName || "Scholar" },
       { trait_type: "Platform", value: "eth.ed" },
       { trait_type: "Completion Date", value: new Date().toISOString().split("T")[0] },
       { trait_type: "NFT Design", value: "Learning Sprout" }
@@ -460,14 +466,15 @@ export async function mintCourseCompletionNFT(params: {
   courseSlug: string;
   courseName: string;
   userAddress?: string;
+  recipientName?: string;
 }) {
-  const { userId, courseSlug, courseName, userAddress } = params;
+  const { userId, courseSlug, courseName, userAddress, recipientName } = params;
 
   // Upload sprout GIF to IPFS
   const imageUri = await uploadCourseSproutToIPFS();
 
   // Generate metadata
-  const metadata = generateCourseCompletionMetadata(imageUri, courseName, courseSlug);
+  const metadata = generateCourseCompletionMetadata(imageUri, courseName, courseSlug, recipientName);
 
   // Upload metadata to IPFS
   const metadataUri = await uploadMetadataToIPFS(metadata);
@@ -480,7 +487,7 @@ export async function mintCourseCompletionNFT(params: {
   const nft = await saveNFTToDatabase({
     userId,
     tokenId: mintResult.tokenId,
-    name: `${courseName} - Learning Sprout`,
+    name: `${courseName}${recipientName ? ` - ${recipientName}` : ''} - Learning Sprout`,
     image: imageUri,
     metadata,
     contractAddress: mintResult.contractAddress,
@@ -504,4 +511,119 @@ export async function mintCourseCompletionNFT(params: {
       explorerUrl,
     },
   };
+}
+
+/**
+ * Synchronize user NFTs from the blockchain to the database
+ */
+export async function syncUserNFTs(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { wallets: true },
+  });
+
+  if (!user || user.wallets.length === 0) {
+    return { success: true, synced: 0, message: "No wallets found for user" };
+  }
+
+  const publicClient = getPublicClient();
+  const contractAddress = getContractAddress("NFT");
+  
+  if (!contractAddress) {
+    return { success: false, error: "NFT contract address not configured" };
+  }
+
+  let syncedCount = 0;
+  
+  for (const wallet of user.wallets) {
+    const address = wallet.address as `0x${string}`;
+    
+    try {
+      // Find all Minted events for this user
+      const logs = await publicClient.getLogs({
+        address: contractAddress,
+        event: {
+          type: "event",
+          name: "Minted",
+          inputs: [
+            { indexed: true, name: "to", type: "address" },
+            { indexed: true, name: "tokenId", type: "uint256" },
+          ],
+        },
+        args: { to: address },
+        fromBlock: 0n, // Start from genesis for Amoy
+      });
+
+      for (const log of logs) {
+        const tokenIdInt = log.args.tokenId;
+        if (tokenIdInt === undefined) continue;
+        const tokenId = tokenIdInt.toString();
+
+        // Check if we already have this NFT by tokenId and contractAddress
+        const existing = await prisma.nFT.findFirst({
+          where: { 
+            tokenId, 
+            contractAddress: contractAddress,
+            chainId: AMOY_CHAIN_ID
+          },
+        });
+
+        if (!existing) {
+          // Fetch TokenURI
+          try {
+            const tokenUri = await publicClient.readContract({
+              address: contractAddress,
+              abi: NFT_CONTRACT_ABI,
+              functionName: "tokenURI",
+              args: [tokenIdInt],
+            }) as string;
+
+            // Fetch metadata JSON
+            let metadata: NFTMetadata;
+            if (tokenUri.startsWith('ipfs://')) {
+              const gatewayUrl = `https://gateway.pinata.cloud/ipfs/${tokenUri.replace('ipfs://', '')}`;
+              const metadataRes = await fetch(gatewayUrl);
+              if (!metadataRes.ok) throw new Error(`HTTP ${metadataRes.status} fetching metadata`);
+              metadata = await metadataRes.json() as NFTMetadata;
+            } else if (tokenUri.startsWith('/local-metadata/')) {
+              // Read local file from public/local-metadata
+              const localPath = path.join(process.cwd(), 'public', tokenUri);
+              if (fs.existsSync(localPath)) {
+                metadata = JSON.parse(fs.readFileSync(localPath, 'utf8')) as NFTMetadata;
+              } else {
+                throw new Error(`Local metadata file not found: ${localPath}`);
+              }
+            } else {
+              // External URL
+              const metadataRes = await fetch(tokenUri);
+              if (!metadataRes.ok) throw new Error(`HTTP ${metadataRes.status} fetching metadata`);
+              metadata = await metadataRes.json() as NFTMetadata;
+            }
+
+            // Save to DB
+            await prisma.nFT.create({
+              data: {
+                userId,
+                tokenId,
+                name: metadata.name || `EthEd Certificate #${tokenId}`,
+                image: metadata.image || "",
+                metadata: metadata as any,
+                contractAddress,
+                chainId: AMOY_CHAIN_ID,
+                ownerAddress: address,
+                transactionHash: log.transactionHash,
+              }
+            });
+            syncedCount++;
+          } catch (err) {
+            logger.error(`Failed to sync NFT ${tokenId}: ${err}`, "nft-service");
+          }
+        }
+      }
+    } catch (err) {
+      logger.error(`Log fetch failed for ${address}: ${err}`, "nft-service");
+    }
+  }
+
+  return { success: true, synced: syncedCount };
 }

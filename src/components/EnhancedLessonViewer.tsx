@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 interface Lesson {
   id: number;
@@ -15,6 +16,7 @@ interface Lesson {
   content: string;
   duration: number;
   type: 'reading' | 'video' | 'quiz' | 'coding' | 'project';
+  videoUrl?: string;
   xpReward: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   keyTakeaways: string[];
@@ -46,12 +48,150 @@ interface EnhancedLessonViewerProps {
   onNavigate: (direction: 'next' | 'prev') => void;
 }
 
+const renderMarkdown = (content: string) => {
+  const lines = content.split('\n');
+  const rendered: React.ReactNode[] = [];
+  let inCodeBlock = false;
+  let codeLines: string[] = [];
+
+  lines.forEach((line, i) => {
+    // Handle code blocks
+    if (line.startsWith('```')) {
+      if (inCodeBlock) {
+        // End of code block
+        rendered.push(
+          <div key={`code-${i}`} className="bg-slate-950 border border-slate-700 rounded-xl p-4 my-6 overflow-x-auto">
+            <pre className="text-sm font-mono text-cyan-300">
+              {codeLines.join('\n')}
+            </pre>
+          </div>
+        );
+        codeLines = [];
+        inCodeBlock = false;
+      } else {
+        // Start of code block
+        inCodeBlock = true;
+      }
+      return;
+    }
+
+    if (inCodeBlock) {
+      codeLines.push(line);
+      return;
+    }
+
+    // Main headings
+    if (line.startsWith('# ')) {
+      rendered.push(
+        <h1 key={i} className="text-3xl font-extrabold text-white mb-6 mt-4 leading-tight border-b border-white/10 pb-2">
+          {line.slice(2)}
+        </h1>
+      );
+      return;
+    }
+    
+    // Section headings
+    if (line.startsWith('## ')) {
+      rendered.push(
+        <h2 key={i} className="text-2xl font-bold text-cyan-300 mb-4 mt-8 leading-tight">
+          {line.slice(3)}
+        </h2>
+      );
+      return;
+    }
+    
+    // Subsection headings
+    if (line.startsWith('### ')) {
+      rendered.push(
+        <h3 key={i} className="text-xl font-semibold text-emerald-300 mb-3 mt-6 leading-snug">
+          {line.slice(4)}
+        </h3>
+      );
+      return;
+    }
+
+    // Bullet points
+    if (line.startsWith('- ')) {
+      rendered.push(
+        <div key={i} className="ml-4 mb-2">
+          <div className="flex items-start gap-2">
+            <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full mt-2.5 flex-shrink-0"></div>
+            <p className="text-slate-300 leading-relaxed">{parseInlineMarkdown(line.slice(2))}</p>
+          </div>
+        </div>
+      );
+      return;
+    }
+
+    // Numbered lists
+    if (line.match(/^\d+\. /)) {
+      rendered.push(
+        <div key={i} className="ml-4 mb-2">
+          <div className="flex items-start gap-3">
+            <span className="font-bold text-emerald-400 mt-0.5 flex-shrink-0">
+              {line.match(/^\d+/)?.[0]}.
+            </span>
+            <p className="text-slate-300 leading-relaxed">
+              {parseInlineMarkdown(line.replace(/^\d+\. /, ''))}
+            </p>
+          </div>
+        </div>
+      );
+      return;
+    }
+
+    // Blockquotes
+    if (line.startsWith('> ')) {
+      rendered.push(
+        <blockquote key={i} className="border-l-4 border-purple-400 pl-4 py-2 bg-purple-500/5 italic my-4 rounded-r-md">
+          <p className="text-purple-200 leading-relaxed">
+            {parseInlineMarkdown(line.slice(2))}
+          </p>
+        </blockquote>
+      );
+      return;
+    }
+
+    // Empty lines
+    if (line.trim() === '') {
+      rendered.push(<div key={i} className="h-4" />);
+      return;
+    }
+
+    // Regular paragraphs
+    rendered.push(
+      <p key={i} className="text-slate-300 leading-relaxed mb-4">
+        {parseInlineMarkdown(line)}
+      </p>
+    );
+  });
+
+  return rendered;
+};
+
+const parseInlineMarkdown = (text: string) => {
+  // Bold: **text**
+  // Inline code: `text`
+  let parts = text.split(/(\*\*.*?\*\*|`.*?`)/);
+  
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="text-white font-bold">{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return <code key={i} className="bg-slate-800 text-cyan-300 px-1.5 py-0.5 rounded font-mono text-sm">{part.slice(1, -1)}</code>;
+    }
+    return part;
+  });
+};
+
 export default function EnhancedLessonViewer({
   lesson,
   courseContext,
   onComplete,
   onNavigate
 }: EnhancedLessonViewerProps) {
+  const router = useRouter();
   const [isCompleted, setIsCompleted] = useState(courseContext.completedLessons.includes(lesson.id));
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [showQuiz, setShowQuiz] = useState(false);
@@ -59,16 +199,70 @@ export default function EnhancedLessonViewer({
   const [showCelebration, setShowCelebration] = useState(false);
   const [noteContent, setNoteContent] = useState('');
   const [showNotes, setShowNotes] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
+
+  // Sync state when lesson prop changes
+  useEffect(() => {
+    setIsCompleted(courseContext.completedLessons.includes(lesson.id));
+    setQuizAnswers({});
+    setShowQuiz(false);
+    setQuizScore(null);
+    setNoteContent('');
+  }, [lesson.id, courseContext.completedLessons]);
 
   const lessonProgress = ((courseContext.completedLessons.length + (isCompleted ? 0 : 1)) / courseContext.totalLessons) * 100;
   const courseProgress = (courseContext.completedLessons.length / courseContext.totalLessons) * 100;
 
   const handleMarkComplete = () => {
+    if (isCompleted) return; // Don't mark twice
     setIsCompleted(true);
     setShowCelebration(true);
     onComplete(lesson.id, lesson.xpReward);
     toast.success(`${lesson.xpReward} XP earned! 🎉`);
     setTimeout(() => setShowCelebration(false), 3000);
+  };
+
+  const handleFinishCourse = async () => {
+    setIsFinishing(true);
+    // Mark last lesson as complete first if it isn't
+    if (!isCompleted) {
+        handleMarkComplete();
+    }
+
+    // Wait a moment for progress sync to DB
+    await new Promise(r => setTimeout(r, 1000));
+
+    try {
+        toast.promise(
+            fetch('/api/user/nft/mint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    courseSlug: courseContext.courseId,
+                    courseName: courseContext.courseName,
+                    // If you have a wallet address available in context, pass it
+                    // userAddress: userWalletAddress 
+                })
+            }).then(async res => {
+                if (!res.ok) throw new Error('Minting failed');
+                const data = await res.json();
+                return data;
+            }),
+            {
+                loading: 'Finalizing course & minting your NFT...',
+                success: (data) => {
+                    setTimeout(() => router.push('/profile'), 2000);
+                    return data.alreadyMinted 
+                        ? 'Achievement updated! Redirecting...' 
+                        : 'Course Complete! Your NFT is being minted! 🎓';
+                },
+                error: 'Course completed, but NFT minting encountered an issue.'
+            }
+        );
+    } catch (error) {
+        console.error('Finalization error:', error);
+        router.push('/dashboard');
+    }
   };
 
   const handleQuizSubmit = () => {
@@ -126,7 +320,7 @@ export default function EnhancedLessonViewer({
           <div className="space-y-2">
             <div className="flex justify-between items-center text-sm">
               <span className="text-slate-300">
-                Lesson {courseContext.completedLessons.length + 1} of {courseContext.totalLessons}
+                Lesson {lesson.id} of {courseContext.totalLessons}
               </span>
               <span className="text-cyan-400 font-bold">{Math.round(courseProgress)}%</span>
             </div>
@@ -201,6 +395,20 @@ export default function EnhancedLessonViewer({
             </CardHeader>
 
             <CardContent className="space-y-8 pb-8">
+              {/* Video Player Section */}
+              {lesson.type === 'video' && lesson.videoUrl && (
+                <div className="aspect-video w-full rounded-xl overflow-hidden shadow-2xl border border-white/10">
+                  <iframe
+                    src={lesson.videoUrl}
+                    title={lesson.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    className="w-full h-full border-0"
+                  />
+                </div>
+              )}
+
               {/* Key Takeaways */}
               <div className="bg-slate-950/40 border border-cyan-400/10 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -220,9 +428,9 @@ export default function EnhancedLessonViewer({
               </div>
 
               {/* Lesson Content */}
-              <div className="prose prose-invert max-w-none">
-                <div className="text-slate-300 leading-relaxed whitespace-pre-wrap">
-                  {lesson.content}
+              <div className="max-w-none">
+                <div className="text-slate-300 leading-relaxed">
+                  {renderMarkdown(lesson.content)}
                 </div>
               </div>
 
@@ -305,10 +513,17 @@ export default function EnhancedLessonViewer({
                     </p>
                     {quizScore >= 80 && (
                       <Button 
-                        onClick={() => setQuizScore(null)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                        onClick={() => {
+                          if (lesson.id === courseContext.totalLessons) {
+                              handleFinishCourse();
+                          } else {
+                              setQuizScore(null);
+                          }
+                        }}
+                        disabled={isFinishing}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white min-w-[140px]"
                       >
-                        Continue
+                        {lesson.id === courseContext.totalLessons ? (isFinishing ? 'Finishing...' : 'Finish Course') : 'Continue'}
                       </Button>
                     )}
                     {quizScore < 80 && (
@@ -364,17 +579,22 @@ export default function EnhancedLessonViewer({
 
           <div className="text-center text-slate-400 text-sm">
             <BookOpen className="inline mr-2 h-4 w-4" />
-            Lesson {courseContext.completedLessons.length + 1} of {courseContext.totalLessons}
+            Lesson {lesson.id} of {courseContext.totalLessons}
           </div>
 
           <Button 
             onClick={() => {
-              if (!isCompleted) handleMarkComplete();
-              onNavigate('next');
+              if (lesson.id === courseContext.totalLessons) {
+                handleFinishCourse();
+              } else {
+                if (!isCompleted) handleMarkComplete();
+                onNavigate('next');
+              }
             }}
-            className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white"
+            disabled={isFinishing}
+            className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white min-w-[140px]"
           >
-            Next Lesson
+            {lesson.id === courseContext.totalLessons ? (isFinishing ? 'Finishing...' : 'Finish Course') : 'Next Lesson'}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </motion.div>

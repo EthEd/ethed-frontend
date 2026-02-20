@@ -4,11 +4,27 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma-client';
 import { logger } from '@/lib/monitoring';
 import { addXpAndProgress } from '@/lib/gamification';
+import arcjet, { shield, slidingWindow } from "@/lib/arcjet";
+import { HttpStatus } from "@/lib/api-response";
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const decision = await arcjet
+      .withRule(
+        slidingWindow({
+          mode: "LIVE",
+          interval: "1m",
+          max: 60, // 60 requests per minute
+        })
+      )
+      .protect(request, { fingerprint: session.user.id });
+
+    if (decision.isDenied()) {
+      return NextResponse.json({ error: "Too many requests" }, { status: HttpStatus.RATE_LIMITED });
+    }
 
     const { searchParams } = new URL(request.url);
     const courseSlug = searchParams.get('courseSlug');
@@ -36,6 +52,20 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const decision = await arcjet
+      .withRule(
+        slidingWindow({
+          mode: "LIVE",
+          interval: "1m",
+          max: 30, // 30 updates per minute
+        })
+      )
+      .protect(request, { fingerprint: session.user.id });
+
+    if (decision.isDenied()) {
+      return NextResponse.json({ error: "Too many requests" }, { status: HttpStatus.RATE_LIMITED });
+    }
 
     const body = await request.json();
     const { courseSlug, completedCount, totalModules, completedModules } = body;

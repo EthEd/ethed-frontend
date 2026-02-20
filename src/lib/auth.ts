@@ -9,23 +9,27 @@ import { SiweProvider } from "./siwe-provider";
 declare module "next-auth" {
   interface Session {
     address?: string;
+    ensName?: string;
     user: {
       id: string;
       name?: string | null;
       email?: string | null;
       image?: string | null;
       address?: string;
+      ensName?: string;
     };
   }
 
   interface User {
     address?: string;
+    ensName?: string;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     address?: string;
+    ensName?: string;
   }
 }
 
@@ -155,7 +159,9 @@ export const authOptions: NextAuthOptions = {
         return false;
       }
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      const { prisma } = await import("@/lib/prisma-client");
+
       // If this is the first time the user signs in, user object will be available
       if (user) {
         token.id = user.id;
@@ -164,6 +170,22 @@ export const authOptions: NextAuthOptions = {
         // propagate wallet address from SIWE provider (if present)
         if ((user as any).address) {
           token.address = (user as any).address as string;
+        }
+      }
+
+      // Handle session updates (e.g. after onboarding)
+      if (trigger === "update" && session?.ensName) {
+        token.ensName = session.ensName;
+      }
+
+      // If we don't have an ensName in the token yet, try to fetch it
+      if (!token.ensName && token.id) {
+        const wallet = await prisma.walletAddress.findFirst({
+          where: { userId: token.id as string, isPrimary: true },
+          select: { ensName: true }
+        });
+        if (wallet?.ensName) {
+          token.ensName = wallet.ensName;
         }
       }
       
@@ -180,9 +202,14 @@ export const authOptions: NextAuthOptions = {
       if (token.name) {
         session.user.name = token.name as string;
       }
-      // expose wallet address on the session for client usage
-      if ((token as any).address) {
-        session.address = (token as any).address as string;
+      // expose wallet address and ENS name on the session for client usage
+      if (token.address) {
+        session.address = token.address as string;
+        session.user.address = token.address as string;
+      }
+      if (token.ensName) {
+        session.ensName = token.ensName as string;
+        session.user.ensName = token.ensName as string;
       }
       
       return session;
