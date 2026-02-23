@@ -1,11 +1,15 @@
+import { redirect } from 'next/navigation';
 import { Metadata } from 'next';
-import ProfileClient from "./_components/ProfileClient";
 
 export const metadata: Metadata = {
   title: 'Profile | eth.ed',
   description: 'View your learning profile, courses, and achievements'
 };
 
+/**
+ * /profile now redirects to /dashboard (unified experience).
+ * The public-facing third-party portfolio view remains at /profile/[id].
+ */
 export default function ProfilePage() {
-  return <ProfileClient />;
+  redirect('/dashboard');
 }

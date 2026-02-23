@@ -23,6 +23,12 @@ import { logger } from "@/lib/monitoring";
 import fs from "fs";
 import path from "path";
 
+// Log on-chain mode at module load
+if (typeof globalThis !== 'undefined' && typeof process !== 'undefined') {
+  const mode = isOnChainEnabled() ? 'REAL (Polygon Amoy)' : 'MOCK (dev fallback)';
+  logger.info(`NFT Service initialized — on-chain mode: ${mode}`, "nft-service");
+}
+
 export interface NFTMetadata {
   name: string;
   description: string;
@@ -340,7 +346,7 @@ export async function mintGenesisNFTs(params: MintNFTParams) {
 
   // Development-friendly fallback: if the genesis image is still the placeholder
   // and Pinata is not configured, use a bundled local image so the UI works offline.
-  const placeholderCid = "ipfs://QmEthEdPioneer1";
+  const placeholderCid = "ipfs://QmEthEdPioneer1" as string;
   // Use the Learning Sprout image as the default for pioneers
   const devLocalImage = "/nft-learning-sprout.png";
   const genesisImageUri =
@@ -527,7 +533,8 @@ export async function syncUserNFTs(userId: string) {
   }
 
   const publicClient = getPublicClient();
-  const contractAddress = getContractAddress("NFT");
+  // specify chain and ensure the returned string is treated as an address literal
+  const contractAddress = getContractAddress(AMOY_CHAIN_ID, "NFT_CONTRACT") as `0x${string}`;
   
   if (!contractAddress) {
     return { success: false, error: "NFT contract address not configured" };
@@ -551,7 +558,7 @@ export async function syncUserNFTs(userId: string) {
           ],
         },
         args: { to: address },
-        fromBlock: 0n, // Start from genesis for Amoy
+        fromBlock: BigInt(0), // Start from genesis for Amoy
       });
 
       for (const log of logs) {

@@ -80,7 +80,7 @@ export default function RootLayout({
         <WebsiteJsonLd />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${merriweather.variable} font-sans antialiased`} suppressHydrationWarning>
-        <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <NextAuthSessionProvider>
           <SkipToContent />
           <GlobalGrid enabled={true} adaptiveGlow={true} />

@@ -19,6 +19,12 @@ import {
 } from "./viem-client";
 import { logger } from "./monitoring";
 
+// Log on-chain mode at module load
+if (typeof globalThis !== 'undefined' && typeof process !== 'undefined') {
+  const mode = isOnChainEnabled() ? 'REAL (Polygon Amoy)' : 'MOCK (dev fallback)';
+  logger.info(`ENS Service initialized — on-chain mode: ${mode}`, "ens-service");
+}
+
 /**
  * Best-effort ENS avatar resolver.
  * Uses the ENS metadata avatar endpoint as a fallback; returns a resolvable URL or null.

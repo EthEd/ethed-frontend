@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useSignOut } from "@/hooks/use-signout";
 import Logo from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -123,6 +124,18 @@ export default function Navbar() {
                 >
                   How It Works
                 </Link>
+                <Link
+                  href="/projects"
+                  className="text-sm font-medium text-slate-400 hover:text-purple-400 transition-all duration-200"
+                >
+                  Projects
+                </Link>
+                <Link
+                  href="/donate"
+                  className="text-sm font-medium text-slate-400 hover:text-emerald-400 transition-all duration-200"
+                >
+                  Donate
+                </Link>
               </div>
             </div>
 
@@ -139,6 +152,7 @@ export default function Navbar() {
 
           {/* Right Section - Auth */}
           <div className="absolute right-0 flex items-center space-x-4">
+            <ThemeToggle />
             {status === "loading" ? (
               <div className="h-8 w-20 bg-slate-300 rounded animate-pulse" />
             ) : session ? (

@@ -3,7 +3,7 @@ import { GENESIS_PIONEER_IMAGE_URI, GENESIS_PIONEER_METADATA_URI } from '@/lib/g
 
 describe('genesis assets', () => {
   it('requires genesis image to be pinned or PINATA_JWT present (enforced in CI/production)', () => {
-    const placeholder = 'ipfs://QmEthEdPioneer1';
+    const placeholder = 'ipfs://QmEthEdPioneer1' as string;
     const pinned = typeof GENESIS_PIONEER_IMAGE_URI === 'string' && GENESIS_PIONEER_IMAGE_URI !== placeholder;
 
     // Only enforce pinning in CI or production builds; local dev uses a bundled fallback image.
