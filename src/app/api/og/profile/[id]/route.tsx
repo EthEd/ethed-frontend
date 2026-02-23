@@ -1,7 +1,8 @@
 import { ImageResponse } from 'next/og';
 import { prisma } from '@/lib/prisma-client';
 
-export const runtime = 'edge';
+// Change from 'edge' to 'nodejs' runtime for higher bundle size limits
+export const runtime = 'nodejs';
 
 export async function GET(
   request: Request,
