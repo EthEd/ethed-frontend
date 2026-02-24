@@ -1,11 +1,45 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 /**
  * Security middleware for the EthEd platform
  * Adds security headers and handles route protection
  */
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // -------------------------------------------------------------------------
+  // Role-based route protection (runs before anything else)
+  // -------------------------------------------------------------------------
+  if (pathname.startsWith('/admin') || pathname.startsWith('/moderator')) {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token) {
+      // Not logged in → send to login
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('callbackUrl', request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const role = token.role as string | undefined;
+
+    if (pathname.startsWith('/admin') && role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/403', request.url));
+    }
+
+    if (
+      pathname.startsWith('/moderator') &&
+      role !== 'ADMIN' &&
+      role !== 'MODERATOR'
+    ) {
+      return NextResponse.redirect(new URL('/403', request.url));
+    }
+  }
+
   const response = NextResponse.next();
   
   // Security headers
@@ -60,7 +94,6 @@ export function middleware(request: NextRequest) {
   }
   
   // Prevent caching of sensitive pages
-  const pathname = request.nextUrl.pathname;
   const noCacheRoutes = ['/dashboard', '/admin', '/profile', '/onboarding'];
   if (noCacheRoutes.some(route => pathname.startsWith(route))) {
     headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');

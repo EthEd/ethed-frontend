@@ -14,7 +14,7 @@ model User {
   email         String?  @unique
   emailVerified Boolean  @default(false)
   image         String?
-  role          String?
+  role          Role     @default(USER)
   banned        Boolean  @default(false)
   banReason     String?
   banExpires    DateTime?
@@ -23,6 +23,7 @@ model User {
   level         Int      @default(1)
   streak        Int      @default(0)
   lastLearnedAt DateTime?
+  notificationPrefs Json @default("{}")
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -42,6 +43,7 @@ model User {
   projects      Project[]
   projectMembers ProjectMember[]
   donations     Donation[]
+  auditLogs     AuditLog[]
 }
 
 model Session {
@@ -198,6 +200,35 @@ model NFT {
   createdAt       DateTime @default(now())
 
   user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Roles
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+// ---------------------------------------------------------------------------
+// Audit Log
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String
+  action     String
+  targetId   String?
+  targetType String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor      User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([actorId])
+  @@index([createdAt(sort: Desc)])
 }
 
 enum CourseLevel {

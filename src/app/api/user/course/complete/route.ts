@@ -6,6 +6,7 @@ import { addXpAndProgress } from "@/lib/gamification";
 import { HttpStatus } from "@/lib/api-response";
 import { logger } from "@/lib/monitoring";
 import arcjet, { shield, slidingWindow } from "@/lib/arcjet";
+import { sendCourseCompletionEmail } from "@/lib/emails/courseCompletion";
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,16 +52,31 @@ export async function POST(request: NextRequest) {
 
     // 2. Award XP and update levels (Standard Lesson XP + 50 Bonus for course completion)
     const bonusXp = 50;
-    const totalXpAwarded = 10 + bonusXp; // 10 for the final module + 50 for the course 
+    const totalXpAwarded = 10 + bonusXp; // 10 for the final module + 50 for the course
     await addXpAndProgress(session.user.id, undefined, totalXpAwarded);
+
+    // 3. Send completion email (only if not already completed before, email is available, and mailer is configured)
+    const wasAlreadyCompleted = userCourse.completed &&
+      (userCourse as any).finishedAt &&
+      new Date((userCourse as any).finishedAt).getTime() < Date.now() - 5000;
+
+    if (!wasAlreadyCompleted && session.user.email && process.env.EMAIL_HOST) {
+      sendCourseCompletionEmail({
+        to: session.user.email,
+        userName: session.user.name ?? 'Learner',
+        courseName: course.title,
+        courseSlug: course.slug,
+        xpAwarded: totalXpAwarded,
+      }).catch(err => logger.warn('Course completion email failed', 'email', { error: String(err) }));
+    }
 
     logger.info(`User ${session.user.id} completed course ${courseSlug}`, "course-api");
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Course marked complete", 
+    return NextResponse.json({
+      success: true,
+      message: "Course marked complete",
       userCourse,
-      bonusXp 
+      bonusXp
     });
   } catch (error) {
     console.error("Course completion Error:", error);

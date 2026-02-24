@@ -111,3 +111,21 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE() {
+  try {
+    const { session, errorResponse } = await getSessionOrUnauthorized();
+    if (errorResponse) return errorResponse;
+
+    const { prisma } = await import("@/lib/prisma-client");
+
+    await prisma.user.delete({ where: { id: session.user.id } });
+
+    return NextResponse.json({ message: "Account deleted" });
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to delete account" },
+      { status: 500 }
+    );
+  }
+}

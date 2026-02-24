@@ -115,6 +115,21 @@ export default function DashboardPage() {
     if (status === 'loading') return;
     if (!session) { router.push('/login'); return; }
     fetchProfile();
+
+    // Auto-sync NFTs once per browser session (silently, no toast on 0 results)
+    const SYNC_KEY = 'ethed_nft_synced';
+    if (!sessionStorage.getItem(SYNC_KEY)) {
+      sessionStorage.setItem(SYNC_KEY, '1');
+      fetch('/api/user/nft-sync', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success && data.synced > 0) {
+            toast.success(`Synced ${data.synced} new NFT${data.synced > 1 ? 's' : ''} from chain!`);
+            fetchProfile();
+          }
+        })
+        .catch(() => {}); // silent fail
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, status]);
 

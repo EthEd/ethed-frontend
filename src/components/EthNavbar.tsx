@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, LogIn } from "lucide-react";
+import { User, LogOut, LogIn, Shield, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 
@@ -120,6 +120,27 @@ export default function Navbar() {
                 >
                   Settings
                 </Link>
+                {/* Role-based admin / mod links */}
+                {user.role === 'ADMIN' && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-red-400/10 hover:text-red-300 transition border-t border-white/5"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <Shield className="h-3.5 w-3.5" />
+                    Admin Panel
+                  </Link>
+                )}
+                {user.role === 'MODERATOR' && (
+                  <Link
+                    href="/moderator"
+                    className="flex items-center gap-2 px-4 py-2 text-purple-400 hover:bg-purple-400/10 hover:text-purple-300 transition border-t border-white/5"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Mod Panel
+                  </Link>
+                )}
                 <button
                   onClick={async () => {
                     await signOut({ redirect: false });

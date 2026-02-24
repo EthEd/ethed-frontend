@@ -33,12 +33,56 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(course);
     }
 
-    const courses = await prisma.course.findMany({
-      include: { _count: { select: { users: true } } },
-      orderBy: { createdAt: "desc" },
+    const searchQ = searchParams.get("q") ?? "";
+    const statusFilter = searchParams.get("status") ?? "";
+    const page = Math.max(1, Number(searchParams.get("page") ?? 1));
+    const PAGE_SIZE = 20;
+
+    const where = {
+      ...(searchQ
+        ? {
+            OR: [
+              { title: { contains: searchQ, mode: "insensitive" as const } },
+              { slug: { contains: searchQ, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+      ...(statusFilter ? { status: statusFilter as any } : {}),
+    };
+
+    const [rawCourses, total] = await Promise.all([
+      prisma.course.findMany({
+        where,
+        include: {
+          _count: { select: { users: true, lessons: true } },
+          users: { select: { completed: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+      }),
+      prisma.course.count({ where }),
+    ]);
+
+    const courses = rawCourses.map(c => {
+      const totalEnrolled = c._count.users;
+      const completedCount = c.users.filter(u => u.completed).length;
+      return {
+        id: c.id,
+        title: c.title,
+        slug: c.slug,
+        status: c.status,
+        level: c.level,
+        price: c.price,
+        lessons: c._count.lessons,
+        students: totalEnrolled,
+        completionRate: totalEnrolled > 0 ? Math.round((completedCount / totalEnrolled) * 100) : 0,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      };
     });
 
-    return NextResponse.json({ courses });
+    return NextResponse.json({ courses, total, page, pageSize: PAGE_SIZE, totalPages: Math.ceil(total / PAGE_SIZE) });
   } catch {
     return NextResponse.json(
       { error: "Internal server error" },

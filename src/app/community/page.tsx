@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { FaDiscord as Discord } from "react-icons/fa";
-import { getFormattedMetrics } from "@/lib/metrics";
+import { getFormattedMetrics, formatMetric } from "@/lib/metrics";
 
 interface Milestone {
   date: string;
@@ -59,8 +59,24 @@ interface PlatformFeature {
 
 export default function CommunityPage() {
   const formattedMetrics = getFormattedMetrics();
-  
+
   const [mounted, setMounted] = useState(false);
+  const [liveStats, setLiveStats] = useState<{
+    developers: number;
+    courses: number;
+    nftsMinted: number;
+    countries: number;
+    hackathons: number;
+    sponsors: number;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    fetch('/api/community/stats')
+      .then(r => r.json())
+      .then(data => setLiveStats(data))
+      .catch(() => {}); // fall back to static metrics
+  }, []);
 
   const milestones: Milestone[] = [
     {
@@ -138,21 +154,21 @@ export default function CommunityPage() {
       icon: Star,
       color: "purple",
       achievements: [
-        `🌟 ${formattedMetrics.developers} active learners globally`,
-        `🏫 ${formattedMetrics.courses} courses across ${formattedMetrics.hackathons} specializations`, 
+        `🌟 ${liveStats ? `${formatMetric(liveStats.developers)}+` : formattedMetrics.developers} active learners globally`,
+        `🏫 ${liveStats ? `${formatMetric(liveStats.courses)}+` : formattedMetrics.courses} courses across ${liveStats ? `${formatMetric(liveStats.hackathons)}+` : formattedMetrics.hackathons} specializations`,
         "🤖 4 unique AI learning companions",
-        `🌍 Available in ${formattedMetrics.countries} countries`
+        `🌍 Available in ${liveStats ? `${formatMetric(liveStats.countries)}+` : formattedMetrics.countries} countries`
       ]
     }
   ];
 
   const communityStats = {
-    developers: formattedMetrics.developers,
-    countries: formattedMetrics.countries, 
-    courses: formattedMetrics.courses,
-    nfts: formattedMetrics.nftsMinted,
-    hackathons: formattedMetrics.hackathons,
-    sponsors: formattedMetrics.sponsors
+    developers: liveStats ? `${formatMetric(liveStats.developers)}+ Developers` : formattedMetrics.developers,
+    countries: liveStats ? `${formatMetric(liveStats.countries)}+ Countries` : formattedMetrics.countries,
+    courses: liveStats ? `${formatMetric(liveStats.courses)}+ Courses` : formattedMetrics.courses,
+    nfts: liveStats ? `${formatMetric(liveStats.nftsMinted)}+ NFTs` : formattedMetrics.nftsMinted,
+    hackathons: liveStats ? `${formatMetric(liveStats.hackathons)}+ Hackathons` : formattedMetrics.hackathons,
+    sponsors: liveStats ? `${formatMetric(liveStats.sponsors)}+ Sponsors` : formattedMetrics.sponsors,
   };
 
   const sponsors: Sponsor[] = [

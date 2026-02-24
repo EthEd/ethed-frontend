@@ -1,108 +1,154 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  BookOpen, 
-  Users, 
-  Clock, 
-  Star,
-  Edit,
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  BookOpen,
+  Users,
+  Clock,
   Eye,
   Plus,
   ArrowLeft,
-  Settings
+  Settings,
+  Search,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
+
+interface AdminCourse {
+  id: string;
+  title: string;
+  slug: string;
+  status: string;
+  level: string;
+  price: number | null;
+  lessons: number;
+  students: number;
+  completionRate: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function AdminCoursesPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const [courses, setCourses] = useState<AdminCourse[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (status === "loading") return;
-    
-    if (!session) {
-      router.push("/login");
+  // New course dialog state
+  const [newOpen, setNewOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [newLevel, setNewLevel] = useState('BEGINNER');
+  const [creating, setCreating] = useState(false);
+
+  async function fetchCourses() {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (search) params.set('q', search);
+      if (statusFilter !== 'all') params.set('status', statusFilter.toUpperCase());
+      const res = await fetch(`/api/admin/courses?${params}`);
+      if (!res.ok) throw new Error('Failed to load courses');
+      const data = await res.json();
+      setCourses(data.courses ?? []);
+      setTotal(data.total ?? 0);
+    } catch {
+      toast.error('Failed to load courses');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { fetchCourses(); }, [search, statusFilter]);
+
+  async function handleStatusChange(courseId: string, newStatus: string) {
+    setUpdatingId(courseId);
+    try {
+      const res = await fetch('/api/admin/courses', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId, status: newStatus }),
+      });
+      if (!res.ok) throw new Error('Update failed');
+      toast.success(`Course status updated to ${newStatus.toLowerCase()}`);
+      fetchCourses();
+    } catch {
+      toast.error('Failed to update course status');
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function handleCreateCourse(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newTitle.trim() || newTitle.trim().length < 5) {
+      toast.error('Title must be at least 5 characters');
       return;
     }
-  }, [session, status, router]);
-
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-          <p className="text-slate-300">Loading courses...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return null;
-  }
-
-  // Mock course data for admin view
-  const courses = [
-    {
-      id: 'eips-101',
-      title: 'EIPs 101: From First Principles to First Proposal',
-      status: 'published',
-      students: 1247,
-      completionRate: 78,
-      rating: 4.8,
-      lessons: 8,
-      lastUpdated: '2024-01-15',
-      difficulty: 'Beginner'
-    },
-    {
-      id: 'ens-101',
-      title: 'ENS 101: Ethereum Name Service Essentials',
-      status: 'published',
-      students: 892,
-      completionRate: 85,
-      rating: 4.7,
-      lessons: 6,
-      lastUpdated: '2024-01-10',
-      difficulty: 'Beginner'
-    },
-    {
-      id: '0g-101',
-      title: '0G 101: AI-Native Blockchain Infrastructure',
-      status: 'published',
-      students: 324,
-      completionRate: 72,
-      rating: 4.9,
-      lessons: 10,
-      lastUpdated: '2024-01-20',
-      difficulty: 'Beginner'
-    },
-    {
-      id: 'blockchain-basics',
-      title: 'Blockchain Fundamentals',
-      status: 'draft',
-      students: 0,
-      completionRate: 0,
-      rating: 0,
-      lessons: 12,
-      lastUpdated: '2024-01-05',
-      difficulty: 'Beginner'
+    setCreating(true);
+    try {
+      const res = await fetch('/api/admin/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          // Provide a padded description so the schema 50-char minimum is met
+          description: newDescription.trim().padEnd(50, ' '),
+          level: newLevel,
+          // fileKey is optional for admin-created drafts — supply a placeholder
+          fileKey: 'https://placehold.co/800x450/1e293b/94a3b8?text=Course+Thumbnail',
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? 'Failed to create course');
+      }
+      toast.success('Draft course created');
+      setNewOpen(false);
+      setNewTitle('');
+      setNewDescription('');
+      setNewLevel('BEGINNER');
+      fetchCourses();
+    } catch (err: any) {
+      toast.error(err.message ?? 'Failed to create course');
+    } finally {
+      setCreating(false);
     }
-  ];
+  }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'published': return 'bg-cyan-500/10 text-cyan-400 border-cyan-400/20';
       case 'draft': return 'bg-amber-500/10 text-amber-400 border-amber-400/20';
       case 'archived': return 'bg-slate-500/10 text-slate-400 border-slate-400/20';
       default: return 'bg-slate-500/10 text-slate-400 border-slate-400/20';
     }
   };
+
+  const published = courses.filter(c => c.status.toLowerCase() === 'published').length;
+  const drafts = courses.filter(c => c.status.toLowerCase() === 'draft').length;
+  const totalStudents = courses.reduce((s, c) => s + c.students, 0);
+  const avgCompletion = courses.length
+    ? Math.round(courses.reduce((s, c) => s + c.completionRate, 0) / courses.length)
+    : 0;
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -120,138 +166,244 @@ export default function AdminCoursesPage() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent mb-2">
             Course Management
           </h1>
-          <p className="text-slate-300">
-            Manage all courses, lessons, and educational content.
-          </p>
+          <p className="text-slate-300">Manage all courses, lessons, and educational content.</p>
         </div>
 
-        {/* Actions Bar */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex gap-4">
-            <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 border-none">
+        {/* Actions & Filters */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div className="flex gap-3 flex-wrap">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+              <Input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search courses…"
+                className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-slate-500 w-56 focus-visible:ring-cyan-500"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-36 bg-white/5 border-white/10 text-slate-300">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-white/10 text-slate-200">
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-slate-400">{total} course{total !== 1 ? 's' : ''}</span>
+            <Button
+              onClick={() => setNewOpen(true)}
+              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 border-none"
+            >
               <Plus className="h-4 w-4 mr-2" />
               New Course
             </Button>
-            <Button variant="outline" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
-              <Settings className="h-4 w-4 mr-2" />
-              Bulk Actions
-            </Button>
-          </div>
-          <div className="text-sm text-slate-400">
-            {courses.length} courses total
           </div>
         </div>
 
-        {/* Courses Grid */}
-        <div className="grid gap-6">
-          {courses.map((course) => (
-            <Card key={course.id} className="bg-slate-900/40 backdrop-blur-xl border border-white/10">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <CardTitle className="text-xl text-white">{course.title}</CardTitle>
-                      <Badge variant="outline" className={getStatusColor(course.status)}>
-                        {course.status}
-                      </Badge>
-                      <Badge variant="outline" className="text-slate-400 border-white/10">
-                        {course.difficulty}
-                      </Badge>
+        {/* ── New Course Dialog ── */}
+        <Dialog open={newOpen} onOpenChange={setNewOpen}>
+          <DialogContent className="bg-slate-900 border border-white/10 text-white max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <Plus className="h-5 w-5 text-cyan-400" />
+                Create New Course
+              </DialogTitle>
+              <DialogDescription className="text-slate-400">
+                A draft course will be created. You can add lessons and publish it later.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateCourse} className="space-y-4 mt-2">
+              <div className="space-y-1">
+                <Label className="text-slate-300 text-sm">Title <span className="text-red-400">*</span></Label>
+                <Input
+                  value={newTitle}
+                  onChange={e => setNewTitle(e.target.value)}
+                  placeholder="e.g. Solidity 101: Smart Contracts from Scratch"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus-visible:ring-cyan-500"
+                  required
+                  minLength={5}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-slate-300 text-sm">Short description</Label>
+                <Textarea
+                  value={newDescription}
+                  onChange={e => setNewDescription(e.target.value)}
+                  placeholder="What will learners gain from this course?"
+                  rows={3}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus-visible:ring-cyan-500 resize-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-slate-300 text-sm">Level</Label>
+                <Select value={newLevel} onValueChange={setNewLevel}>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-slate-200">
+                    <SelectItem value="BEGINNER">Beginner</SelectItem>
+                    <SelectItem value="INTERMEDIATE">Intermediate</SelectItem>
+                    <SelectItem value="ADVANCED">Advanced</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter className="gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10"
+                  onClick={() => setNewOpen(false)}
+                  disabled={creating}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={creating}
+                  className="bg-cyan-600 hover:bg-cyan-500 text-white min-w-[120px]"
+                >
+                  {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Draft'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Course list */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+          </div>
+        ) : courses.length === 0 ? (
+          <div className="text-center py-20 text-slate-400">
+            <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            <p>No courses found.</p>
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {courses.map((course) => (
+              <Card key={course.id} className="bg-slate-900/40 backdrop-blur-xl border border-white/10">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
+                        <CardTitle className="text-xl text-white">{course.title}</CardTitle>
+                        <Badge variant="outline" className={getStatusColor(course.status)}>
+                          {course.status.toLowerCase()}
+                        </Badge>
+                        <Badge variant="outline" className="text-slate-400 border-white/10 capitalize">
+                          {course.level.toLowerCase()}
+                        </Badge>
+                      </div>
+                      <CardDescription className="text-slate-400">
+                        Last updated: {new Date(course.updatedAt).toLocaleDateString()}
+                        {course.price !== null && course.price > 0 && (
+                          <span className="ml-3 text-cyan-400">${(course.price / 100).toFixed(2)}</span>
+                        )}
+                      </CardDescription>
                     </div>
-                    <CardDescription className="text-slate-400">
-                      Last updated: {new Date(course.lastUpdated).toLocaleDateString()}
-                    </CardDescription>
+                    <div className="flex gap-2 flex-wrap">
+                      <Button asChild size="sm" variant="outline" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
+                        <Link href={`/learn/${course.slug}`}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </Link>
+                      </Button>
+                      {/* Inline status toggle */}
+                      <Select
+                        value={course.status.toUpperCase()}
+                        onValueChange={val => handleStatusChange(course.id, val)}
+                        disabled={updatingId === course.id}
+                      >
+                        <SelectTrigger className="h-8 w-32 bg-white/5 border-white/10 text-slate-300 text-xs">
+                          {updatingId === course.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <SelectValue />
+                          )}
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900 border-white/10 text-slate-200">
+                          <SelectItem value="DRAFT">Draft</SelectItem>
+                          <SelectItem value="PUBLISHED">Published</SelectItem>
+                          <SelectItem value="ARCHIVED">Archived</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button asChild size="sm" variant="outline" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
-                      <Link href={`/courses/${course.id}`}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </Link>
-                    </Button>
-                    <Button size="sm" variant="outline" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Users className="h-4 w-4 text-cyan-400" />
+                      </div>
+                      <p className="text-lg font-semibold text-white">{course.students.toLocaleString()}</p>
+                      <p className="text-xs text-slate-400">Enrolled</p>
+                    </div>
+                    <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <BookOpen className="h-4 w-4 text-blue-400" />
+                      </div>
+                      <p className="text-lg font-semibold text-white">{course.lessons}</p>
+                      <p className="text-xs text-slate-400">Lessons</p>
+                    </div>
+                    <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Clock className="h-4 w-4 text-indigo-400" />
+                      </div>
+                      <p className="text-lg font-semibold text-white">{course.completionRate}%</p>
+                      <p className="text-xs text-slate-400">Completion</p>
+                    </div>
+                    <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Settings className="h-4 w-4 text-slate-400" />
+                      </div>
+                      <p className="text-lg font-semibold text-white capitalize">{course.status.toLowerCase()}</p>
+                      <p className="text-xs text-slate-400">Status</p>
+                    </div>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Summary stats */}
+        {!loading && courses.length > 0 && (
+          <div className="mt-8">
+            <Card className="bg-slate-900/40 backdrop-blur-xl border border-white/10">
+              <CardHeader>
+                <CardTitle className="text-white">Summary</CardTitle>
+                <CardDescription>Aggregated metrics across visible courses</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Users className="h-4 w-4 text-cyan-400" />
-                    </div>
-                    <p className="text-lg font-semibold text-white">{course.students.toLocaleString()}</p>
-                    <p className="text-xs text-slate-400">Students</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
+                    <p className="text-2xl font-bold text-cyan-400">{published}</p>
+                    <p className="text-sm text-slate-400">Published</p>
                   </div>
-                  
-                  <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <BookOpen className="h-4 w-4 text-blue-400" />
-                    </div>
-                    <p className="text-lg font-semibold text-white">{course.lessons}</p>
-                    <p className="text-xs text-slate-400">Lessons</p>
+                  <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
+                    <p className="text-2xl font-bold text-amber-400">{drafts}</p>
+                    <p className="text-sm text-slate-400">Drafts</p>
                   </div>
-                  
-                  <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Clock className="h-4 w-4 text-indigo-400" />
-                    </div>
-                    <p className="text-lg font-semibold text-white">{course.completionRate}%</p>
-                    <p className="text-xs text-slate-400">Completion</p>
+                  <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
+                    <p className="text-2xl font-bold text-blue-400">{totalStudents.toLocaleString()}</p>
+                    <p className="text-sm text-slate-400">Total Enrolled</p>
                   </div>
-                  
-                  <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Star className="h-4 w-4 text-amber-400" />
-                    </div>
-                    <p className="text-lg font-semibold text-white">{course.rating || 'N/A'}</p>
-                    <p className="text-xs text-slate-400">Rating</p>
-                  </div>
-                  
-                  <div className="text-center p-3 bg-white/5 rounded-lg border border-white/5">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Settings className="h-4 w-4 text-slate-400" />
-                    </div>
-                    <p className="text-lg font-semibold text-white">{course.status === 'published' ? 'Live' : 'Draft'}</p>
-                    <p className="text-xs text-slate-400">Status</p>
+                  <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
+                    <p className="text-2xl font-bold text-indigo-400">{avgCompletion}%</p>
+                    <p className="text-sm text-slate-400">Avg Completion</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-
-        {/* Course Statistics */}
-        <div className="mt-8">
-          <Card className="bg-slate-900/40 backdrop-blur-xl border border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Course Statistics</CardTitle>
-              <CardDescription>Overview of course performance and engagement</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
-                  <p className="text-2xl font-bold text-cyan-400">{courses.filter(c => c.status === 'published').length}</p>
-                  <p className="text-sm text-slate-400">Published Courses</p>
-                </div>
-                <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
-                  <p className="text-2xl font-bold text-amber-400">{courses.filter(c => c.status === 'draft').length}</p>
-                  <p className="text-sm text-slate-400">Draft Courses</p>
-                </div>
-                <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
-                  <p className="text-2xl font-bold text-blue-400">{courses.reduce((sum, c) => sum + c.students, 0).toLocaleString()}</p>
-                  <p className="text-sm text-slate-400">Total Enrollments</p>
-                </div>
-                <div className="text-center p-4 bg-white/5 rounded-xl border border-white/5">
-                  <p className="text-2xl font-bold text-indigo-400">{Math.round(courses.reduce((sum, c) => sum + c.completionRate, 0) / courses.length)}%</p>
-                  <p className="text-sm text-slate-400">Avg Completion</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ declare module "next-auth" {
       image?: string | null;
       address?: string;
       ensName?: string;
+      role?: string;
     };
   }
 
@@ -30,6 +31,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     address?: string;
     ensName?: string;
+    role?: string;
   }
 }
 
@@ -178,17 +180,25 @@ export const authOptions: NextAuthOptions = {
         token.ensName = session.ensName;
       }
 
-      // If we don't have an ensName in the token yet, try to fetch it
-      if (!token.ensName && token.id) {
-        const wallet = await prisma.walletAddress.findFirst({
-          where: { userId: token.id as string, isPrimary: true },
-          select: { ensName: true }
+      // Always refresh role from DB so role changes take effect on next request
+      if (token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true },
         });
-        if (wallet?.ensName) {
-          token.ensName = wallet.ensName;
+        if (dbUser) {
+          token.role = dbUser.role as string;
+        }
+        // ENS name from wallet if not already set
+        if (!token.ensName) {
+          const wallet = await prisma.walletAddress.findFirst({
+            where: { userId: token.id as string, isPrimary: true },
+            select: { ensName: true },
+          });
+          if (wallet?.ensName) token.ensName = wallet.ensName;
         }
       }
-      
+
       return token;
     },
     async session({ session, token }) {
@@ -201,6 +211,9 @@ export const authOptions: NextAuthOptions = {
       }
       if (token.name) {
         session.user.name = token.name as string;
+      }
+      if (token.role) {
+        session.user.role = token.role as string;
       }
       // expose wallet address and ENS name on the session for client usage
       if (token.address) {

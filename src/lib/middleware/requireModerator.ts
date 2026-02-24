@@ -5,19 +5,19 @@ import { prisma } from "@/lib/prisma-client";
 import { logger } from "@/lib/monitoring";
 
 /**
- * Require the current session to belong to an ADMIN user.
+ * Require the current session to belong to a MODERATOR or ADMIN.
  *
  * Returns the userId (string) on success.
  * Returns a NextResponse (401 or 403) that the caller must return immediately.
  *
  * Usage:
  * ```ts
- * const check = await requireAdmin();
+ * const check = await requireModerator();
  * if (check instanceof Response) return check;
- * const userId = check; // string
+ * const userId = check;
  * ```
  */
-export async function requireAdmin(): Promise<string | NextResponse> {
+export async function requireModerator(): Promise<string | NextResponse> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -32,10 +32,10 @@ export async function requireAdmin(): Promise<string | NextResponse> {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  if (user.role !== "ADMIN") {
+  if (user.role !== "MODERATOR" && user.role !== "ADMIN") {
     logger.warn(
-      `Non-admin access attempt by ${user.email ?? session.user.id}`,
-      "requireAdmin"
+      `Insufficient role (${user.role}) for moderator endpoint — ${user.email ?? session.user.id}`,
+      "requireModerator"
     );
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
