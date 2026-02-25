@@ -54,6 +54,7 @@ export default function ModeratorUsersPage() {
     type: 'ban' | 'unban';
     userName?: string;
   } | null>(null);
+  const [banReason, setBanReason] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
@@ -77,12 +78,14 @@ export default function ModeratorUsersPage() {
       body: JSON.stringify({
         userId: confirmAction.userId,
         banned: confirmAction.type === 'ban',
+        ...(confirmAction.type === 'ban' && banReason.trim() ? { banReason: banReason.trim() } : {}),
       }),
     });
     if (!res.ok) {
       const json = await res.json();
       setError(json.error ?? 'Action failed');
     }
+    setBanReason('');
     setConfirmAction(null);
     fetchUsers();
   }
@@ -221,7 +224,7 @@ export default function ModeratorUsersPage() {
       )}
 
       {/* Confirm dialog */}
-      <AlertDialog open={!!confirmAction} onOpenChange={open => !open && setConfirmAction(null)}>
+      <AlertDialog open={!!confirmAction} onOpenChange={open => { if (!open) { setConfirmAction(null); setBanReason(''); } }}>
         <AlertDialogContent className="bg-slate-900 border border-white/10 text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -233,6 +236,16 @@ export default function ModeratorUsersPage() {
                 : `${confirmAction?.userName} will be able to sign in again.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {confirmAction?.type === 'ban' && (
+            <div className="px-1 pb-2">
+              <Input
+                value={banReason}
+                onChange={e => setBanReason(e.target.value)}
+                placeholder="Ban reason (optional)"
+                className="bg-slate-800 border-white/10 text-white placeholder:text-slate-500 text-sm"
+              />
+            </div>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10">
               Cancel

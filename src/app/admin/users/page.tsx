@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,8 +23,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Users, Search, ShieldCheck, ShieldOff, Ban, CheckCircle } from 'lucide-react';
+import { Users, Search, ShieldCheck, ShieldOff, Ban, CheckCircle, Eye } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface User {
   id: string;
@@ -52,10 +54,11 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function AdminUsersPage() {
+  const searchParams = useSearchParams();
   const [data, setData] = useState<PaginatedResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState(() => searchParams.get('role') ?? '');
   const [page, setPage] = useState(1);
 
   // Dialog state
@@ -65,6 +68,7 @@ export default function AdminUsersPage() {
     newRole?: string;
     userName?: string;
   } | null>(null);
+  const [banReason, setBanReason] = useState('');
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -85,7 +89,7 @@ export default function AdminUsersPage() {
 
     const body: Record<string, unknown> = { userId };
     if (type === 'role') body.role = newRole;
-    if (type === 'ban') { body.banned = true; }
+    if (type === 'ban') { body.banned = true; if (banReason.trim()) body.banReason = banReason.trim(); }
     if (type === 'unban') { body.banned = false; }
 
     await fetch('/api/admin/users', {
@@ -93,6 +97,7 @@ export default function AdminUsersPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
+    setBanReason('');
     setConfirmAction(null);
     fetchUsers();
   }
@@ -201,25 +206,37 @@ export default function AdminUsersPage() {
                         {new Date(user.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        {user.banned ? (
+                        <div className="flex gap-2 justify-end">
                           <Button
+                            asChild
                             size="sm"
                             variant="outline"
-                            className="h-7 text-xs border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
-                            onClick={() => setConfirmAction({ userId: user.id, type: 'unban', userName: user.name ?? user.email ?? user.id })}
+                            className="h-7 text-xs border-white/10 text-slate-400 hover:bg-white/5"
                           >
-                            <CheckCircle className="h-3 w-3 mr-1" />Unban
+                            <Link href={`/admin/users/${user.id}`}>
+                              <Eye className="h-3 w-3 mr-1" />View
+                            </Link>
                           </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10"
-                            onClick={() => setConfirmAction({ userId: user.id, type: 'ban', userName: user.name ?? user.email ?? user.id })}
-                          >
-                            <Ban className="h-3 w-3 mr-1" />Ban
-                          </Button>
-                        )}
+                          {user.banned ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                              onClick={() => setConfirmAction({ userId: user.id, type: 'unban', userName: user.name ?? user.email ?? user.id })}
+                            >
+                              <CheckCircle className="h-3 w-3 mr-1" />Unban
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10"
+                              onClick={() => setConfirmAction({ userId: user.id, type: 'ban', userName: user.name ?? user.email ?? user.id })}
+                            >
+                              <Ban className="h-3 w-3 mr-1" />Ban
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -247,7 +264,7 @@ export default function AdminUsersPage() {
       )}
 
       {/* Confirm dialog */}
-      <AlertDialog open={!!confirmAction} onOpenChange={open => !open && setConfirmAction(null)}>
+      <AlertDialog open={!!confirmAction} onOpenChange={open => { if (!open) { setConfirmAction(null); setBanReason(''); } }}>
         <AlertDialogContent className="bg-slate-900 border border-white/10 text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -264,6 +281,16 @@ export default function AdminUsersPage() {
                 `${confirmAction.userName} will be able to sign in again.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {confirmAction?.type === 'ban' && (
+            <div className="px-1 pb-2">
+              <Input
+                value={banReason}
+                onChange={e => setBanReason(e.target.value)}
+                placeholder="Reason for ban (optional)"
+                className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 mt-2"
+              />
+            </div>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10">
               Cancel

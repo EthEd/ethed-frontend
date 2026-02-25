@@ -1,15 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { ArrowRight, Clock, Star, Users, Award, Lock, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'motion/react';
 import { Badge } from '@/components/ui/badge';
 import { coursesWithPath, learningPaths, canAccessCourse } from '@/lib/courseData';
-
-// Mock completed courses - in real app, would come from user session/DB
-const mockCompletedCourses = ['eips-101'];
 
 // Deterministic pseudo-random generator based on course id so server/client match.
 // Returns an object `{ students, rating }` stable across renders.
@@ -73,7 +71,25 @@ const cardVariants = {
 };
 
 export default function CoursesPage() {
+  const { data: session } = useSession();
   const [selectedPath, setSelectedPath] = useState<'all' | 'Fundamentals' | 'Infrastructure' | 'Development'>('all');
+  const [completedCourses, setCompletedCourses] = useState<string[]>([]);
+
+  // Fetch real completed course slugs for the logged-in user
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    fetch('/api/user/profile-data')
+      .then(r => r.json())
+      .then(d => {
+        if (d.success && Array.isArray(d.courses)) {
+          const slugs = d.courses
+            .filter((c: { completed: boolean; slug?: string }) => c.completed && c.slug)
+            .map((c: { slug: string }) => c.slug);
+          setCompletedCourses(slugs);
+        }
+      })
+      .catch(() => {});
+  }, [session?.user?.id]);
 
   const availableCourses = courses.filter(course => course.available);
   const comingSoonCourses = courses.filter(course => !course.available);
@@ -173,7 +189,7 @@ export default function CoursesPage() {
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredCourses.map((course) => {
-              const canAccess = canAccessCourse(course.id, mockCompletedCourses);
+              const canAccess = canAccessCourse(course.id, completedCourses);
               
               return (
                 <motion.div key={course.id} variants={cardVariants}>
@@ -237,12 +253,12 @@ export default function CoursesPage() {
                                 key={prereq.courseId}
                                 variant="outline"
                                 className={`text-xs ${
-                                  mockCompletedCourses.includes(prereq.courseId)
+                                  completedCourses.includes(prereq.courseId)
                                     ? 'border-emerald-400/50 bg-emerald-500/10 text-emerald-300'
                                     : 'border-orange-400/50 bg-orange-500/10 text-orange-300'
                                 }`}
                               >
-                                {mockCompletedCourses.includes(prereq.courseId) && '✓ '}
+                                {completedCourses.includes(prereq.courseId) && '✓ '}
                                 {prereq.courseName}
                               </Badge>
                             ))}

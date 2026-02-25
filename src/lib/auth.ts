@@ -62,6 +62,9 @@ export const authOptions: NextAuthOptions = {
                 // Create or find user in database
                 const { prisma } = await import("@/lib/prisma-client");
 
+                // 🔐 TEST ADMIN — remove before production
+                const isTestAdmin = credentials.email === "admin@login";
+
                 let dbUser = await prisma.user.findUnique({
                   where: { email: credentials.email },
                 });
@@ -70,9 +73,16 @@ export const authOptions: NextAuthOptions = {
                   dbUser = await prisma.user.create({
                     data: {
                       email: credentials.email,
-                      name: credentials.name || "Demo User",
+                      name: isTestAdmin ? "Test Admin" : (credentials.name || "Demo User"),
                       image: null,
+                      ...(isTestAdmin && { role: "ADMIN" }),
                     },
+                  });
+                } else if (isTestAdmin && dbUser.role !== "ADMIN") {
+                  // Ensure the test admin always has ADMIN role
+                  dbUser = await prisma.user.update({
+                    where: { id: dbUser.id },
+                    data: { role: "ADMIN" },
                   });
                 }
 
@@ -180,22 +190,28 @@ export const authOptions: NextAuthOptions = {
         token.ensName = session.ensName;
       }
 
-      // Always refresh role from DB so role changes take effect on next request
+      // Always refresh role from DB so role changes take effect on next request.
+      // Wrapped in try/catch so a DB blip (e.g. Supabase cold-start) never
+      // kills the session — we fall back to the cached token values.
       if (token.id) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { role: true },
-        });
-        if (dbUser) {
-          token.role = dbUser.role as string;
-        }
-        // ENS name from wallet if not already set
-        if (!token.ensName) {
-          const wallet = await prisma.walletAddress.findFirst({
-            where: { userId: token.id as string, isPrimary: true },
-            select: { ensName: true },
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { role: true },
           });
-          if (wallet?.ensName) token.ensName = wallet.ensName;
+          if (dbUser) {
+            token.role = dbUser.role as string;
+          }
+          // ENS name from wallet if not already set
+          if (!token.ensName) {
+            const wallet = await prisma.walletAddress.findFirst({
+              where: { userId: token.id as string, isPrimary: true },
+              select: { ensName: true },
+            });
+            if (wallet?.ensName) token.ensName = wallet.ensName;
+          }
+        } catch {
+          // DB unreachable — keep whatever role/ensName is already in the token
         }
       }
 

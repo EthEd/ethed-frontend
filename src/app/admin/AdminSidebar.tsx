@@ -9,12 +9,14 @@ import {
   ClipboardList,
   ArrowLeft,
   Shield,
+  Gem,
 } from 'lucide-react';
 
 const navItems = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/courses', label: 'Courses', icon: BookOpen },
+  { href: '/admin/nfts', label: 'NFTs', icon: Gem },
   { href: '/admin/audit-logs', label: 'Audit Logs', icon: ClipboardList },
 ];
 

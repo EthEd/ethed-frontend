@@ -28,6 +28,7 @@ import {
   Sparkles,
   Flame,
   Gift,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { courses, type Course } from "@/lib/courses";
@@ -75,10 +76,27 @@ const learningPaths: LearningPath[] = [
 export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [allCourses, setAllCourses] = useState<Course[]>(courses);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>(courses);
+  const [loadingDb, setLoadingDb] = useState(true);
+
+  // Fetch published DB courses and merge with static ones (deduplicate by id)
+  useEffect(() => {
+    fetch('/api/courses')
+      .then(r => r.json())
+      .then((data: { courses: Course[] }) => {
+        if (Array.isArray(data.courses) && data.courses.length > 0) {
+          const staticIds = new Set(courses.map(c => c.id));
+          const newOnes = data.courses.filter(c => !staticIds.has(c.id));
+          setAllCourses([...courses, ...newOnes]);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingDb(false));
+  }, []);
 
   useEffect(() => {
-    const filtered = courses.filter((course) => {
+    const filtered = allCourses.filter((course) => {
       const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         course.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         course.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -88,9 +106,9 @@ export default function CoursesPage() {
       return matchesSearch && matchesCategory;
     });
     setFilteredCourses(filtered);
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, allCourses]);
 
-  const categories = ["All", ...Array.from(new Set(courses.map(c => c.category)))];
+  const categories = ["All", ...Array.from(new Set(allCourses.map(c => c.category)))];
 
   return (
     <div className="min-h-screen bg-slate-950 pb-20">
@@ -154,6 +172,12 @@ export default function CoursesPage() {
 
       {/* Course Grid */}
       <section className="container mx-auto px-4 py-12">
+        {loadingDb && (
+          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-8">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading latest courses…
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <AnimatePresence mode="popLayout">
             {filteredCourses.map((course, idx) => (

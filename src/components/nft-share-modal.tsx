@@ -38,9 +38,21 @@ export default function NFTShareModal({ nft, open, onClose }: NFTShareModalProps
     ? ipfsToGatewayUrl(nft.metadata)
     : null;
 
-  const explorerUrl = nft.transactionHash
+  // Only show explorer link for real (non-zero) transactions
+  const isRealTx = nft.transactionHash && !/^0x0+$/.test(nft.transactionHash);
+  const explorerUrl = isRealTx
     ? `https://amoy.polygonscan.com/tx/${nft.transactionHash}`
     : null;
+
+  // Parse "CourseName - RecipientName - Learning Sprout" into parts
+  const isMockToken = nft.tokenId?.startsWith('mock-') ?? false;
+  const nameParts = nft.name.split(' - ');
+  const nftType = nameParts[nameParts.length - 1] ?? 'NFT'; // "Learning Sprout"
+  const recipient = nameParts.length >= 3 ? nameParts[nameParts.length - 2] : null;
+  const courseName = nameParts.length >= 2
+    ? nameParts.slice(0, nameParts.length >= 3 ? -2 : -1).join(' - ')
+    : nft.name;
+  const description = (nft.metadata as any)?.description ?? nft.description ?? null;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(shareUrl);
@@ -50,7 +62,7 @@ export default function NFTShareModal({ nft, open, onClose }: NFTShareModalProps
   };
 
   const handleTwitterShare = () => {
-    const text = encodeURIComponent(`I just earned "${nft.name}" on @ethed_app! 🎉🏆\n\nLearn blockchain & earn verifiable NFT credentials:\n${shareUrl}`);
+    const text = encodeURIComponent(`I just earned the "${courseName}" NFT on @ethed_app! 🎉🏆\n\nLearn blockchain & earn verifiable NFT credentials:\n${shareUrl}`);
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
   };
 
@@ -97,14 +109,26 @@ export default function NFTShareModal({ nft, open, onClose }: NFTShareModalProps
                   <Share2 className="h-8 w-8 text-purple-400" />
                 )}
               </div>
-              <div className="min-w-0">
-                <h3 className="font-bold text-foreground truncate">{nft.name}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {nft.description || nft.metadata?.description || 'NFT Achievement'}
-                </p>
-                {nft.tokenId && (
-                  <Badge variant="outline" className="mt-1 text-xs">Token #{nft.tokenId}</Badge>
+              <div className="min-w-0 space-y-1">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{nftType}</p>
+                <h3 className="font-bold text-foreground leading-tight">{courseName}</h3>
+                {recipient && (
+                  <p className="text-sm text-muted-foreground">Earned by <span className="text-foreground font-medium">{recipient}</span></p>
                 )}
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  {isMockToken ? (
+                    <Badge variant="outline" className="text-xs bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400">
+                      Dev Preview
+                    </Badge>
+                  ) : nft.tokenId ? (
+                    <Badge variant="outline" className="text-xs">Token #{nft.tokenId}</Badge>
+                  ) : null}
+                  {isRealTx && (
+                    <Badge variant="outline" className="text-xs bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+                      On-Chain ✓
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           </div>
