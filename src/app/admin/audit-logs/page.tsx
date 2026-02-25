@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -11,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, Search, X } from 'lucide-react';
 import Image from 'next/image';
 
 interface AuditEntry {
@@ -59,19 +60,35 @@ export default function AdminAuditLogsPage() {
   const [data, setData] = useState<PaginatedResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionFilter, setActionFilter] = useState('');
+  const [actorSearch, setActorSearch] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [page, setPage] = useState(1);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page) });
     if (actionFilter) params.set('action', actionFilter);
+    if (actorSearch) params.set('actor', actorSearch);
+    if (fromDate) params.set('from', fromDate);
+    if (toDate) params.set('to', toDate);
     const res = await fetch(`/api/admin/audit-logs?${params}`);
     const json = await res.json();
     setData(json);
     setLoading(false);
-  }, [page, actionFilter]);
+  }, [page, actionFilter, actorSearch, fromDate, toDate]);
 
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
+
+  function clearFilters() {
+    setActionFilter('');
+    setActorSearch('');
+    setFromDate('');
+    setToDate('');
+    setPage(1);
+  }
+
+  const hasFilters = actionFilter || actorSearch || fromDate || toDate;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -84,8 +101,8 @@ export default function AdminAuditLogsPage() {
         <p className="text-slate-400 text-sm">All admin and moderator actions are recorded here.</p>
       </div>
 
-      {/* Filter */}
-      <div className="flex gap-3 mb-6">
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3 mb-6">
         <Select value={actionFilter} onValueChange={v => { setActionFilter(v === 'ALL' ? '' : v); setPage(1); }}>
           <SelectTrigger className="w-56 bg-slate-900/60 border-white/10 text-white">
             <SelectValue placeholder="All actions" />
@@ -97,6 +114,48 @@ export default function AdminAuditLogsPage() {
             ))}
           </SelectContent>
         </Select>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+          <Input
+            value={actorSearch}
+            onChange={e => { setActorSearch(e.target.value); setPage(1); }}
+            placeholder="Search by actor name/email…"
+            className="pl-9 bg-slate-900/60 border-white/10 text-white placeholder:text-slate-500 w-56"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-slate-400 text-xs shrink-0">From</label>
+          <Input
+            type="date"
+            value={fromDate}
+            onChange={e => { setFromDate(e.target.value); setPage(1); }}
+            className="bg-slate-900/60 border-white/10 text-white w-36 text-sm"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-slate-400 text-xs shrink-0">To</label>
+          <Input
+            type="date"
+            value={toDate}
+            onChange={e => { setToDate(e.target.value); setPage(1); }}
+            className="bg-slate-900/60 border-white/10 text-white w-36 text-sm"
+          />
+        </div>
+
+        {hasFilters && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearFilters}
+            className="border-white/10 text-slate-400 bg-white/5 hover:bg-white/10 h-10"
+          >
+            <X className="h-3.5 w-3.5 mr-1" />
+            Clear
+          </Button>
+        )}
       </div>
 
       {/* Table */}

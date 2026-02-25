@@ -26,6 +26,9 @@ import {
   Settings,
   Search,
   Loader2,
+  Pencil,
+  Trash2,
+  ChevronRight,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -47,6 +50,8 @@ interface AdminCourse {
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<AdminCourse[]>([]);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -59,17 +64,27 @@ export default function AdminCoursesPage() {
   const [newLevel, setNewLevel] = useState('BEGINNER');
   const [creating, setCreating] = useState(false);
 
+  // Edit course dialog state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editCourse, setEditCourse] = useState<AdminCourse | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editLevel, setEditLevel] = useState('BEGINNER');
+  const [saving, setSaving] = useState(false);
+
   async function fetchCourses() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (search) params.set('q', search);
       if (statusFilter !== 'all') params.set('status', statusFilter.toUpperCase());
+      params.set('page', String(page));
       const res = await fetch(`/api/admin/courses?${params}`);
       if (!res.ok) throw new Error('Failed to load courses');
       const data = await res.json();
       setCourses(data.courses ?? []);
       setTotal(data.total ?? 0);
+      setTotalPages(data.totalPages ?? 1);
     } catch {
       toast.error('Failed to load courses');
     } finally {
@@ -77,7 +92,10 @@ export default function AdminCoursesPage() {
     }
   }
 
-  useEffect(() => { fetchCourses(); }, [search, statusFilter]);
+  useEffect(() => { fetchCourses(); }, [search, statusFilter, page]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setPage(1); }, [search, statusFilter]);
 
   async function handleStatusChange(courseId: string, newStatus: string) {
     setUpdatingId(courseId);
@@ -94,6 +112,49 @@ export default function AdminCoursesPage() {
       toast.error('Failed to update course status');
     } finally {
       setUpdatingId(null);
+    }
+  }
+
+  function openEditDialog(course: AdminCourse) {
+    setEditCourse(course);
+    setEditTitle(course.title);
+    setEditDescription('');
+    setEditLevel(course.level);
+    setEditOpen(true);
+  }
+
+  async function handleEditCourse(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editCourse) return;
+    if (!editTitle.trim() || editTitle.trim().length < 5) {
+      toast.error('Title must be at least 5 characters');
+      return;
+    }
+    setSaving(true);
+    try {
+      const body: Record<string, string> = {
+        courseId: editCourse.id,
+        title: editTitle.trim(),
+        level: editLevel,
+      };
+      if (editDescription.trim()) body.description = editDescription.trim();
+      const res = await fetch('/api/admin/courses', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? 'Failed to update course');
+      }
+      toast.success('Course updated');
+      setEditOpen(false);
+      setEditCourse(null);
+      fetchCourses();
+    } catch (err: any) {
+      toast.error(err.message ?? 'Failed to update course');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -274,6 +335,75 @@ export default function AdminCoursesPage() {
           </DialogContent>
         </Dialog>
 
+        {/* ── Edit Course Dialog ── */}
+        <Dialog open={editOpen} onOpenChange={open => { if (!open) { setEditOpen(false); setEditCourse(null); } }}>
+          <DialogContent className="bg-slate-900 border border-white/10 text-white max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <Pencil className="h-5 w-5 text-blue-400" />
+                Edit Course
+              </DialogTitle>
+              <DialogDescription className="text-slate-400">
+                Update course details. Status can be changed from the course card.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleEditCourse} className="space-y-4 mt-2">
+              <div className="space-y-1">
+                <Label className="text-slate-300 text-sm">Title <span className="text-red-400">*</span></Label>
+                <Input
+                  value={editTitle}
+                  onChange={e => setEditTitle(e.target.value)}
+                  placeholder="Course title"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus-visible:ring-cyan-500"
+                  required
+                  minLength={5}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-slate-300 text-sm">Description <span className="text-slate-500">(leave blank to keep existing)</span></Label>
+                <Textarea
+                  value={editDescription}
+                  onChange={e => setEditDescription(e.target.value)}
+                  placeholder="Course description"
+                  rows={3}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus-visible:ring-cyan-500 resize-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-slate-300 text-sm">Level</Label>
+                <Select value={editLevel} onValueChange={setEditLevel}>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-slate-200">
+                    <SelectItem value="BEGINNER">Beginner</SelectItem>
+                    <SelectItem value="INTERMEDIATE">Intermediate</SelectItem>
+                    <SelectItem value="ADVANCED">Advanced</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter className="gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10"
+                  onClick={() => { setEditOpen(false); setEditCourse(null); }}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-blue-600 hover:bg-blue-500 text-white min-w-[100px]"
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
         {/* Course list */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
@@ -312,6 +442,21 @@ export default function AdminCoursesPage() {
                         <Link href={`/learn/${course.slug}`}>
                           <Eye className="h-4 w-4 mr-2" />
                           View
+                        </Link>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-blue-500/30 text-blue-400 bg-white/5 hover:bg-blue-500/10"
+                        onClick={() => openEditDialog(course)}
+                      >
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                      <Button asChild size="sm" variant="outline" className="border-indigo-500/30 text-indigo-400 bg-white/5 hover:bg-indigo-500/10">
+                        <Link href={`/admin/courses/${course.id}`}>
+                          <ChevronRight className="h-4 w-4 mr-2" />
+                          Lessons
                         </Link>
                       </Button>
                       {/* Inline status toggle */}
@@ -372,7 +517,33 @@ export default function AdminCoursesPage() {
             ))}
           </div>
         )}
-
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6 text-sm text-slate-400">
+            <span>{total} course{total !== 1 ? 's' : ''} total</span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 1}
+                onClick={() => setPage(p => p - 1)}
+                className="border-white/10 text-slate-300 bg-white/5"
+              >
+                Previous
+              </Button>
+              <span className="px-3 py-1.5 text-slate-300">Page {page} / {totalPages}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === totalPages}
+                onClick={() => setPage(p => p + 1)}
+                className="border-white/10 text-slate-300 bg-white/5"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
         {/* Summary stats */}
         {!loading && courses.length > 0 && (
           <div className="mt-8">

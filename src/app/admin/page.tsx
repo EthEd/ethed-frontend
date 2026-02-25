@@ -14,6 +14,7 @@ import {
   Shield,
   Activity,
   ClipboardList,
+  Gem,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -69,7 +70,7 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-cyan-300 text-sm font-medium">Total Users</p>
                 <p className="text-2xl font-bold text-white">{stats?.totalUsers.toLocaleString() ?? '—'}</p>
-                <p className="text-xs text-slate-500 mt-1">{stats?.moderatorCount ?? 0} moderators</p>
+                <p className="text-xs text-slate-500 mt-1">registered accounts</p>
               </div>
               <Users className="h-8 w-8 text-cyan-400" />
             </div>
@@ -118,8 +119,22 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-cyan-300 text-sm font-medium">Completion Rate</p>
                 <p className="text-2xl font-bold text-white">{stats?.completionRate ?? '—'}%</p>
+                <p className="text-xs text-slate-500 mt-1">across all enrollments</p>
               </div>
               <Activity className="h-8 w-8 text-cyan-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-slate-900/40 backdrop-blur-xl border border-white/10">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-300 text-sm font-medium">Moderators</p>
+                <p className="text-2xl font-bold text-white">{stats?.moderatorCount ?? '—'}</p>
+                <p className="text-xs text-slate-500 mt-1">active moderators</p>
+              </div>
+              <Shield className="h-8 w-8 text-purple-400" />
             </div>
           </CardContent>
         </Card>
@@ -181,11 +196,17 @@ export default function AdminDashboard() {
             <CardDescription>Platform configuration</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-2">
-            <Button variant="outline" size="sm" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
-              <Database className="h-4 w-4 mr-2" />Database
+            <Button asChild variant="outline" size="sm" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
+              <Link href="/admin/audit-logs"><Database className="h-4 w-4 mr-2" />Audit Logs</Link>
             </Button>
-            <Button variant="outline" size="sm" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
-              <Shield className="h-4 w-4 mr-2" />Security
+            <Button asChild variant="outline" size="sm" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
+              <Link href="/admin/users?role=ADMIN"><Shield className="h-4 w-4 mr-2" />Admins</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
+              <Link href="/admin/nfts"><Gem className="h-4 w-4 mr-2" />NFTs</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="border-white/10 text-slate-300 bg-white/5 hover:bg-white/10">
+              <Link href="/admin/users?role=MODERATOR"><Users className="h-4 w-4 mr-2" />Moderators</Link>
             </Button>
           </CardContent>
         </Card>

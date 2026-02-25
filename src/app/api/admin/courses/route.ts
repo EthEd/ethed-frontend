@@ -5,9 +5,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma-client";
-import { CourseCreateSchema } from "@/lib/zodSchemas";
-import { sanitizeSlug } from "@/lib/zodSchemas";
+import { CourseDraftSchema, sanitizeSlug } from "@/lib/zodSchemas";
 import { requireAdmin } from "@/lib/middleware/requireAdmin";
+import { createAuditLog, AUDIT_ACTIONS } from "@/lib/middleware/auditLog";
 import { logger } from "@/lib/monitoring";
 
 
@@ -96,13 +96,13 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin();
-    if (adminCheck instanceof Response) return adminCheck as any;
+    const actorId = await requireAdmin();
+    if (actorId instanceof Response) return actorId as any;
 
     const body = await request.json();
 
-    // Validate request body
-    const validation = CourseCreateSchema.safeParse(body);
+    // Validate request body — use draft schema so only title is required
+    const validation = CourseDraftSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
         { error: "Validation failed", details: validation.error.issues },
@@ -137,6 +137,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await createAuditLog({
+      actorId,
+      action: AUDIT_ACTIONS.COURSE_CREATED,
+      targetId: course.id,
+      targetType: "COURSE",
+      metadata: { title: course.title, slug: course.slug },
+    });
+
     return NextResponse.json(course, { status: 201 });
   } catch (error) {
     logger.error("Course creation error", "api/admin/courses", undefined, error);
@@ -152,8 +160,8 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin();
-    if (adminCheck instanceof Response) return adminCheck as any;
+    const actorId = await requireAdmin();
+    if (actorId instanceof Response) return actorId as any;
 
     const body = await request.json();
     const { courseId, title, description, level, status } = body;
@@ -170,6 +178,14 @@ export async function PUT(request: NextRequest) {
         ...(level && { level }),
         ...(status && { status }),
       },
+    });
+
+    await createAuditLog({
+      actorId,
+      action: AUDIT_ACTIONS.COURSE_UPDATED,
+      targetId: course.id,
+      targetType: "COURSE",
+      metadata: { title: course.title, changes: { title, description, level, status } },
     });
 
     return NextResponse.json(course);
@@ -189,8 +205,8 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const adminCheck = await requireAdmin();
-    if (adminCheck instanceof Response) return adminCheck as any;
+    const actorId = await requireAdmin();
+    if (actorId instanceof Response) return actorId as any;
 
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get("id");
@@ -203,6 +219,14 @@ export async function DELETE(request: NextRequest) {
     const course = await prisma.course.update({
       where: { id: courseId },
       data: { status: "ARCHIVED" },
+    });
+
+    await createAuditLog({
+      actorId,
+      action: AUDIT_ACTIONS.COURSE_DELETED,
+      targetId: course.id,
+      targetType: "COURSE",
+      metadata: { title: course.title, slug: course.slug },
     });
 
     return NextResponse.json({ message: "Course archived", course });

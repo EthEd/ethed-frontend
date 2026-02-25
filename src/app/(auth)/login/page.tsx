@@ -24,6 +24,29 @@ export default function LoginPage() {
     });
   }, []);
 
+  // 🔐 TEST ADMIN — quick login for development testing; remove before production
+  const handleAdminTestLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await signIn('demo', {
+        email: 'admin@login',
+        name: 'Test Admin',
+        redirect: false,
+        callbackUrl: '/admin',
+      });
+      if (result?.error) {
+        toast.error('Admin login failed: ' + result.error);
+      } else if (result?.ok) {
+        toast.success('Signed in as Test Admin');
+        setTimeout(() => router.push('/admin'), 500);
+      }
+    } catch {
+      toast.error('Admin login failed.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleDemoLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -119,6 +142,25 @@ export default function LoginPage() {
               )}
             </Button>
             </form>
+
+            {/* 🔐 TEST ADMIN — remove before production */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-600" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-slate-800/40 text-slate-500 text-xs">Dev only</span>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-red-500/40 text-red-400 hover:bg-red-500/10 hover:text-red-300 text-sm"
+              disabled={isLoading}
+              onClick={handleAdminTestLogin}
+            >
+              🔐 Admin Test Login
+            </Button>
           </div>
           
           <div className="mt-6 text-center">
