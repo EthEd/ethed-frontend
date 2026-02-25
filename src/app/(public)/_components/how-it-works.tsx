@@ -6,7 +6,7 @@ import { Wallet, PawPrint, Globe, Gift, Coins, ShieldCheck } from "lucide-react"
 const steps = [
   { icon: <Wallet className="h-5 w-5 text-emerald-400" />, title: "Connect", desc: "Sign in or connect wallet (SIWE ready)." },
   { icon: <PawPrint className="h-5 w-5 text-cyan-400" />, title: "Pick Buddy", desc: "Choose your AI mentor and start chatting." },
-  { icon: <Globe className="h-5 w-5 text-blue-400" />, title: "Claim ENS", desc: "Reserve your subdomain: username.ethed.eth." },
+  { icon: <Globe className="h-5 w-5 text-blue-400" />, title: "Claim ENS", desc: "Reserve your subdomain: username.ayushetty.eth." },
   { icon: <Coins className="h-5 w-5 text-yellow-400" />, title: "Pay-as-you-go", desc: "Micropay per lesson via x402 (simulated)." },
   { icon: <Gift className="h-5 w-5 text-purple-400" />, title: "Earn NFTs", desc: "Collect badges and credentials on progress." },
   { icon: <ShieldCheck className="h-5 w-5 text-teal-400" />, title: "Own It", desc: "Your identity and rewards are portable." },

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,17 +13,14 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  User,
   Award,
   BookOpen,
   Calendar,
   TrendingUp,
   Trophy,
   Loader2,
-  ExternalLink,
   ArrowRight,
   BarChart3,
-  Target,
   Sparkles,
   CheckCircle2,
   Clock,
@@ -30,6 +28,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { ipfsToGatewayUrl } from '@/lib/ipfs';
 
 interface ProfileData {
   id: string;
@@ -78,18 +77,8 @@ export default function ProfileClient() {
   const router = useRouter();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-
-  useEffect(() => {
-    if (status === 'loading') return;
-    
-    if (!session) {
-      router.push('/login');
-      return;
-    }
-
-    fetchProfile();
-  }, [session, status, router]);
 
   const fetchProfile = async () => {
     try {
@@ -101,18 +90,57 @@ export default function ProfileClient() {
           router.push('/login');
           return;
         }
-        toast.error(data.error || 'Failed to load profile');
+        const errText = typeof data.error === 'string' ? data.error : (data.error ? JSON.stringify(data.error) : null);
+        toast.error(errText || 'Failed to load profile');
         return;
       }
 
       setProfile(data.profile);
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
+    } catch {
       toast.error('Failed to load profile');
     } finally {
       setLoading(false);
     }
   };
+
+  const handleSyncNFTs = async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    
+    const toastId = toast.loading('Syncing your NFTs from blockchain...');
+    
+    try {
+      const res = await fetch('/api/user/nft-sync', { method: 'POST' });
+      const data = await res.json();
+      
+      if (data.success) {
+        if (data.synced > 0) {
+          toast.success(`Synced ${data.synced} new NFTs!`, { id: toastId });
+          fetchProfile(); // Refresh data
+        } else {
+          toast.info('Your collection is already up to date', { id: toastId });
+        }
+      } else {
+        throw new Error(data.error || 'Sync failed');
+      }
+    } catch (err) {
+      toast.error('Failed to sync NFTs', { id: toastId });
+      console.error(err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session) {
+      router.push('/login');
+      return;
+    }
+
+    fetchProfile();
+  }, [session, status, router]);
 
   if (status === 'loading' || loading) {
     return (
@@ -180,7 +208,7 @@ export default function ProfileClient() {
                 {/* User Info */}
                 <div className="flex-1">
                   <h1 className="text-4xl font-bold text-white mb-2">
-                    {profile.name || 'Anonymous Learner'}
+                    {profile.ensName ? profile.ensName : (profile.name || 'Anonymous Learner')}
                   </h1>
                   <p className="text-slate-400 mb-4">{profile.email}</p>
                   
@@ -257,7 +285,7 @@ export default function ProfileClient() {
                       <BookOpen className="h-12 w-12 text-slate-600 mx-auto mb-4" />
                       <p className="text-slate-400 mb-4">No courses enrolled yet</p>
                       <Button asChild className="bg-cyan-600 hover:bg-cyan-500">
-                        <Link href="/courses">Browse Courses</Link>
+                        <Link href="/learn">Browse Courses</Link>
                       </Button>
                     </div>
                   ) : (
@@ -343,7 +371,7 @@ export default function ProfileClient() {
                       Explore more courses and earn exclusive NFT badges
                     </p>
                     <Button asChild className="w-full bg-cyan-600 hover:bg-cyan-500">
-                      <Link href="/courses">
+                      <Link href="/learn">
                         Browse Courses
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </Link>
@@ -363,7 +391,7 @@ export default function ProfileClient() {
                   <h3 className="text-xl font-bold text-white mb-2">No Courses Yet</h3>
                   <p className="text-slate-400 mb-6">Start your learning journey today!</p>
                   <Button asChild className="bg-cyan-600 hover:bg-cyan-500">
-                    <Link href="/courses">Browse All Courses</Link>
+                    <Link href="/learn">Browse All Courses</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -433,6 +461,30 @@ export default function ProfileClient() {
 
           {/* Achievements Tab */}
           <TabsContent value="achievements" className="space-y-4">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Your Achievements</h2>
+                <p className="text-slate-400">NFT badges earned through learning</p>
+              </div>
+              <Button 
+                onClick={handleSyncNFTs} 
+                className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30"
+                disabled={isSyncing}
+              >
+                {isSyncing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Sync Collections
+                  </>
+                )}
+              </Button>
+            </div>
+
             {nfts.length === 0 ? (
               <Card className="bg-slate-900/40 backdrop-blur-xl border border-cyan-400/10 rounded-2xl">
                 <CardContent className="p-12 text-center">
@@ -440,7 +492,7 @@ export default function ProfileClient() {
                   <h3 className="text-xl font-bold text-white mb-2">No NFTs Yet</h3>
                   <p className="text-slate-400 mb-6">Complete courses to earn exclusive NFT badges!</p>
                   <Button asChild className="bg-purple-600 hover:bg-purple-500">
-                    <Link href="/courses">Start Learning</Link>
+                    <Link href="/learn">Start Learning</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -449,9 +501,15 @@ export default function ProfileClient() {
                 {nfts.map((nft) => (
                   <Card key={nft.id} className="bg-slate-900/40 backdrop-blur-xl border border-purple-400/10 rounded-2xl hover:border-purple-400/30 transition-all duration-300 group">
                     <CardContent className="p-6">
-                      <div className="aspect-square rounded-xl bg-gradient-to-br from-purple-500/20 via-cyan-500/20 to-emerald-500/20 mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                      <div className="aspect-square rounded-xl bg-gradient-to-br from-purple-500/20 via-cyan-500/20 to-emerald-500/20 mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300 overflow-hidden relative">
                         {nft.image ? (
-                          <img src={nft.image} alt={nft.name} className="w-full h-full object-cover" />
+                          <Image
+                            src={ipfsToGatewayUrl(nft.image)}
+                            alt={nft.name}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            className="object-cover"
+                          />
                         ) : (
                           <Award className="h-16 w-16 text-purple-400" />
                         )}

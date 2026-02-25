@@ -1,11 +1,18 @@
 /**
  * Agent API endpoint
  * Handles agent interactions, questions, and triggers actions
+ * Uses real AI (OpenAI) when OPENAI_API_KEY is set, otherwise falls back to mock.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import {
+  chatCompletion,
+  checkRateLimit,
+  sanitizeInput,
+  isInputSafe,
+} from "@/lib/ai-client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,14 +25,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Rate limit check
+    if (!checkRateLimit(session.user.id)) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const { action, message, context } = body;
-
-    console.log(`Agent action requested by ${session.user.email}:`, {
-      action,
-      message,
-      context,
-    });
 
     // Handle different agent actions
     switch (action) {
@@ -47,8 +56,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error("Agent API error:", error);
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -57,21 +65,44 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Handle "Ask me anything" questions
+ * Handle "Ask me anything" questions — powered by AI
  */
 async function handleAskQuestion(message: string, userId: string) {
-  // TODO: In production, integrate with AI service (OpenAI, Claude, etc.)
-  // For now, return a mock response
+  if (!message || typeof message !== "string") {
+    return NextResponse.json({ error: "Message is required" }, { status: 400 });
+  }
+
+  const sanitized = sanitizeInput(message);
+
+  if (!isInputSafe(sanitized)) {
+    return NextResponse.json(
+      {
+        reply: "I can't help with that topic. Please ask about blockchain concepts, Ethereum standards, or Web3 development.",
+        suggestions: [
+          "What is Ethereum?",
+          "How do smart contracts work?",
+          "Explain gas fees",
+          "What is a wallet?",
+        ],
+        userId,
+      }
+    );
+  }
+
+  const result = await chatCompletion({
+    messages: [{ role: "user", content: sanitized }],
+  });
 
   const response = {
-    reply: `I understand you asked: "${message}". I'm your eth.ed learning assistant! I can help you with blockchain concepts, smart contracts, and Web3 fundamentals. How can I guide your learning journey today?`,
+    reply: result.reply,
     suggestions: [
       "What is Ethereum?",
       "How do smart contracts work?",
       "Explain gas fees",
-      "What is a wallet?",
+      "What are EIPs?",
     ],
     userId,
+    mock: result.mock,
   };
 
   return NextResponse.json(response);

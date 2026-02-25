@@ -2,16 +2,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, LogIn } from "lucide-react";
+import { User, LogOut, LogIn, Shield, ShieldCheck } from "lucide-react";
 import Image from "next/image";
+import { useSession, signOut } from "next-auth/react";
 
-// Import your actual Better Auth client
-import { authClient } from "@/lib/auth-client";
-
-// Use Better Auth's session hook
 export default function Navbar() {
-  // This hook gives session, loading state, errors, refetch
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session, status } = useSession();
+  const isPending = status === "loading";
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const user = session?.user;
@@ -27,27 +24,28 @@ export default function Navbar() {
       <div className="flex justify-between items-center px-6 py-4">
         {/* Left Menu */}
         <div className="flex space-x-6 font-medium text-sm text-slate-200">
-          <Link href="#" className="hover:text-emerald-400 transition">Explore</Link>
-          <Link href="#" className="hover:text-emerald-400 transition">How It Works</Link>
-          <Link href="#" className="hover:text-emerald-400 transition">Milestones</Link>
+          <Link href="/learn" className="hover:text-emerald-400 transition">Explore</Link>
+          <Link href="/how-it-works" className="hover:text-emerald-400 transition">How It Works</Link>
+          <Link href="/dashboard" className="hover:text-emerald-400 transition">Dashboard</Link>
+          <Link href="/leaderboard" className="hover:text-emerald-400 transition text-emerald-400">Leaderboard</Link>
         </div>
 
         {/* Center Logo */}
         <div>
-          <img
+          <Image
             src="/logos/logo.png"
             alt="eth.ed Logo"
             height={32}
             width={128}
             className="h-8 mx-auto invert"
-            loading="eager"
+            priority
           />
         </div>
 
         {/* Right Menu */}
         <div className="flex space-x-6 font-medium text-sm items-center relative text-slate-200">
-          <Link href="#" className="hover:text-emerald-400 transition">About</Link>
-          <Link href="#" className="hover:text-emerald-400 transition">Start Learning</Link>
+          <Link href="/about" className="hover:text-emerald-400 transition">About</Link>
+          <Link href="/learn" className="hover:text-emerald-400 transition">Start Learning</Link>
 
           {/* User/Login Section */}
           <div className="relative select-none">
@@ -122,16 +120,32 @@ export default function Navbar() {
                 >
                   Settings
                 </Link>
+                {/* Role-based admin / mod links */}
+                {user.role === 'ADMIN' && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-red-400/10 hover:text-red-300 transition border-t border-white/5"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <Shield className="h-3.5 w-3.5" />
+                    Admin Panel
+                  </Link>
+                )}
+                {user.role === 'MODERATOR' && (
+                  <Link
+                    href="/moderator"
+                    className="flex items-center gap-2 px-4 py-2 text-purple-400 hover:bg-purple-400/10 hover:text-purple-300 transition border-t border-white/5"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Mod Panel
+                  </Link>
+                )}
                 <button
                   onClick={async () => {
-                    await authClient.signOut({
-                      fetchOptions: {
-                        onSuccess: () => {
-                          setDropdownOpen(false);
-                          router.push("/login");
-                        },
-                      },
-                    });
+                    await signOut({ redirect: false });
+                    setDropdownOpen(false);
+                    router.push("/login");
                   }}
                   className="w-full text-left px-4 py-2 flex items-center space-x-2 text-slate-200 hover:bg-emerald-400/10 hover:text-emerald-300 transition"
                 >

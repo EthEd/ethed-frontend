@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { useCourseProgress } from '@/hooks/useCourseProgress';
-import { ArrowLeft, ArrowRight, Play, FileText, Code, CheckCircle, Clock, Award, Users } from 'lucide-react';
+import { useClaimNFT } from '@/hooks/use-claim-nft';
+import { ArrowLeft, Play, FileText, Code, Clock, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -61,6 +62,7 @@ ENS makes it easy to get a human-readable name for your Ethereum address.\n\n## 
 
 export default function ENS101Course() {
   const { completedModules, completionCount, percent } = useCourseProgress('ens-101', courseModules.length);
+  const { claimNFT, isClaiming, claimed } = useClaimNFT();
   const completionPercentage = percent;
 
   const handleModuleClick = (moduleId: number) => {
@@ -83,7 +85,7 @@ export default function ENS101Course() {
           <Button 
             variant="ghost" 
             className="mb-4 text-cyan-400 hover:text-cyan-300"
-            onClick={() => window.location.href = '/courses'}
+            onClick={() => window.location.href = '/learn'}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Courses

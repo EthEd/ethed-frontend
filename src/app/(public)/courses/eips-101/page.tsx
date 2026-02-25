@@ -12,10 +12,10 @@ import { motion } from 'motion/react';
 const courseModules = [
   {
     id: 1,
-    title: 'Ethereum in Plain Language',
-    description: 'Understanding Ethereum as a global computer and the role of smart contracts',
-    duration: '15 min',
-    type: 'reading',
+    title: 'EIPs 101 — Intro (Video)',
+    description: 'Introductory course overview video',
+    duration: '10 min',
+    type: 'video',
     completed: false,
     content: '/EIPs101.md#1-ethereum-in-plain-language'
   },
@@ -76,11 +76,20 @@ const courseModules = [
   {
     id: 8,
     title: 'Draft Your First EIP',
-    description: 'Hands-on workshop using EIPsInsight Proposal Builder',
+    description: 'Hands-on workshop using EthEd Proposal Builder',
     duration: '45 min',
     type: 'interactive',
     completed: false,
-    content: '/EIPs101.md#9-drafting-a-first-eip-with-eipsinsights-proposal-builder'
+    content: '/EIPs101.md#9-drafting-a-first-eip-with-etheds-proposal-builder'
+  },
+  {
+    id: 9,
+    title: 'Final Quiz — Mint NFT',
+    description: 'Complete a short quiz to mint your EIP Expert NFT',
+    duration: '10 min',
+    type: 'quiz',
+    completed: false,
+    content: '/EIPs101.md#10-final-quiz'
   }
 ];
 
@@ -114,7 +123,7 @@ export default function EIPs101Course() {
               Dashboard
             </Link>
             <span>/</span>
-            <Link href="/courses" className="hover:text-cyan-400 transition-colors">
+            <Link href="/learn" className="hover:text-cyan-400 transition-colors">
               Courses
             </Link>
             <span>/</span>
@@ -136,7 +145,7 @@ export default function EIPs101Course() {
           <Button 
             variant="ghost" 
             className="mb-4 text-cyan-400 hover:text-cyan-300"
-            onClick={() => window.location.href = '/courses'}
+            onClick={() => window.location.href = '/learn'}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Courses
@@ -148,7 +157,7 @@ export default function EIPs101Course() {
                 EIPs 101: From First Principles to First Proposal
               </h1>
               <p className="text-lg text-muted-foreground mb-6">
-                Master Ethereum Improvement Proposals from basics to writing your first EIP using EIPsInsight&apos;s tools.
+                Master Ethereum Improvement Proposals from basics to writing your first EIP using EthEd&apos;s tools.
               </p>
               
               <div className="flex flex-wrap gap-4 mb-6">
@@ -317,7 +326,7 @@ export default function EIPs101Course() {
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-300">Draft your first EIP using EIPsInsight&apos;s Proposal Builder</span>
+                <span className="text-slate-300">Draft your first EIP using EthEd&apos;s Proposal Builder</span>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />

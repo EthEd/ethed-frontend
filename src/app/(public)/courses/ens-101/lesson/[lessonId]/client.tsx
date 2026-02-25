@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle, HelpCircle, Clock, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -105,9 +105,9 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
         body: JSON.stringify({ courseSlug: 'ens-101' })
       });
       if (res.ok) toast.success('Course completed! 🎉');
-      try { router.refresh(); } catch (e) {}
-    } catch (err) {
-      console.error('Finish course API error:', err);
+      try { router.refresh(); } catch { }
+    } catch {
+      // finish course API error — silently handled
     }
   };
 
@@ -119,28 +119,28 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
     if (newCount === modules.length) {
       finishCourseBackend();
     } else {
-      try {
-        fetch('/api/user/course/progress', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ courseSlug: 'ens-101', completedCount: newCount, totalModules: modules.length })
-        });
-      } catch (err) { /* ignore */ }
-    }
-  };
+        try {
+          fetch('/api/user/course/progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ courseSlug: 'ens-101', completedCount: newCount, totalModules: modules.length })
+          });
+        } catch { /* ignore */ }
+      }
+    };
 
-  if (!currentModule) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Lesson not found</h1>
-          <Button onClick={() => window.location.href = '/courses/ens-101'}>
-            Back to Course
-          </Button>
+    if (!currentModule) {
+      return (
+        <div className="min-h-screen flex items-center justify-center text-white">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Lesson not found</h1>
+            <Button onClick={() => window.location.href = '/courses/ens-101'}>
+              Back to Course
+            </Button>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
   const renderTextContent = (content: string) => {
     return content.split('\n').map((line: string, i: number) => {
@@ -393,7 +393,7 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
               onClick={async () => {
                 if (!completedModules.has(moduleId)) markAsCompleted();
                 if (moduleId === modules.length) {
-                  try { await finishCourseBackend(); } catch (e) {}
+                  try { await finishCourseBackend(); } catch { }
                   window.location.href = '/courses/ens-101';
                 } else {
                   window.location.href = `/courses/ens-101/lesson/${moduleId + 1}`;

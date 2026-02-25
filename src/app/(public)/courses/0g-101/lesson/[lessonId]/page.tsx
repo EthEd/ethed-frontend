@@ -183,7 +183,6 @@ interface PageProps {
 export default function ZeroGLessonPage({ params }: PageProps) {
   const [lessonId, setLessonId] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const getParams = async () => {
@@ -207,13 +206,13 @@ export default function ZeroGLessonPage({ params }: PageProps) {
         fetch('/api/user/course/complete', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ courseSlug: '0g-101' })
         });
-      } catch (err) {}
+      } catch { }
     } else {
       try {
         fetch('/api/user/course/progress', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ courseSlug: '0g-101', completedCount: newCount, totalModules: modules.length })
         });
-      } catch (err) {}
+      } catch { }
     }
   };
 

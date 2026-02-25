@@ -14,11 +14,16 @@ model User {
   email         String?  @unique
   emailVerified Boolean  @default(false)
   image         String?
-  role          String?
+  role          Role     @default(USER)
   banned        Boolean  @default(false)
   banReason     String?
   banExpires    DateTime?
   onboardingStep Int     @default(0)
+  xp            Int      @default(0)
+  level         Int      @default(1)
+  streak        Int      @default(0)
+  lastLearnedAt DateTime?
+  notificationPrefs Json @default("{}")
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -34,6 +39,11 @@ model User {
   purchases     Purchase[]
   payments      Payment[]
   nfts          NFT[]
+  lessonProgress LessonProgress[]
+  projects      Project[]
+  projectMembers ProjectMember[]
+  donations     Donation[]
+  auditLogs     AuditLog[]
 }
 
 model Session {
@@ -114,6 +124,7 @@ model Lesson {
   updatedAt DateTime @default(now())
 
   course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessonProgress LessonProgress[]
 }
 
 model UserCourse {
@@ -130,6 +141,19 @@ model UserCourse {
   course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
+}
+
+model LessonProgress {
+  id        String   @id @default(uuid())
+  userId    String
+  lessonId  String
+  completed Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
 }
 
 model Purchase {
@@ -162,15 +186,49 @@ model Payment {
 }
 
 model NFT {
-  id        String   @id @default(uuid())
-  userId    String
-  tokenId   String
-  name      String
-  image     String
-  metadata  Json?
-  createdAt DateTime @default(now())
+  id              String   @id @default(uuid())
+  userId          String
+  tokenId         String
+  name            String
+  image           String
+  metadata        Json?
+  contractAddress String?
+  ownerAddress    String?
+  transactionHash String?
+  chainId         Int?
+  mintedAt        DateTime?
+  createdAt       DateTime @default(now())
 
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Roles
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+// ---------------------------------------------------------------------------
+// Audit Log
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String
+  action     String
+  targetId   String?
+  targetType String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor      User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([actorId])
+  @@index([createdAt(sort: Desc)])
 }
 
 enum CourseLevel {
@@ -200,4 +258,87 @@ enum PaymentStatus {
 enum PaymentType {
   MICROPAYMENT
   SUBSCRIPTION
+}
+
+// ---------------------------------------------------------------------------
+// Projects & Donations
+// ---------------------------------------------------------------------------
+
+model Project {
+  id           String        @id @default(uuid())
+  title        String
+  description  String
+  slug         String        @unique
+  imageUrl     String?
+  category     String?
+  type         ProjectType   @default(INDIVIDUAL)
+  status       ProjectStatus @default(OPEN)
+  fundingGoal  Int           @default(0) // in cents
+  fundingRaised Int          @default(0) // in cents
+  maxMembers   Int           @default(1)
+  tags         String[]      @default([])
+  creatorId    String
+  txHash       String?
+  chainId      Int?
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  creator      User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  members      ProjectMember[]
+  donations    Donation[]
+}
+
+model ProjectMember {
+  id        String            @id @default(uuid())
+  userId    String
+  projectId String
+  role      ProjectMemberRole @default(MEMBER)
+  joinedAt  DateTime          @default(now())
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+}
+
+model Donation {
+  id          String         @id @default(uuid())
+  userId      String
+  projectId   String
+  amount      Int            // in cents
+  txHash      String?
+  chainId     Int?
+  status      DonationStatus @default(PENDING)
+  message     String?
+
+  createdAt   DateTime       @default(now())
+
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+enum ProjectType {
+  INDIVIDUAL
+  GROUP
+}
+
+enum ProjectStatus {
+  OPEN
+  IN_PROGRESS
+  FUNDED
+  COMPLETED
+  ARCHIVED
+}
+
+enum ProjectMemberRole {
+  OWNER
+  MEMBER
+  CONTRIBUTOR
+}
+
+enum DonationStatus {
+  PENDING
+  COMPLETED
+  FAILED
 }

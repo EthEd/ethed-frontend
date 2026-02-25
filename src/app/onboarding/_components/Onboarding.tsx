@@ -7,19 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import Confetti from "react-confetti";
 import {
   Sparkles,
-  PawPrint,
   BadgeCheck,
   ArrowRight,
-  Heart,
   Globe,
   Gift,
-  MessageCircle,
-  Wallet,
   Crown,
   Star,
   Zap,
@@ -29,12 +23,11 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useENSLookup } from "@/hooks/use-ens-lookup";
+import { ENS_ROOT_DOMAIN } from "@/lib/contracts";
 
 export default function Onboarding() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
-  const { lookupByAddress } = useENSLookup();
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -58,8 +51,8 @@ export default function Onboarding() {
         if (data.user?.onboardingStep) {
           setStep(data.user.onboardingStep);
         }
-      } catch (error) {
-        console.error("Failed to fetch onboarding step:", error);
+      } catch {
+        // onboarding step fetch failed — default to step 0
       }
     };
     if (session) fetchStep();
@@ -73,18 +66,16 @@ export default function Onboarding() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ onboardingStep: newStep }),
       });
-    } catch (error) {
-      console.error("Failed to persist onboarding step:", error);
+    } catch {
+      // step persist failed — non-blocking
     }
   };
   const [ensName, setEnsName] = useState("");
-  const [ensAvailable, setEnsAvailable] = useState<boolean | null>(null);
-  const [ensChecking, setEnsChecking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [nftsMinted, setNftsMinted] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
-  const [userProfile, setUserProfile] = useState<any>(null);
+
 
   // Auto-generate initial ENS name
   useEffect(() => {
@@ -140,20 +131,13 @@ export default function Onboarding() {
   useEffect(() => {
     const checkENSAvailability = async () => {
       if (ensName.length < 3) {
-        setEnsAvailable(null);
         return;
       }
 
-      setEnsChecking(true);
       try {
-        const response = await fetch(`/api/ens/lookup?name=${encodeURIComponent(ensName)}`);
-        const data = await response.json();
-        setEnsAvailable(true);
-      } catch (error) {
-        console.error("ENS availability check failed:", error);
-        setEnsAvailable(null);
-      } finally {
-        setEnsChecking(false);
+        await fetch(`/api/ens/lookup?name=${encodeURIComponent(ensName)}`);
+      } catch {
+        // ignore lookup errors
       }
     };
 
@@ -175,6 +159,7 @@ export default function Onboarding() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           subdomain: ensName,
+          walletAddress: session?.address || undefined,
         }),
       });
 
@@ -184,13 +169,15 @@ export default function Onboarding() {
         throw new Error(data.error || "Failed to register ENS");
       }
 
+      // Update session with new ENS name
+      await updateSession({ ensName: `${ensName}.${ENS_ROOT_DOMAIN}` });
+
       setNftsMinted((prev) => [...prev, "ens-pioneer"]);
-      toast.success(`🌐 ENS ${ensName}.ethed.eth registered successfully!`);
+      toast.success(`🌐 ENS ${ensName}.${ENS_ROOT_DOMAIN} registered successfully!`);
       
       setTimeout(() => changeStep(2), 1500);
 
     } catch (error: any) {
-      console.error("ENS registration error:", error);
       toast.error(error.message || "Failed to register ENS. Please try again.");
     } finally {
       setIsLoading(false);
@@ -205,7 +192,8 @@ export default function Onboarding() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ensName: `${ensName}.ethed.eth`,
+          ensName: `${ensName}.${ENS_ROOT_DOMAIN}`,
+          walletAddress: session?.address || undefined,
         }),
       });
 
@@ -221,8 +209,6 @@ export default function Onboarding() {
         throw new Error(data.error || "Failed to mint NFTs");
       }
 
-      console.log("NFT minting successful:", data);
-
       setShowConfetti(true);
       setNftsMinted((prev) => [...prev, "pioneer-scholar"]);
 
@@ -234,7 +220,6 @@ export default function Onboarding() {
       }, 4000);
 
     } catch (error: any) {
-      console.error("NFT minting error:", error);
       toast.error(error.message || "Failed to mint NFTs. Please try again.");
     } finally {
       setIsLoading(false);
@@ -248,7 +233,7 @@ export default function Onboarding() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           onboardingCompleted: true,
-          ensName: `${ensName}.ethed.eth`,
+          ensName: `${ensName}.${ENS_ROOT_DOMAIN}`,
         }),
       });
 
@@ -259,7 +244,6 @@ export default function Onboarding() {
 
       return await response.json();
     } catch (error: any) {
-      console.error("Profile update failed:", error);
       throw error;
     }
   };
@@ -378,7 +362,7 @@ export default function Onboarding() {
                       <div className="text-left p-5 bg-slate-800/30 rounded-xl border border-white/5">
                         <Globe className="w-6 h-6 text-cyan-400 mb-3" />
                         <h3 className="text-white font-semibold mb-1">Web3 Identity</h3>
-                        <p className="text-sm text-slate-400">Claim your unique .ethed.eth name</p>
+                        <p className="text-sm text-slate-400">Claim your unique .{ENS_ROOT_DOMAIN} name</p>
                       </div>
                       <div className="text-left p-5 bg-slate-800/30 rounded-xl border border-white/5">
                         <Gift className="w-6 h-6 text-blue-400 mb-3" />
@@ -443,7 +427,7 @@ export default function Onboarding() {
                           maxLength={20}
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-lg pointer-events-none">
-                          .ethed.eth
+                          .{ENS_ROOT_DOMAIN}
                         </div>
                       </div>
                       {ensName && (
@@ -466,7 +450,7 @@ export default function Onboarding() {
                         </div>
                         <div>
                           <p className="text-cyan-400 font-bold text-xl font-mono">
-                            {ensName || "yourname"}.ethed.eth
+                            {ensName || "yourname"}.{ENS_ROOT_DOMAIN}
                           </p>
                           <p className="text-slate-400 text-sm">
                             Identity ready for verification
@@ -528,7 +512,7 @@ export default function Onboarding() {
                           <h3 className="text-2xl font-bold text-white mb-2">eth.ed Pioneer</h3>
                           <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">GENESIS EDITION</Badge>
                           <p className="mt-4 text-slate-400 text-sm px-10">
-                            {ensName}.ethed.eth • Pioneer Scholar #001
+                            {ensName}.{ENS_ROOT_DOMAIN} • Pioneer Scholar #001
                           </p>
                         </div>
                       </div>
@@ -599,7 +583,7 @@ export default function Onboarding() {
                         You're All Set!
                       </h2>
                       <p className="text-cyan-400 font-mono text-lg">
-                        {ensName}.ethed.eth
+                        {ensName}.{ENS_ROOT_DOMAIN}
                       </p>
                     </div>
                     

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma-client";
+import { ENS_ROOT_DOMAIN } from "@/lib/contracts";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +11,8 @@ export async function GET(request: NextRequest) {
     // Lookup by ENS name
     if (name) {
       const cleanName = name.trim().toLowerCase();
-      const ensName = cleanName.endsWith(".ethed.eth") ? cleanName : `${cleanName}.ethed.eth`;
+      // Use dynamic root domain
+      const ensName = cleanName.includes('.') ? cleanName : `${cleanName}.${ENS_ROOT_DOMAIN}`;
 
       const wallet = await prisma.walletAddress.findFirst({
         where: { ensName },
@@ -31,6 +33,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           available: true,
           ensName,
+          ensAvatar: null,
           message: "This ENS name is available!"
         });
       }
@@ -39,6 +42,7 @@ export async function GET(request: NextRequest) {
         available: false,
         ensName,
         address: wallet.address,
+        ensAvatar: wallet.ensAvatar || null,
         user: wallet.user,
         message: "This ENS name is already registered"
       });
@@ -46,8 +50,24 @@ export async function GET(request: NextRequest) {
 
     // Lookup by address
     if (address) {
+      // Sanitize: strip zero-width characters, smart quotes, extra whitespace
+      const cleanAddress = address
+        .replace(/[\u200B-\u200D\uFEFF\u00AD\u2060\u180E]/g, "")
+        .replace(/[\u2018\u2019\u201C\u201D]/g, "")
+        .replace(/[\s\u00A0]+/g, "")
+        .trim()
+        .toLowerCase();
+
+      // Validate Ethereum address format (case-insensitive hex, then lowercased)
+      if (!/^0x[a-f0-9]{40}$/.test(cleanAddress)) {
+        return NextResponse.json(
+          { error: "Invalid Ethereum address. Expected a 42-character hex string starting with 0x." },
+          { status: 400 }
+        );
+      }
+
       const wallet = await prisma.walletAddress.findFirst({
-        where: { address },
+        where: { address: cleanAddress },
         include: {
           user: {
             select: {
@@ -64,14 +84,16 @@ export async function GET(request: NextRequest) {
       if (!wallet?.ensName) {
         return NextResponse.json({
           ensName: null,
-          address,
+          ensAvatar: null,
+          address: cleanAddress,
           user: null
         });
       }
 
       return NextResponse.json({
         ensName: wallet.ensName,
-        address,
+        ensAvatar: wallet.ensAvatar || null,
+        address: cleanAddress,
         user: wallet.user
       });
     }
@@ -80,8 +102,7 @@ export async function GET(request: NextRequest) {
       { error: "Please provide either 'name' or 'address' query parameter" },
       { status: 400 }
     );
-  } catch (error) {
-    console.error("ENS lookup error:", error);
+  } catch {
     return NextResponse.json(
       { error: "Failed to check ENS. Please try again." },
       { status: 500 }

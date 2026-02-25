@@ -23,7 +23,7 @@ describe('useENSLookup', () => {
 
     it('should fetch ENS data for valid address', async () => {
       const mockData = {
-        ensName: 'test.ethed.eth',
+        ensName: 'test.ayushetty.eth',
         address: '0x123...',
         cached: false
       };
@@ -68,7 +68,7 @@ describe('useENSLookup', () => {
     it('should fetch address data for valid ENS name', async () => {
       const mockData = {
         address: '0x123456789',
-        ensName: 'test.ethed.eth',
+        ensName: 'test.ayushetty.eth',
         cached: true
       };
 
@@ -79,9 +79,9 @@ describe('useENSLookup', () => {
 
       const { result } = renderHook(() => useENSLookup());
 
-      const data = await result.current.lookupByName('test.ethed.eth');
+      const data = await result.current.lookupByName('test.ayushetty.eth');
 
-      expect(fetchMock).toHaveBeenCalledWith('/api/ens/lookup?name=test.ethed.eth');
+      expect(fetchMock).toHaveBeenCalledWith('/api/ens/lookup?name=test.ayushetty.eth');
       expect(data).toEqual(mockData);
     });
   });

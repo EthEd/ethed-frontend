@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle, HelpCircle, Clock, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,7 +96,25 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
   const currentModule = modules.find(m => m.id === moduleId);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const { completedModules, completionCount, markModuleComplete } = useCourseProgress('ens-101', modules.length);
+  const { completedModules, markModuleComplete } = useCourseProgress('ens-101', modules.length);
+
+  const isCompleted = completedModules.has(moduleId);
+
+  const handleMarkComplete = () => {
+    markModuleComplete(moduleId);
+  };
+
+  const onNavigate = (direction: 'next') => {
+    if (direction === 'next') {
+      if (moduleId === modules.length) {
+        // Finish course
+        finishCourseBackend();
+        router.push('/courses/ens-101');
+      } else {
+        router.push(`/courses/ens-101/lesson/${moduleId + 1}`);
+      }
+    }
+  };
 
   const finishCourseBackend = async () => {
     try {
@@ -106,27 +124,9 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
         body: JSON.stringify({ courseSlug: 'ens-101' })
       });
       if (res.ok) toast.success('Course completed! 🎉');
-      try { router.refresh(); } catch (e) {}
-    } catch (err) {
-      console.error('Finish course API error:', err);
-    }
-  };
-
-  const markAsCompleted = () => {
-    if (completedModules.has(moduleId)) return;
-    markModuleComplete(moduleId);
-
-    const newCount = completionCount + 1;
-    if (newCount === modules.length) {
-      finishCourseBackend();
-    } else {
-      try {
-        fetch('/api/user/course/progress', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ courseSlug: 'ens-101', completedCount: newCount, totalModules: modules.length })
-        });
-      } catch (err) { /* ignore */ }
+      try { router.refresh(); } catch { }
+    } catch {
+      // finish course API error — silently handled
     }
   };
 
@@ -387,16 +387,13 @@ export default function ENSLessonClient({ lessonId }: ENSLessonClientProps) {
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> 
               Previous Lesson
+            </Button>
             <Button 
               onClick={() => {
                 if (!isCompleted) handleMarkComplete();
                 onNavigate('next');
               }}
               className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white"
-            >
-              Next Lesson
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
             >
               {moduleId === modules.length ? 'Finish Course' : 'Next Lesson'}
               <ArrowRight className="ml-2 h-4 w-4" />

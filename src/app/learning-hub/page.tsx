@@ -308,9 +308,7 @@ export default function LearningHubDashboard() {
             >
               <GamificationDashboard
                 userProgress={mockUserProgress}
-                onStreakUpdate={(newStreak) => {
-                  console.log('Streak updated to:', newStreak);
-                }}
+                onStreakUpdate={() => {}}
               />
             </motion.div>
           </TabsContent>
@@ -357,7 +355,6 @@ export default function LearningHubDashboard() {
                 badge="📚"
                 onProgress={(progress) => {
                   setCourseProgress(Math.round(progress));
-                  console.log('Course progress:', progress);
                 }}
               />
             </motion.div>
@@ -426,7 +423,7 @@ export default function LearningHubDashboard() {
                   }
                 ]}
                 onNewThread={(thread) => {
-                  console.log('New thread created:', thread);
+                  void thread;
                 }}
               />
             </motion.div>

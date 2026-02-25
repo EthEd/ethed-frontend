@@ -20,6 +20,8 @@ export interface LessonMetadata {
   estimatedTime: string;
   keyTakeaways: string[];
   resources?: string[];
+  // Optional direct video URL for `video` lessons (YouTube embed URL expected)
+  videoUrl?: string;
 }
 
 export interface CourseModule {
@@ -63,7 +65,7 @@ export const coursesWithPath: EnhancedCourse[] = [
   {
     id: 'eips-101',
     title: 'EIPs 101: From First Principles to First Proposal',
-    description: 'Master Ethereum Improvement Proposals from basics to writing your first EIP using EIPsInsight\'s tools.',
+    description: 'Master Ethereum Improvement Proposals from basics to writing your first EIP using EthEd\'s tools.',
     level: 'Beginner',
     learningPath: 'Fundamentals',
     duration: '2-3 hours',
@@ -75,7 +77,7 @@ export const coursesWithPath: EnhancedCourse[] = [
     href: '/courses/eips-101',
     available: true,
     prerequisites: [],
-    totalLessons: 8,
+    totalLessons: 9,
     estimatedTotalTime: '2-3 hours',
     learningOutcomes: [
       'Understand the EIP process and governance',
@@ -95,21 +97,18 @@ export const coursesWithPath: EnhancedCourse[] = [
       {
         id: 1,
         title: 'Foundation Module',
-        description: 'Understand Ethereum fundamentals',
-        estimatedTime: '30 min',
+        description: 'Understand Ethereum fundamentals and the EIP process',
+        estimatedTime: '2-3 hours',
         lessons: [
-          {
-            id: 1,
-            title: 'Ethereum in Plain Language',
-            type: 'reading',
-            duration: 15,
-            difficulty: 'Easy',
-            xpReward: 100,
-            hasQuiz: true,
-            estimatedTime: '15 min',
-            keyTakeaways: ['Ethereum is a global computer', 'Smart contracts enable programmable transactions', 'Decentralization removes single points of failure'],
-            resources: ['ethereum.org', 'ethereum whitepaper']
-          }
+          { id: 1, title: 'EIPs 101 — Intro (Video)', type: 'video', duration: 10, difficulty: 'Easy', xpReward: 50, hasQuiz: false, estimatedTime: '10 min', keyTakeaways: ['Overview of EIPs and course roadmap'], videoUrl: 'https://www.youtube.com/embed/9CuuCAJWUTw' },
+          { id: 2, title: 'What is an EIP?', type: 'reading', duration: 10, difficulty: 'Easy', xpReward: 80, hasQuiz: false, estimatedTime: '10 min', keyTakeaways: ['Purpose of EIPs', 'Proposal lifecycle', 'Who can author an EIP'] },
+          { id: 3, title: 'Types of EIPs', type: 'reading', duration: 12, difficulty: 'Easy', xpReward: 80, hasQuiz: false, estimatedTime: '12 min', keyTakeaways: ['Standards track vs informational vs meta', 'ERCs and interfaces'] },
+          { id: 4, title: 'EIP Lifecycle', type: 'reading', duration: 18, difficulty: 'Medium', xpReward: 120, hasQuiz: false, estimatedTime: '18 min', keyTakeaways: ['Draft → review → last call → final', 'Editor roles and community process'] },
+          { id: 5, title: 'Anatomy of an EIP', type: 'reading', duration: 20, difficulty: 'Medium', xpReward: 120, hasQuiz: false, estimatedTime: '20 min', keyTakeaways: ['Preamble, abstract, motivation, specification, rationale'] },
+          { id: 6, title: 'Famous EIP Case Studies', type: 'reading', duration: 25, difficulty: 'Medium', xpReward: 140, hasQuiz: false, estimatedTime: '25 min', keyTakeaways: ['ERC-20, EIP-1559, EIP-4844—what changed and why'] },
+          { id: 7, title: 'Reading EIPs Like a Pro', type: 'reading', duration: 15, difficulty: 'Easy', xpReward: 90, hasQuiz: false, estimatedTime: '15 min', keyTakeaways: ['How to skim, understand motivation, and evaluate specification'] },
+          { id: 8, title: 'Draft Your First EIP', type: 'project', duration: 45, difficulty: 'Hard', xpReward: 200, hasQuiz: false, estimatedTime: '45 min', keyTakeaways: ['Hands-on drafting, proposal builder, submission checklist'] },
+          { id: 9, title: 'Final Quiz — Mint NFT', type: 'quiz', duration: 10, difficulty: 'Hard', xpReward: 250, hasQuiz: true, estimatedTime: '10 min', keyTakeaways: ['Knowledge verification'] }
         ]
       }
     ]
@@ -151,7 +150,12 @@ export const coursesWithPath: EnhancedCourse[] = [
         title: 'ENS Fundamentals',
         description: 'Learn ENS basics',
         estimatedTime: '45 min',
-        lessons: []
+        lessons: [
+          { id: 1, title: 'What is ENS?', type: 'video', duration: 8, difficulty: 'Easy', xpReward: 50, hasQuiz: false, estimatedTime: '8 min', keyTakeaways: ['Intro to ENS architecture'], videoUrl: 'https://www.youtube.com/embed/1kQ4hQG4Fqg' },
+          { id: 2, title: 'Registering Your First ENS Name', type: 'reading', duration: 12, difficulty: 'Easy', xpReward: 100, hasQuiz: false, estimatedTime: '12 min', keyTakeaways: ['Step-by-step registration guide'] },
+          { id: 3, title: 'Integrating ENS in dApps', type: 'coding', duration: 15, difficulty: 'Medium', xpReward: 120, hasQuiz: false, estimatedTime: '15 min', keyTakeaways: ['Resolving names with ethers.js'] },
+          { id: 4, title: 'Quiz: ENS Basics', type: 'quiz', duration: 10, difficulty: 'Easy', xpReward: 150, hasQuiz: true, estimatedTime: '10 min', keyTakeaways: ['Knowledge check'] }
+        ]
       }
     ]
   },

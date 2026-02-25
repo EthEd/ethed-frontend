@@ -1,0 +1,21 @@
+{
+  "name": "EthEd - Blockchain Education",
+  "short_name": "EthEd",
+  "description": "Blockchain education made interactive, verifiable, and rewarding.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#06b6d4",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/logos/logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

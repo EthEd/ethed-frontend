@@ -13,7 +13,6 @@ import {
   Users,
   Star,
   Trophy,
-  Zap,
   Target,
   ArrowRight,
   Search,
@@ -21,56 +20,23 @@ import {
   ChevronDown,
   ChevronRight,
   CheckCircle,
-  Lock,
-  Unlock,
   Code,
-  Globe,
   Coins,
   Shield,
-  Lightbulb,
-  Rocket,
   Brain,
-  PawPrint,
   Award,
-  TrendingUp,
-  Heart,
   Sparkles,
-  Crown,
   Flame,
   Gift,
-  Calendar,
-  MapPin,
-  ExternalLink,
-  Info,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
-
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-  duration: string;
-  lessons: number;
-  students: number;
-  rating: number;
-  price: "Free" | "Pro" | "Premium";
-  category: string;
-  tags: string[];
-  instructor: string;
-  thumbnail: string;
-  isNew?: boolean;
-  isPopular?: boolean;
-  progress?: number;
-  nftReward?: string;
-}
+import { courses, type Course } from "@/lib/courses";
 
 interface LearningPath {
   id: string;
   title: string;
   description: string;
-  courses: number;
+  coursesLength: number;
   duration: string;
   level: string;
   color: string;
@@ -79,117 +45,12 @@ interface LearningPath {
   completionReward: string;
 }
 
-const courses: Course[] = [
-  {
-    id: "blockchain-basics",
-    title: "Blockchain Fundamentals",
-    description: "Master the core concepts of blockchain technology, from cryptographic hashing to consensus mechanisms.",
-    difficulty: "Beginner",
-    duration: "4 weeks",
-    lessons: 12,
-    students: 8420,
-    rating: 4.8,
-    price: "Free",
-    category: "Blockchain",
-    tags: ["Bitcoin", "Ethereum", "Consensus", "Cryptography"],
-    instructor: "Dr. Sarah Chen",
-    thumbnail: "/courses/blockchain-basics.jpg",
-    isPopular: true,
-    progress: 0,
-    nftReward: "Blockchain Pioneer NFT"
-  },
-  {
-    id: "solidity-development",
-    title: "Smart Contract Development with Solidity",
-    description: "Learn to build, test, and deploy smart contracts on Ethereum using Solidity and modern development tools.",
-    difficulty: "Intermediate",
-    duration: "8 weeks",
-    lessons: 24,
-    students: 6150,
-    rating: 4.9,
-    price: "Pro",
-    category: "Development",
-    tags: ["Solidity", "Smart Contracts", "Testing", "Deployment"],
-    instructor: "Marcus Rodriguez",
-    thumbnail: "/courses/solidity-dev.jpg",
-    isNew: true,
-    progress: 35,
-    nftReward: "Solidity Master NFT"
-  },
-  {
-    id: "defi-protocols",
-    title: "DeFi Protocol Architecture",
-    description: "Understand how decentralized finance protocols work, from AMMs to lending platforms and yield farming.",
-    difficulty: "Advanced",
-    duration: "10 weeks",
-    lessons: 30,
-    students: 3280,
-    rating: 4.7,
-    price: "Premium",
-    category: "DeFi",
-    tags: ["DeFi", "AMM", "Lending", "Yield Farming"],
-    instructor: "Aisha Patel",
-    thumbnail: "/courses/defi-protocols.jpg",
-    nftReward: "DeFi Architect NFT"
-  },
-  {
-    id: "web3-frontend",
-    title: "Web3 Frontend Development",
-    description: "Build modern DApp frontends using React, ethers.js, and popular Web3 libraries.",
-    difficulty: "Intermediate",
-    duration: "6 weeks",
-    lessons: 18,
-    students: 4920,
-    rating: 4.6,
-    price: "Pro",
-    category: "Development",
-    tags: ["React", "ethers.js", "Web3", "DApp"],
-    instructor: "Jake Thompson",
-    thumbnail: "/courses/web3-frontend.jpg",
-    isPopular: true,
-    nftReward: "Frontend Builder NFT"
-  },
-  {
-    id: "nft-development",
-    title: "NFT Development & Marketplaces",
-    description: "Create, deploy, and trade NFTs. Learn ERC-721, ERC-1155, and build your own NFT marketplace.",
-    difficulty: "Intermediate",
-    duration: "5 weeks",
-    lessons: 15,
-    students: 5670,
-    rating: 4.8,
-    price: "Free",
-    category: "NFTs",
-    tags: ["NFT", "ERC-721", "OpenSea", "Marketplace"],
-    instructor: "Luna Kim",
-    thumbnail: "/courses/nft-development.jpg",
-    isNew: true,
-    nftReward: "NFT Creator NFT"
-  },
-  {
-    id: "dao-governance",
-    title: "DAO Governance & Tokenomics",
-    description: "Design and implement decentralized autonomous organizations with effective governance mechanisms.",
-    difficulty: "Advanced",
-    duration: "7 weeks",
-    lessons: 21,
-    students: 2140,
-    rating: 4.9,
-    price: "Premium",
-    category: "Governance",
-    tags: ["DAO", "Governance", "Tokenomics", "Voting"],
-    instructor: "Dr. Emily Watson",
-    thumbnail: "/courses/dao-governance.jpg",
-    nftReward: "DAO Architect NFT"
-  }
-];
-
 const learningPaths: LearningPath[] = [
   {
     id: "web3-developer",
     title: "Complete Web3 Developer",
     description: "Go from zero to full-stack Web3 developer with our comprehensive learning path",
-    courses: 8,
+    coursesLength: 8,
     duration: "16-20 weeks",
     level: "Beginner to Advanced",
     color: "emerald",
@@ -201,582 +62,224 @@ const learningPaths: LearningPath[] = [
     id: "defi-specialist",
     title: "DeFi Protocol Specialist",
     description: "Master decentralized finance protocols and become a DeFi expert",
-    courses: 6,
+    coursesLength: 6,
     duration: "12-15 weeks",
     level: "Intermediate to Advanced",
     color: "cyan",
     icon: Coins,
     skills: ["AMM Design", "Lending Protocols", "Yield Strategies", "Risk Management"],
-    completionReward: "DeFi Master NFT + Job Placement Assistance"
-  },
-  {
-    id: "security-auditor",
-    title: "Smart Contract Security Auditor",
-    description: "Learn to identify vulnerabilities and audit smart contracts professionally",
-    courses: 5,
-    duration: "10-12 weeks",
-    level: "Advanced",
-    color: "red",
-    icon: Shield,
-    skills: ["Security Patterns", "Vulnerability Analysis", "Audit Reports", "Tools"],
-    completionReward: "Security Expert NFT + Audit Certification"
-  },
-  {
-    id: "blockchain-architect",
-    title: "Blockchain Protocol Architect",
-    description: "Design and build custom blockchain protocols and consensus mechanisms",
-    courses: 7,
-    duration: "14-18 weeks",
-    level: "Advanced",
-    color: "purple",
-    icon: Brain,
-    skills: ["Consensus Design", "Protocol Development", "Network Security", "Scalability"],
-    completionReward: "Protocol Architect NFT + Research Opportunities"
+    completionReward: "DeFi Master NFT"
   }
 ];
 
-const categories = ["All", "Blockchain", "Development", "DeFi", "NFTs", "Governance", "Security"];
-const difficulties = ["All", "Beginner", "Intermediate", "Advanced"];
-const prices = ["All", "Free", "Pro", "Premium"];
-
-export default function LearnPage() {
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedDifficulty, setSelectedDifficulty] = useState("All");
-  const [selectedPrice, setSelectedPrice] = useState("All");
+export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>(courses);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const filteredCourses = courses.filter(course => {
-    return (
-      (selectedCategory === "All" || course.category === selectedCategory) &&
-      (selectedDifficulty === "All" || course.difficulty === selectedDifficulty) &&
-      (selectedPrice === "All" || course.price === selectedPrice) &&
-      (searchQuery === "" || 
-        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const filtered = courses.filter((course) => {
+      const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         course.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        course.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
-    );
-  });
+        course.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const matchesCategory = selectedCategory === "All" || course.category === selectedCategory;
+      
+      return matchesSearch && matchesCategory;
+    });
+    setFilteredCourses(filtered);
+  }, [searchQuery, selectedCategory]);
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Beginner": return "text-green-400 bg-green-400/10";
-      case "Intermediate": return "text-yellow-400 bg-yellow-400/10";
-      case "Advanced": return "text-red-400 bg-red-400/10";
-      default: return "text-gray-400 bg-gray-400/10";
-    }
-  };
-
-  const getPriceColor = (price: string) => {
-    switch (price) {
-      case "Free": return "text-emerald-400 bg-emerald-400/10";
-      case "Pro": return "text-cyan-400 bg-cyan-400/10";
-      case "Premium": return "text-purple-400 bg-purple-400/10";
-      default: return "text-gray-400 bg-gray-400/10";
-    }
-  };
-
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="container mx-auto px-4 py-16">
-          <div className="animate-pulse space-y-8">
-            <div className="h-20 bg-slate-700 rounded-lg" />
-            <div className="grid grid-cols-3 gap-4">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-32 bg-slate-700 rounded-lg" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const categories = ["All", ...Array.from(new Set(courses.map(c => c.category)))];
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      {/* Background Effects */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px]" />
-      </div>
-
-      <div className="container mx-auto px-4 py-16 max-w-7xl">
-        {/* Hero Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-400/20">
-            <BookOpen className="h-4 w-4 text-cyan-400" />
-            <span className="text-sm font-medium text-cyan-300">Learn & Build</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
-            Master Web3
-          </h1>
-          
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed mb-8">
-            Learn blockchain development with interactive lessons, hands-on projects, 
-            and NFT credentials that prove your skills to employers worldwide.
-          </p>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto mb-8">
-            {[
-              { label: "Courses", value: "200+", icon: BookOpen },
-              { label: "Students", value: "12K+", icon: Users },
-              { label: "NFTs Earned", value: "45K+", icon: Award },
-              { label: "Success Rate", value: "94%", icon: Trophy }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <Card className="bg-slate-950/60 backdrop-blur-md border border-cyan-400/10 text-center rounded-2xl">
-                  <CardContent className="p-4">
-                    <stat.icon className="w-6 h-6 text-cyan-400 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-white">{stat.value}</div>
-                    <div className="text-slate-400 text-sm">{stat.label}</div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Learning Paths */}
-        <motion.section
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="mb-16"
-        >
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 flex items-center justify-center gap-3">
-              <Target className="w-8 h-8 text-cyan-400" />
-              Learning Paths
-            </h2>
-            <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-              Structured curricula designed to take you from beginner to expert in specific Web3 domains
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {learningPaths.map((path, index) => {
-              const Icon = path.icon;
-              return (
-                <motion.div
-                  key={path.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <Card className="bg-slate-950/60 backdrop-blur-md border border-cyan-400/10 h-full hover:border-cyan-400/30 transition-all duration-300 group rounded-2xl shadow-lg hover:shadow-cyan-400/5">
-                    <CardHeader>
-                      <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-xl bg-cyan-500/10 border border-cyan-400/20`}>
-                          <Icon className={`w-6 h-6 text-cyan-400`} />
-                        </div>
-                        <div className="flex-1">
-                          <CardTitle className="text-xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-400 group-hover:bg-clip-text transition-all duration-300">
-                            {path.title}
-                          </CardTitle>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-slate-400">
-                            <span>{path.courses} courses</span>
-                            <span>{path.duration}</span>
-                            <Badge variant="outline" className="text-xs border-cyan-400/20 text-cyan-400">
-                              {path.level}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-slate-400 leading-relaxed">
-                        {path.description}
-                      </p>
-                      
-                      <div>
-                        <h4 className="text-sm font-semibold text-slate-300 mb-2">Skills You'll Master:</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {path.skills.map((skill, skillIndex) => (
-                            <Badge key={skillIndex} variant="secondary" className="text-xs bg-slate-800 text-slate-300">
-                              {skill}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="p-3 bg-cyan-500/5 border border-cyan-500/10 rounded-xl">
-                        <p className="text-cyan-200 text-sm font-medium">
-                          🏆 Completion Reward: {path.completionReward}
-                        </p>
-                      </div>
-
-                      <Button className="w-full border-cyan-400/20 hover:bg-cyan-400/10 text-cyan-400 hover:text-cyan-300" variant="outline">
-                        View Path Details
-                        <ChevronRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.section>
-
-        {/* Courses Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="mb-16"
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Explore Courses
-            </h2>
-            <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-              Hands-on courses taught by industry experts with real-world projects and NFT credentials
-            </p>
-          </div>
-
-          {/* Search and Filters */}
-          <div className="flex flex-col md:flex-row gap-4 mb-8">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search courses, skills, or topics..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-950/60 border border-cyan-400/10 rounded-xl text-white placeholder-slate-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all outline-none"
-              />
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="border-cyan-400/10 text-slate-300 hover:bg-slate-900 bg-slate-950/60"
+    <div className="min-h-screen bg-slate-950 pb-20">
+      {/* Hero Section */}
+      <section className="relative pt-20 pb-32 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full bg-gradient-to-b from-cyan-500/10 via-transparent to-transparent opacity-50 blur-3xl pointer-events-none" />
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              <Filter className="w-4 h-4 mr-2" />
-              Filters
-              <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-            </Button>
-          </div>
+              <Badge className="mb-4 bg-cyan-500/10 text-cyan-400 border-cyan-500/20 hover:bg-cyan-500/20 px-4 py-1">
+                <Sparkles className="w-3 h-3 mr-2" />
+                The Future of Education
+              </Badge>
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">
+                Unlock Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Web3 Potential</span>
+              </h1>
+              <p className="text-xl text-slate-400 mb-10 leading-relaxed">
+                Choose from our selection of high-quality courses designed to take you from beginner to expert in the blockchain space.
+              </p>
+            </motion.div>
 
-          {/* Filter Options */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="mb-8"
-              >
-                <Card className="bg-slate-950/60 backdrop-blur-md border border-cyan-400/10 rounded-2xl overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="grid md:grid-cols-3 gap-6">
-                      {/* Category Filter */}
-                      <div>
-                        <h4 className="text-sm font-semibold text-slate-300 mb-3">Category</h4>
-                        <div className="space-y-2">
-                          {categories.map((category) => (
-                            <button
-                              key={category}
-                              onClick={() => setSelectedCategory(category)}
-                              className={`block w-full text-left px-3 py-2 rounded-lg transition-all text-sm ${
-                                selectedCategory === category
-                                  ? "bg-cyan-500/10 text-cyan-300 border border-cyan-400/20"
-                                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-                              }`}
-                            >
-                              {category}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Difficulty Filter */}
-                      <div>
-                        <h4 className="text-sm font-semibold text-slate-300 mb-3">Difficulty</h4>
-                        <div className="space-y-2">
-                          {difficulties.map((difficulty) => (
-                            <button
-                              key={difficulty}
-                              onClick={() => setSelectedDifficulty(difficulty)}
-                              className={`block w-full text-left px-3 py-2 rounded-lg transition-all text-sm ${
-                                selectedDifficulty === difficulty
-                                  ? "bg-blue-500/10 text-blue-300 border border-blue-400/20"
-                                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-                              }`}
-                            >
-                              {difficulty}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Price Filter */}
-                      <div>
-                        <h4 className="text-sm font-semibold text-slate-300 mb-3">Price</h4>
-                        <div className="space-y-2">
-                          {prices.map((price) => (
-                            <button
-                              key={price}
-                              onClick={() => setSelectedPrice(price)}
-                              className={`block w-full text-left px-3 py-2 rounded-lg transition-all text-sm ${
-                                selectedPrice === price
-                                  ? "bg-purple-500/20 text-purple-300"
-                                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-700/40"
-                              }`}
-                            >
-                              {price}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Courses Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence mode="wait">
-              {filteredCourses.map((course, index) => (
-                <motion.div
-                  key={course.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
+            {/* Search and Filter */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex flex-col md:flex-row gap-4 p-2 bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl"
+            >
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search courses, skills, or tags..."
+                  className="w-full bg-transparent border-none focus:ring-0 text-white pl-12 pr-4 py-3 placeholder:text-slate-500"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2">
+                <select
+                  className="bg-slate-800 text-white border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 cursor-pointer min-w-[140px]"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
                 >
-                  <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10 h-full hover:border-white/20 transition-all duration-300 group overflow-hidden">
-                    {/* Course Thumbnail */}
-                    <div className="relative h-48 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <BookOpen className="w-16 h-16 text-slate-400" />
-                      </div>
-                      
-                      {/* Badges */}
-                      <div className="absolute top-3 left-3 flex gap-2">
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+                <Button className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-8 rounded-xl transition-all shadow-lg shadow-cyan-500/20">
+                  Search
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Course Grid */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <AnimatePresence mode="popLayout">
+            {filteredCourses.map((course, idx) => (
+              <motion.div
+                key={course.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, delay: idx * 0.05 }}
+              >
+                <Link href={`/learn/${course.id}`}>
+                  <Card className="group bg-slate-900/40 border-white/5 hover:border-cyan-500/50 transition-all duration-300 overflow-hidden h-full flex flex-col hover:shadow-2xl hover:shadow-cyan-500/10 hover:-translate-y-1">
+                    <div className="relative aspect-video overflow-hidden">
+                      <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-transparent transition-colors duration-300 z-10" />
+                      <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
                         {course.isNew && (
-                          <Badge className="bg-emerald-500 text-white">
-                            <Sparkles className="w-3 h-3 mr-1" />
-                            New
-                          </Badge>
+                          <Badge className="bg-emerald-500 text-white border-none">New</Badge>
                         )}
                         {course.isPopular && (
-                          <Badge className="bg-orange-500 text-white">
-                            <Flame className="w-3 h-3 mr-1" />
-                            Popular
-                          </Badge>
+                          <Badge className="bg-orange-500 text-white border-none">Popular</Badge>
                         )}
                       </div>
-
-                      <div className="absolute top-3 right-3">
-                        <Badge className={getPriceColor(course.price)}>
-                          {course.price === "Free" ? (
-                            <>
-                              <Gift className="w-3 h-3 mr-1" />
-                              Free
-                            </>
-                          ) : course.price}
+                      <div className="absolute bottom-4 left-4 z-20">
+                        <Badge className="bg-slate-900/80 backdrop-blur-md text-white border-white/10 uppercase text-[10px] tracking-widest px-2 py-1">
+                          {course.category}
                         </Badge>
                       </div>
-
-                      {/* Progress Bar for Enrolled Courses */}
-                      {course.progress !== undefined && course.progress > 0 && (
-                        <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <div className="bg-slate-950/80 rounded-lg p-2 backdrop-blur-sm border border-cyan-400/10">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs text-slate-300">Progress</span>
-                              <span className="text-xs text-cyan-400">{course.progress}%</span>
-                            </div>
-                            <Progress value={course.progress} className="h-1 bg-slate-800" />
-                          </div>
-                        </div>
-                      )}
+                      <div className="w-full h-full bg-slate-800 transition-transform duration-500 group-hover:scale-110 flex items-center justify-center text-slate-600">
+                        <BookOpen className="w-12 h-12" />
+                      </div>
                     </div>
-
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-lg font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-400 group-hover:bg-clip-text transition-all duration-300 line-clamp-2">
-                          {course.title}
-                        </CardTitle>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-slate-400">
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4 text-cyan-400/60" />
-                          {course.duration}
+                    <CardHeader className="flex-1 p-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex gap-1">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} className={`w-3 h-3 ${i < Math.floor(course.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600'}`} />
+                          ))}
+                          <span className="text-[10px] text-slate-400 ml-1">({course.rating})</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Play className="w-4 h-4 text-cyan-400/60" />
-                          {course.lessons} lessons
-                        </div>
+                        <span className="text-xs font-medium text-slate-500">{course.lessons} Lessons</span>
                       </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-4">
-                      <p className="text-slate-400 text-sm leading-relaxed line-clamp-3">
+                      <CardTitle className="text-xl text-white group-hover:text-cyan-400 transition-colors duration-300">
+                        {course.title}
+                      </CardTitle>
+                      <p className="text-slate-400 text-sm mt-3 line-clamp-2 leading-relaxed">
                         {course.description}
                       </p>
-
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-1">
-                        {course.tags.slice(0, 3).map((tag, tagIndex) => (
-                          <Badge key={tagIndex} variant="secondary" className="text-xs bg-slate-900 text-slate-400 border-none">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {course.tags.length > 3 && (
-                          <Badge variant="secondary" className="text-xs bg-slate-900 text-slate-400 border-none">
-                            +{course.tags.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Course Info */}
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Badge className={`${getDifficultyColor(course.difficulty)} border-none`}>
-                            {course.difficulty}
-                          </Badge>
+                    </CardHeader>
+                    <CardContent className="p-6 pt-0 mt-auto">
+                      <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-slate-500 uppercase tracking-tighter">Instructor</span>
+                          <span className="text-sm font-medium text-slate-300">{course.instructor}</span>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-slate-400">
-                          <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                            {course.rating}
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${course.price === 'Free' ? 'text-emerald-400' : 'text-white'}`}>
+                            {course.price}
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            {course.students.toLocaleString()}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* NFT Reward */}
-                      {course.nftReward && (
-                        <div className="p-3 bg-cyan-500/5 border border-cyan-500/10 rounded-xl">
-                          <div className="flex items-center gap-2">
-                            <Trophy className="w-4 h-4 text-cyan-400" />
-                            <p className="text-cyan-200 text-sm font-medium">
-                              Earn: {course.nftReward}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Action Button */}
-                      <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl shadow-lg shadow-cyan-900/20" asChild>
-                        <Link href={`/courses/${course.id}`}>
-                          {course.progress !== undefined && course.progress > 0 ? (
-                            <>
-                              Continue Learning
-                              <Play className="w-4 h-4 ml-2" />
-                            </>
-                          ) : (
-                            <>
-                              {course.price === "Free" ? "Start Free" : "Enroll Now"}
-                              <ArrowRight className="w-4 h-4 ml-2" />
-                            </>
+                          {course.nftReward && (
+                            <div className="flex items-center gap-1 text-[10px] text-cyan-400 font-medium">
+                              <Award className="w-3 h-3" />
+                              NFT Reward
+                            </div>
                           )}
-                        </Link>
-                      </Button>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+                </Link>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </section>
 
-          {/* No Results */}
-          {filteredCourses.length === 0 && (
-            <div className="text-center py-12">
-              <Search className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No courses found</h3>
-              <p className="text-slate-400 mb-4">Try adjusting your search or filter criteria</p>
-              <Button 
-                variant="outline" 
-                className="border-cyan-400/20 text-cyan-400"
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedCategory("All");
-                  setSelectedDifficulty("All");
-                  setSelectedPrice("All");
-                }}
-              >
-                Clear Filters
-              </Button>
-            </div>
-          )}
-        </motion.section>
-
-        {/* CTA Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="text-center"
-        >
-          <Card className="bg-slate-950/60 border border-cyan-400/20 backdrop-blur-md rounded-[2.5rem] overflow-hidden">
-            <CardContent className="p-12">
-              <div className="max-w-3xl mx-auto">
-                <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-                  Ready to Start Your Web3 Journey?
-                </h2>
-                <p className="text-slate-400 text-lg mb-8">
-                  Join 12,000+ developers mastering Web3. 
-                  Get personalized learning paths, earn NFT credentials, and build your blockchain career.
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button asChild size="lg" className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-full px-8">
-                    <Link href="/onboarding">
-                      Start Learning Free
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" size="lg" className="border-cyan-400/20 text-cyan-400 hover:bg-cyan-400/10 rounded-full px-8">
-                    <Link href="/how-it-works">
-                      See How It Works
-                    </Link>
-                  </Button>
+      {/* Learning Paths */}
+      <section className="container mx-auto px-4 py-24">
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-white mb-4">Mastery Paths</h2>
+          <p className="text-slate-400 max-w-2xl">Step-by-step curriculum guided by experts to help you master specific Web3 domains.</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {learningPaths.map((path) => (
+            <div key={path.id} className="relative group rounded-3xl overflow-hidden">
+               <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-300 group-hover:scale-105 opacity-10 group-hover:opacity-20 ${
+                path.color === 'emerald' ? 'from-emerald-500 to-cyan-500' : 'from-cyan-500 to-blue-500'
+              }`} />
+              <div className="relative p-8 border border-white/5 bg-slate-900/40 backdrop-blur-xl h-full flex flex-col">
+                <div className="flex justify-between items-start mb-6">
+                  <div className={`p-4 rounded-2xl bg-${path.color}-500/10`}>
+                    <path.icon className={`w-8 h-8 text-${path.color}-400`} />
+                  </div>
+                  <Badge className={`bg-${path.color}-500/10 text-${path.color}-400 border-${path.color}-500/20`}>
+                    {path.level}
+                  </Badge>
                 </div>
-                
-                <div className="flex items-center justify-center gap-8 mt-12 text-slate-500">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-cyan-400" />
-                    <span className="text-sm">Free courses available</span>
+                <h3 className="text-2xl font-bold text-white mb-3">{path.title}</h3>
+                <p className="text-slate-400 mb-6">{path.description}</p>
+                <div className="flex flex-wrap gap-2 mb-8 mt-auto">
+                  {path.skills.map(skill => (
+                    <Badge key={skill} variant="outline" className="bg-slate-800/50 border-white/10 text-slate-300">
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                  <div className="flex gap-6">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-slate-500 uppercase tracking-tighter">Duration</span>
+                      <span className="text-sm font-medium text-slate-300">{path.duration}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-slate-500 uppercase tracking-tighter">Courses</span>
+                      <span className="text-sm font-medium text-slate-300">{path.coursesLength} Units</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-cyan-400" />
-                    <span className="text-sm">NFT certificates</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-cyan-400" />
-                    <span className="text-sm">Structured Curriculum</span>
-                  </div>
+                  <Button variant="ghost" className="group/btn text-slate-300 hover:text-white hover:bg-white/5 px-0 flex items-center gap-2">
+                    View Path <ChevronRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                  </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </motion.section>
-      </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

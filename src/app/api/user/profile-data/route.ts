@@ -2,15 +2,44 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
+import { getExplorerTxUrl } from "@/lib/contracts";
+import arcjet, { shield, slidingWindow } from "@/lib/arcjet";
+import { HttpStatus } from "@/lib/api-response";
 
-export async function GET() {
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
-        { status: 401 }
+        { status: HttpStatus.UNAUTHORIZED }
+      );
+    }
+
+    // 1. Arcjet Protection
+    const decision = await arcjet
+      .withRule(
+        slidingWindow({
+          mode: "LIVE",
+          interval: "1m",
+          max: 30, // 30 requests per minute
+        })
+      )
+      .protect(request, { fingerprint: session.user.id });
+
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        return NextResponse.json(
+          { success: false, error: "Too many requests" },
+          { status: HttpStatus.RATE_LIMITED }
+        );
+      }
+      return NextResponse.json(
+        { success: false, error: "Forbidden" },
+        { status: HttpStatus.FORBIDDEN }
       );
     }
 
@@ -33,7 +62,20 @@ export async function GET() {
     if (!user) {
       return NextResponse.json(
         { success: false, error: "User not found" },
-        { status: 404 }
+        { status: HttpStatus.NOT_FOUND }
+      );
+    }
+
+    // 2. Security Check: Banned Users
+    if (user.banned) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Account banned", 
+          reason: user.banReason,
+          expires: user.banExpires
+        },
+        { status: HttpStatus.FORBIDDEN }
       );
     }
 
@@ -62,21 +104,34 @@ export async function GET() {
       };
     });
 
-    // Get NFTs with metadata
-    const nftsWithDetails = user.nfts.map(nft => ({
-      id: nft.id,
-      name: nft.name,
-      description: nft.metadata && typeof nft.metadata === 'object' && 'description' in nft.metadata 
-        ? String(nft.metadata.description) 
-        : null,
-      image: nft.image,
-      tokenId: nft.tokenId,
-      metadata: nft.metadata,
-      createdAt: nft.createdAt,
-      type: nft.metadata && typeof nft.metadata === 'object' && 'courseSlug' in nft.metadata 
-        ? 'course-completion' 
-        : 'achievement'
-    }));
+    // Get NFTs with metadata and explorer links
+    const nftsWithDetails = user.nfts.map(nft => {
+      const txHash = (nft as any).transactionHash as string | null;
+      const chainId = (nft as any).chainId as number | null;
+      const explorerUrl = txHash && chainId && !txHash.startsWith("0x" + "0".repeat(64))
+        ? getExplorerTxUrl(chainId, txHash)
+        : null;
+
+      return {
+        id: nft.id,
+        name: nft.name,
+        description: nft.metadata && typeof nft.metadata === 'object' && 'description' in nft.metadata 
+          ? String(nft.metadata.description) 
+          : null,
+        image: nft.image,
+        tokenId: nft.tokenId,
+        metadata: nft.metadata,
+        createdAt: nft.createdAt,
+        contractAddress: (nft as any).contractAddress ?? null,
+        transactionHash: txHash ?? null,
+        ownerAddress: (nft as any).ownerAddress ?? null,
+        chainId: chainId ?? null,
+        explorerUrl,
+        type: nft.metadata && typeof nft.metadata === 'object' && 'courseSlug' in nft.metadata 
+          ? 'course-completion' 
+          : 'achievement',
+      };
+    });
 
     const stats = {
       coursesEnrolled: user.courses.length,
@@ -89,7 +144,7 @@ export async function GET() {
         // Each course has approximately 8 lessons
         return sum + Math.floor((c.progress || 0) / 100 * 8);
       }, 0),
-      studyStreak: 0, // Implement streak tracking in future
+      studyStreak: user.streak || 0,
       joinedDate: user.createdAt,
       lastActive: user.courses.length > 0 
         ? new Date(Math.max(...user.courses.map(c => new Date(c.startedAt).getTime())))
@@ -106,6 +161,7 @@ export async function GET() {
         role: user.role,
         createdAt: user.createdAt,
         ensName: user.wallets.find(w => w.ensName)?.ensName || null,
+        ensAvatar: user.wallets.find(w => w.ensAvatar)?.ensAvatar || null,
         walletAddress: user.wallets[0]?.address || null,
         stats,
         courses: coursesWithDetails,
@@ -114,10 +170,10 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error("Profile data fetch error:", error);
+    console.error("Profile Data Error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
-      { status: 500 }
+      { status: HttpStatus.INTERNAL_ERROR }
     );
   }
 }

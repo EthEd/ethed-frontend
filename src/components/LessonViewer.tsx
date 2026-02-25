@@ -9,6 +9,9 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
+import { useClaimNFT } from '@/hooks/use-claim-nft';
+
+interface QuizQuestion { question: string; options: string[]; answer: number }
 
 interface LessonContent {
   id: number;
@@ -16,49 +19,20 @@ interface LessonContent {
   content: string;
   duration: string;
   type: string;
+  // optional embedded video URL (YouTube embed)
+  videoUrl?: string;
+  // optional quiz payload (for `quiz` lessons)
+  quiz?: QuizQuestion[];
 }
 
 const lessonContents: Record<number, LessonContent> = {
   1: {
     id: 1,
-    title: 'Ethereum in Plain Language',
-    duration: '15 min',
-    type: 'reading',
-    content: `
-# Ethereum in Plain Language
-
-Ethereum is often called "the world computer" - but what does that actually mean?
-
-## What is Ethereum?
-
-Think of Ethereum as a **global, decentralized computer** that never stops running. Unlike your laptop or phone, this computer isn't owned by any single person or company. Instead, it's maintained by thousands of computers around the world working together.
-
-### Key Concepts
-
-**Smart Contracts**: These are like digital vending machines. You put something in (like cryptocurrency), and if certain conditions are met, you automatically get something out. No middleman needed!
-
-**Decentralization**: No single point of failure. If one computer goes down, thousands of others keep the network running.
-
-**Transparency**: Every transaction and smart contract is visible to everyone. It's like having a public ledger that everyone can audit.
-
-## Why Does This Matter?
-
-Traditional applications run on servers owned by companies. If the company shuts down, your app disappears. Ethereum applications (called dApps) run on this global computer, so they can't be easily shut down or censored.
-
-### Real-World Examples
-
-- **DeFi**: Decentralized finance applications that let you lend, borrow, and trade without banks
-- **NFTs**: Unique digital assets that prove ownership of digital items
-- **DAOs**: Organizations that operate through smart contracts rather than traditional management
-
-## The Ethereum Virtual Machine (EVM)
-
-The EVM is like the "processor" of this world computer. It executes smart contracts in a standardized way, ensuring that the same code produces the same results on every computer in the network.
-
----
-
-**Key Takeaway**: Ethereum enables programmable money and unstoppable applications by providing a global, decentralized computing platform.
-    `
+    title: 'EIPs 101 — Intro (Video)',
+    duration: '10 min',
+    type: 'video',
+    videoUrl: 'https://www.youtube.com/embed/9CuuCAJWUTw',
+    content: `\nWatch the 10‑minute intro video, then continue with the lessons below.`
   },
   2: {
     id: 2,
@@ -635,7 +609,7 @@ Let's apply this framework to EIP-1559:
     content: `
 # Draft Your First EIP: Hands-On Workshop
 
-Now it's time to put everything together and draft your first EIP using EIPsInsight's Proposal Builder.
+Now it's time to put everything together and draft your first EIP using EthEd's Proposal Builder.
 
 ## Workshop Overview
 
@@ -694,7 +668,7 @@ In this hands-on session, we'll:
 
 ## Step 4: Writing Your EIP (10 minutes)
 
-### Using EIPsInsight's Proposal Builder
+### Using EthEd's Proposal Builder
 
 The Proposal Builder provides:
 - **Template Generation**: Automatically creates proper EIP structure
@@ -774,11 +748,24 @@ You've mastered:
 - ✅ Understanding Ethereum's architecture and EIP system
 - ✅ Reading and analyzing existing EIPs
 - ✅ Writing well-structured proposals
-- ✅ Using EIPsInsight's tools for EIP development
+- ✅ Using EthEd's tools for EIP development
 - ✅ Engaging with the Ethereum community
 
 **Ready to claim your EIP Expert NFT badge!**
     `
+  },
+
+  9: {
+    id: 9,
+    title: 'Final Quiz — Mint NFT',
+    duration: '10 min',
+    type: 'quiz',
+    content: `\nAnswer the short quiz. Score ≥ 70% to mint the EIP Expert NFT.`,
+    quiz: [
+      { question: 'Which EIP introduced the base fee mechanism?', options: ['EIP-20','EIP-1559','EIP-721','EIP-4844'], answer: 1 },
+      { question: 'ERC-20 is primarily a standard for?', options: ['Non-fungible tokens','Token interoperability','Layer 2 scaling','Gas estimation'], answer: 1 },
+      { question: 'What does EIP stand for?', options: ['Ethereum Improvement Proposal','Ethereum Integration Protocol','External Improvement Plan','Ether Implementation Patch'], answer: 0 }
+    ]
   }
 };
 
@@ -791,15 +778,29 @@ import { useRouter } from 'next/navigation';
 export default function LessonViewer({ moduleId }: LessonViewerProps) {
   const router = useRouter();
   const [lesson, setLesson] = useState<LessonContent | null>(null);
+  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizScore, setQuizScore] = useState<number | null>(null);
 
   const moduleNumber = parseInt(moduleId);
   const totalModules = Object.keys(lessonContents).length;
   const { completedModules, completionCount, markModuleComplete } = useCourseProgress('eips-101', totalModules);
+  const { claimNFT, isClaiming, claimed } = useClaimNFT();
 
   useEffect(() => {
     const currentLesson = lessonContents[moduleNumber];
     if (currentLesson) {
       setLesson(currentLesson);
+      // initialize quiz state if this lesson has a quiz
+      if (currentLesson.quiz) {
+        setSelectedAnswers(new Array(currentLesson.quiz.length).fill(-1));
+        setQuizSubmitted(false);
+        setQuizScore(null);
+      } else {
+        setSelectedAnswers([]);
+        setQuizSubmitted(false);
+        setQuizScore(null);
+      }
     }
     
     // initial lesson load handled by hook; nothing to do here
@@ -815,12 +816,12 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
       if (res.ok) {
         toast.success('Course completed! 🎉');
       } else {
-        console.error('Finish course API error:', await res.text());
+        // API returned non-OK — will retry on next completion attempt
       }
       // refresh server data (profile etc.)
       try { router.refresh(); } catch (e) { /* ignore */ }
     } catch (err) {
-      console.error('Finish course API error:', err);
+      // finish course API error — silently handled
     }
   };
 
@@ -952,6 +953,92 @@ export default function LessonViewer({ moduleId }: LessonViewerProps) {
           >
             <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-cyan-400/20 mb-8">
               <CardContent className="p-8">
+                {/* Render video lesson iframe when present */}
+                {lesson.type === 'video' && lesson.videoUrl && (
+                  <div className="aspect-video w-full rounded-lg overflow-hidden shadow-2xl mb-8">
+                    <iframe
+                      src={lesson.videoUrl}
+                      title={lesson.title}
+                      allowFullScreen
+                      className="w-full h-full"
+                    />
+                  </div>
+                )}
+
+                {/* Render quiz UI when lesson contains a quiz */}
+                {lesson.type === 'quiz' && lesson.quiz && (
+                  <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-white mb-4">Final Quiz</h2>
+                    <p className="text-sm text-slate-400 mb-4">Answer correctly to mint your EIP Expert NFT.</p>
+
+                    <div className="space-y-6">
+                      {lesson.quiz.map((q, qi) => (
+                        <div key={qi} className="bg-slate-800/60 border border-slate-700 rounded-lg p-4">
+                          <div className="text-lg font-semibold text-white mb-3">{qi + 1}. {q.question}</div>
+                          <div className="grid gap-3">
+                            {q.options.map((opt, oi) => {
+                              const selected = selectedAnswers[qi] === oi;
+                              return (
+                                <button
+                                  key={oi}
+                                  type="button"
+                                  onClick={() => {
+                                    const copy = [...selectedAnswers];
+                                    copy[qi] = oi;
+                                    setSelectedAnswers(copy);
+                                  }}
+                                  className={`text-left p-3 rounded-md border transition-all ${selected ? 'bg-emerald-500/10 border-emerald-400 text-emerald-300' : 'bg-slate-900/40 border-slate-700 text-slate-300 hover:border-slate-600'}`}
+                                >
+                                  {opt}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={async () => {
+                            if (!lesson.quiz) return;
+                            if (selectedAnswers.some(a => a === -1)) {
+                              toast.error('Please answer all questions');
+                              return;
+                            }
+
+                            // grade
+                            const correct = lesson.quiz.reduce((acc, q, idx) => acc + (q.answer === selectedAnswers[idx] ? 1 : 0), 0);
+                            const score = correct / lesson.quiz.length;
+                            setQuizScore(score);
+                            setQuizSubmitted(true);
+
+                            if (score >= 0.7) {
+                              // mark module complete and call claim flow
+                              markAsCompleted();
+                              try {
+                                await claimNFT('eips-101');
+                              } catch (e) {
+                                // claimNFT handles errors/toasts
+                              }
+                            } else {
+                              toast.error('Score below passing threshold (70%)');
+                            }
+                          }}
+                          className="bg-gradient-to-r from-purple-500 to-pink-500 border-none"
+                        >
+                          Submit Quiz
+                        </Button>
+
+                        {quizSubmitted && quizScore !== null && (
+                          <div className="text-sm text-slate-300 self-center">
+                            Score: {Math.round((quizScore || 0) * 100)}% — {quizScore! >= 0.7 ? 'Passed' : 'Failed'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div 
                   className="prose prose-invert prose-cyan max-w-none
                     prose-headings:font-bold prose-headings:leading-tight

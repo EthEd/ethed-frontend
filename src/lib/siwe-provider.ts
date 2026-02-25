@@ -5,7 +5,36 @@
 
 import CredentialsProvider from "next-auth/providers/credentials";
 import { SiweMessage } from "siwe";
-import { prisma } from "./prisma-client";
+import { prisma } from "@/lib/prisma-client";
+import { AMOY_CHAIN_ID } from "./contracts";
+import { logger } from "./monitoring";
+
+function getCookieValue(cookieHeader: string | undefined, name: string): string | undefined {
+  if (!cookieHeader) return undefined;
+  const parts = cookieHeader.split(";").map((p) => p.trim());
+  for (const part of parts) {
+    if (!part) continue;
+    const eq = part.indexOf("=");
+    if (eq === -1) continue;
+    const key = part.slice(0, eq).trim();
+    if (key !== name) continue;
+    return decodeURIComponent(part.slice(eq + 1));
+  }
+  return undefined;
+}
+
+function parseSiweMessage(message: string) {
+  try {
+    const maybeJson = JSON.parse(message);
+    if (maybeJson && typeof maybeJson === "object") {
+      return new SiweMessage(maybeJson as any);
+    }
+  } catch {
+    // fallthrough to parse raw SIWE string
+  }
+
+  return new SiweMessage(message);
+}
 
 export function SiweProvider() {
   return CredentialsProvider({
@@ -15,22 +44,58 @@ export function SiweProvider() {
       message: { label: "Message", type: "text" },
       signature: { label: "Signature", type: "text" },
     },
-    async authorize(credentials) {
+    async authorize(credentials, req) {
       try {
         if (!credentials?.message || !credentials?.signature) {
           throw new Error("Missing message or signature");
         }
 
-        // Parse the SIWE message (just extract the address and chain ID)
-        const messageData = JSON.parse(credentials.message);
-        const address = messageData.address.toLowerCase();
-        const chainId = messageData.chainId || 1;
-        
-        // Verify the signature using siwe
-        const siweMessage = new SiweMessage(messageData);
-        const result = await siweMessage.verify({
-          signature: credentials.signature,
-        });
+        const siweMessage = parseSiweMessage(credentials.message);
+        const address = siweMessage.address?.toLowerCase();
+
+        if (!address) {
+          throw new Error("Invalid SIWE message: missing address");
+        }
+
+        const chainId = (siweMessage.chainId ?? AMOY_CHAIN_ID) as number;
+        if (chainId !== AMOY_CHAIN_ID) {
+          throw new Error("Wrong network: please switch to Polygon Amoy");
+        }
+
+        const cookieHeader = (req as any)?.headers?.cookie as string | undefined;
+        const nonceCookie = getCookieValue(cookieHeader, "siwe-nonce");
+
+        // Development-only diagnostic logs to help reproduce verification/nonce issues
+        if (process.env.NODE_ENV !== "production") {
+          // Avoid logging signatures or sensitive tokens; log only nonce/cookie/header presence and message fields.
+          logger.info("SIWE authorize request", "siwe-provider", {
+            address,
+            cookieHeader: cookieHeader ? "<present>" : "<missing>",
+            nonceCookie: nonceCookie ? "<present>" : "<missing>",
+            nonceInMessage: siweMessage.nonce,
+          });
+        }
+
+        if (!nonceCookie) {
+          throw new Error("Missing SIWE nonce cookie");
+        }
+
+        if (siweMessage.nonce !== nonceCookie) {
+          throw new Error("Invalid SIWE nonce");
+        }
+
+        try {
+          await siweMessage.verify({ signature: credentials.signature });
+        } catch (verifyErr: any) {
+          // Log server-side for debugging and return a clear message to client
+          logger.error(
+            "SIWE verification failed",
+            "siwe-provider",
+            { address },
+            verifyErr
+          );
+          throw new Error("Signature verification failed — please ensure you signed the exact message in your wallet and try again.");
+        }
 
         // result is a SiweResponse, check if it has a success flag or just throw on error
         // If verify doesn't throw, it's valid
@@ -77,14 +142,23 @@ export function SiweProvider() {
               where: { userId: user.id }
             });
 
-            await prisma.walletAddress.create({
-              data: {
-                userId: user.id,
-                address,
-                chainId,
-                isPrimary: walletCount === 0,
+            try {
+              await prisma.walletAddress.create({
+                data: {
+                  userId: user.id,
+                  address,
+                  chainId,
+                  isPrimary: walletCount === 0,
+                }
+              });
+            } catch (err: any) {
+              // If another concurrent request created the same wallet, ignore the unique constraint error
+              if (err?.code === 'P2002') {
+                // wallet already exists — proceed
+              } else {
+                throw err;
               }
-            });
+            }
           }
         }
 
@@ -96,7 +170,6 @@ export function SiweProvider() {
           address: address,
         };
       } catch (error) {
-        console.error("SIWE authorization error:", error);
         throw error;
       }
     },

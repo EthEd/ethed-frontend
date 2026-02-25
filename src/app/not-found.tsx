@@ -27,7 +27,7 @@ export default function NotFound() {
             </Button>
             
             <Button asChild variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800">
-              <Link href="/courses">
+              <Link href="/learn">
                 <Search className="h-4 w-4 mr-2" />
                 Browse Courses
               </Link>

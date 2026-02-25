@@ -29,8 +29,6 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log('Attempting login with:', { email, name });
-      
       const result = await signIn('demo', {
         email,
         name,
@@ -38,10 +36,7 @@ export default function LoginPage() {
         callbackUrl: '/onboarding'
       });
 
-      console.log('SignIn result:', result);
-
       if (result?.error) {
-        console.error('Login error:', result.error);
         toast.error('Login failed: ' + result.error);
       } else if (result?.ok) {
         toast.success('Welcome to eth.ed!');
@@ -52,8 +47,7 @@ export default function LoginPage() {
       } else {
         toast.error('Login failed. Please try again.');
       }
-    } catch (error) {
-      console.error('Login exception:', error);
+    } catch {
       toast.error('Login failed. Please try again.');
     } finally {
       setIsLoading(false);

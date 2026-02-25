@@ -1,6 +1,8 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string().optional(),
@@ -8,7 +10,9 @@ export const env = createEnv({
     OPENPRS_MONGODB_URI: z.string().optional(),
     OPENPRS_DATABASE: z.string().optional(),
 
-    NEXTAUTH_SECRET: z.string().min(1, "NEXTAUTH_SECRET is required"),
+    NEXTAUTH_SECRET: isProduction
+      ? z.string().min(1, "NEXTAUTH_SECRET is required in production")
+      : z.string().min(1).optional(),
     NEXTAUTH_URL: z.string().url().optional(),
 
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
@@ -42,6 +46,22 @@ export const env = createEnv({
     PINATA_API_SECRET: z.string().optional(),
     PINATA_JWT: z.string().optional(),
     PINATA_GATEWAY_URL: z.string().optional(),
+
+    // Supabase
+    SUPABASE_URL: z.string().optional(),
+    SUPABASE_ANON_KEY: z.string().optional(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+
+    // Blockchain / On-chain
+    AMOY_RPC_URL: z.string().optional(),
+    DEPLOYER_PRIVATE_KEY: z.string().optional(),
+
+    // Contract address overrides (hex address strings)
+    NFT_CONTRACT_ADDRESS: z.string().optional(),
+    ENS_REGISTRAR_ADDRESS: z.string().optional(),
+
+    // AI
+    OPENAI_API_KEY: z.string().optional(),
   },
   client: {
     // No payment-related client environment variables needed

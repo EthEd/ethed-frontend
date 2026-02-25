@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowRight, Clock, Star, Users, Award, Lock, CheckCircle, Zap, BookOpen, Target, Flame } from 'lucide-react';
+import { ArrowRight, Clock, Star, Users, Award, Lock, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'motion/react';
@@ -10,6 +10,19 @@ import { coursesWithPath, learningPaths, canAccessCourse } from '@/lib/courseDat
 
 // Mock completed courses - in real app, would come from user session/DB
 const mockCompletedCourses = ['eips-101'];
+
+// Deterministic pseudo-random generator based on course id so server/client match.
+// Returns an object `{ students, rating }` stable across renders.
+function deterministicStats(id: string) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) {
+    h = (h << 5) - h + id.charCodeAt(i);
+    h |= 0;
+  }
+  const students = Math.abs(h) % 3000 + 100;
+  const rating = (4.5 + (Math.abs(h) % 40) / 100).toFixed(1);
+  return { students, rating };
+}
 
 const courses = coursesWithPath.map(c => ({
   id: c.id,
@@ -20,8 +33,7 @@ const courses = coursesWithPath.map(c => ({
     const match = m.estimatedTime.match(/(\d+)/);
     return acc + (match ? parseInt(match[0]) : 0);
   }, 0) + ' hours',
-  students: Math.floor(Math.random() * 3000) + 100,
-  rating: (Math.random() * 0.4 + 4.5).toFixed(1),
+  ...deterministicStats(c.id),
   price: 'Free',
   badge: c.badge,
   topics: c.skillsGained,

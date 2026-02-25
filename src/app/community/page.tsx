@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,38 +10,23 @@ import {
   Rocket,
   Trophy,
   Zap,
-  Heart,
   Star,
   ArrowRight,
   ExternalLink,
   Calendar,
-  MapPin,
   Award,
   Building,
   Handshake,
-  Target,
-  ChevronRight,
-  Github,
-  Twitter,
-  Linkedin,
-  MessageSquare,
   Code,
-  BookOpen,
-  Sparkles,
   Crown,
-  TrendingUp,
   Lightbulb,
   PawPrint,
   Globe,
-  Gift,
   CheckCircle,
-  Wallet,
-  Brain,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { FaDiscord as Discord } from "react-icons/fa";
-import { getFormattedMetrics } from "@/lib/metrics";
+import { getFormattedMetrics, formatMetric } from "@/lib/metrics";
 
 interface Milestone {
   date: string;
@@ -74,15 +59,30 @@ interface PlatformFeature {
 
 export default function CommunityPage() {
   const formattedMetrics = getFormattedMetrics();
-  
-  const [selectedMilestone, setSelectedMilestone] = useState<number>(0);
+
   const [mounted, setMounted] = useState(false);
+  const [liveStats, setLiveStats] = useState<{
+    developers: number;
+    courses: number;
+    nftsMinted: number;
+    countries: number;
+    hackathons: number;
+    sponsors: number;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    fetch('/api/community/stats')
+      .then(r => r.json())
+      .then(data => setLiveStats(data))
+      .catch(() => {}); // fall back to static metrics
+  }, []);
 
   const milestones: Milestone[] = [
     {
       date: "March 2024",
       title: "The Spark of an Idea",
-      description: "EIPSInsight was born at ETHGlobal London, where our founder realized that Web3 education needed a more personalized, AI-driven approach.",
+      description: "EthEd was born at ETHGlobal London, where our founder realized that Web3 education needed a more personalized, AI-driven approach.",
       icon: Lightbulb,
       color: "emerald",
       ethGlobalEvent: "ETHGlobal London 2024",
@@ -109,13 +109,13 @@ export default function CommunityPage() {
     {
       date: "May 2024",
       title: "European Expansion", 
-      description: "ETHGlobal Brussels was where EIPSInsight truly came alive. We launched our ENS integration and saw our first real user growth.",
+      description: "ETHGlobal Brussels was where EthEd truly came alive. We launched our ENS integration and saw our first real user growth.",
       icon: Globe,
       color: "blue",
       ethGlobalEvent: "ETHGlobal Brussels 2024",
       achievements: [
         "🥈 2nd Place - Best Infrastructure Tool",
-        "🌐 ENS .ethed.eth subdomain system launched",
+        "🌐 ENS .ayushetty.eth subdomain system launched",
         "📈 First 1,000 registered learners",
         "🏅 NFT credential system beta"
       ]
@@ -123,7 +123,7 @@ export default function CommunityPage() {
     {
       date: "July 2024",
       title: "Community Growth",
-      description: "Summer brought incredible growth as word spread through the Web3 community. Developers from around the world started joining EIPSInsight.",
+      description: "Summer brought incredible growth as word spread through the Web3 community. Developers from around the world started joining EthEd.",
       icon: Users,
       color: "purple",
       achievements: [
@@ -144,31 +144,31 @@ export default function CommunityPage() {
         "🥇 Winner - Best Educational Platform",
         "💰 $15,000 prize + $500K Series A",
         "📰 Featured in TechCrunch & CoinDesk",
-        "🚀 Launched EIPSInsight free learning platform"
+        "🚀 Launched EthEd free learning platform"
       ]
     },
     {
       date: "Present Day",
       title: "Building the Future",
-      description: "Today, EIPSInsight is the leading Web3 education platform. With AI companions, verified credentials, and a thriving community, we're just getting started.",
+      description: "Today, EthEd is the leading Web3 education platform. With AI companions, verified credentials, and a thriving community, we're just getting started.",
       icon: Star,
       color: "purple",
       achievements: [
-        `🌟 ${formattedMetrics.developers} active learners globally`,
-        `🏫 ${formattedMetrics.courses} courses across ${formattedMetrics.hackathons} specializations`, 
+        `🌟 ${liveStats ? `${formatMetric(liveStats.developers)}+` : formattedMetrics.developers} active learners globally`,
+        `🏫 ${liveStats ? `${formatMetric(liveStats.courses)}+` : formattedMetrics.courses} courses across ${liveStats ? `${formatMetric(liveStats.hackathons)}+` : formattedMetrics.hackathons} specializations`,
         "🤖 4 unique AI learning companions",
-        `🌍 Available in ${formattedMetrics.countries} countries`
+        `🌍 Available in ${liveStats ? `${formatMetric(liveStats.countries)}+` : formattedMetrics.countries} countries`
       ]
     }
   ];
 
   const communityStats = {
-    developers: formattedMetrics.developers,
-    countries: formattedMetrics.countries, 
-    courses: formattedMetrics.courses,
-    nfts: formattedMetrics.nftsMinted,
-    hackathons: formattedMetrics.hackathons,
-    sponsors: formattedMetrics.sponsors
+    developers: liveStats ? `${formatMetric(liveStats.developers)}+ Developers` : formattedMetrics.developers,
+    countries: liveStats ? `${formatMetric(liveStats.countries)}+ Countries` : formattedMetrics.countries,
+    courses: liveStats ? `${formatMetric(liveStats.courses)}+ Courses` : formattedMetrics.courses,
+    nfts: liveStats ? `${formatMetric(liveStats.nftsMinted)}+ NFTs` : formattedMetrics.nftsMinted,
+    hackathons: liveStats ? `${formatMetric(liveStats.hackathons)}+ Hackathons` : formattedMetrics.hackathons,
+    sponsors: liveStats ? `${formatMetric(liveStats.sponsors)}+ Sponsors` : formattedMetrics.sponsors,
   };
 
   const sponsors: Sponsor[] = [
@@ -258,7 +258,7 @@ export default function CommunityPage() {
     },
     {
       title: "ENS Integration", 
-      description: "Every learner gets their own .ethed.eth subdomain for Web3 identity",
+      description: "Every learner gets their own .ayushetty.eth subdomain for Web3 identity",
       icon: Globe,
       developedAt: "ETHGlobal Brussels 2024",
       inspiration: "Built during the hackathon after seeing ENS's potential for education"
@@ -332,32 +332,34 @@ export default function CommunityPage() {
           </div>
           
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
-            The EIPSInsight Journey
+            The EthEd Journey
           </h1>
           
-          <p className=\"text-lg text-muted-foreground max-w-3xl mx-auto mb-8\">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
             From a weekend hackathon idea to the world's leading Web3 education platform. 
             This is how ETHGlobal, our amazing sponsors, and an incredible community helped us build the future of blockchain learning.
           </p>
 
           {/* Community Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-5xl mx-auto">
-            {Object.entries(communityStats).map(([key, value], index) => (
-              <motion.div
-                key={key}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10 text-center hover:border-emerald-400/30 transition-all duration-300">
-                  <CardContent className="p-4">
-                    <div className="text-2xl font-bold text-emerald-400 mb-1">{value}</div>
-                    <div className="text-slate-300 capitalize text-sm">{key.replace('nfts', 'NFTs')}</div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          {mounted && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-5xl mx-auto">
+              {Object.entries(communityStats).map(([key, value], index) => (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10 text-center hover:border-emerald-400/30 transition-all duration-300">
+                    <CardContent className="p-4">
+                      <div className="text-2xl font-bold text-emerald-400 mb-1">{value}</div>
+                      <div className="text-slate-300 capitalize text-sm">{key.replace('nfts', 'NFTs')}</div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </motion.section>
 
         {/* Our Journey Timeline */}

@@ -3,29 +3,35 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import EmailProvider from "next-auth/providers/email";
-import { env } from "@/env";
+
 import { SiweProvider } from "./siwe-provider";
 
 declare module "next-auth" {
   interface Session {
     address?: string;
+    ensName?: string;
     user: {
       id: string;
       name?: string | null;
       email?: string | null;
       image?: string | null;
       address?: string;
+      ensName?: string;
+      role?: string;
     };
   }
 
   interface User {
     address?: string;
+    ensName?: string;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     address?: string;
+    ensName?: string;
+    role?: string;
   }
 }
 
@@ -37,88 +43,83 @@ export const authOptions: NextAuthOptions = {
   providers: [
     // Sign In With Ethereum
     SiweProvider(),
-    // Demo/Test credentials provider
-    CredentialsProvider({
-      id: "demo",
-      name: "Demo Account",
-      credentials: {
-        email: { label: "Email", type: "email", placeholder: "demo@ethed.app" },
-        name: { label: "Name", type: "text", placeholder: "Demo User" }
-      },
-      async authorize(credentials) {
-        console.log("Demo auth attempt:", credentials);
-        
-        if (!credentials?.email) {
-          console.log("No email provided");
-          return null;
-        }
-        
-        try {
-          // Create or find user in database
-          const { prisma } = await import("@/lib/prisma-client");
-          
-          let dbUser = await prisma.user.findUnique({
-            where: { email: credentials.email }
-          });
-          
-          if (!dbUser) {
-            dbUser = await prisma.user.create({
-              data: {
-                email: credentials.email,
-                name: credentials.name || "Demo User",
-                image: null,
+    // Demo/Test credentials provider – ONLY available in development/test
+    ...(process.env.NODE_ENV !== "production"
+      ? [
+          CredentialsProvider({
+            id: "demo",
+            name: "Demo Account",
+            credentials: {
+              email: { label: "Email", type: "email", placeholder: "demo@ethed.app" },
+              name: { label: "Name", type: "text", placeholder: "Demo User" },
+            },
+            async authorize(credentials) {
+              if (!credentials?.email) {
+                return null;
               }
-            });
-            console.log("Created demo user:", dbUser.id);
-          }
-          
-          const user = {
-            id: dbUser.id,
-            email: dbUser.email,
-            name: dbUser.name,
-            image: dbUser.image,
-          };
-          
-          console.log("Demo auth successful:", user);
-          return user;
-        } catch (error) {
-          console.error("Demo auth error:", error);
-          return null;
-        }
-      }
-    }),
-    ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? [
+
+              try {
+                // Create or find user in database
+                const { prisma } = await import("@/lib/prisma-client");
+
+                let dbUser = await prisma.user.findUnique({
+                  where: { email: credentials.email },
+                });
+
+                if (!dbUser) {
+                  dbUser = await prisma.user.create({
+                    data: {
+                      email: credentials.email,
+                      name: credentials.name || "Demo User",
+                      image: null,
+                    },
+                  });
+                }
+
+                const user = {
+                  id: dbUser.id,
+                  email: dbUser.email,
+                  name: dbUser.name,
+                  image: dbUser.image,
+                };
+
+                return user;
+              } catch {
+                return null;
+              }
+            },
+          }),
+        ]
+      : []),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
       GoogleProvider({ 
-        clientId: env.GOOGLE_CLIENT_ID, 
-        clientSecret: env.GOOGLE_CLIENT_SECRET 
+        clientId: process.env.GOOGLE_CLIENT_ID, 
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET 
       })
     ] : []),
-    ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET ? [
+    ...(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET ? [
       GitHubProvider({ 
-        clientId: env.GITHUB_CLIENT_ID, 
-        clientSecret: env.GITHUB_CLIENT_SECRET 
+        clientId: process.env.GITHUB_CLIENT_ID, 
+        clientSecret: process.env.GITHUB_CLIENT_SECRET 
       })
     ] : []),
-    ...(env.EMAIL_HOST && env.EMAIL_PORT && env.EMAIL_USERNAME && env.EMAIL_PASSWORD && env.EMAIL_FROM ? [
+    ...(process.env.EMAIL_HOST && process.env.EMAIL_PORT && process.env.EMAIL_USERNAME && process.env.EMAIL_PASSWORD && process.env.EMAIL_FROM ? [
       EmailProvider({
         server: { 
-          host: env.EMAIL_HOST, 
-          port: env.EMAIL_PORT, 
+          host: process.env.EMAIL_HOST, 
+          port: Number(process.env.EMAIL_PORT), 
           auth: { 
-            user: env.EMAIL_USERNAME, 
-            pass: env.EMAIL_PASSWORD 
+            user: process.env.EMAIL_USERNAME, 
+            pass: process.env.EMAIL_PASSWORD 
           } 
         },
-        from: env.EMAIL_FROM,
+        from: process.env.EMAIL_FROM,
       })
     ] : []),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
-      console.log("SignIn callback:", { user, account: account?.provider });
-      
+    async signIn({ user }) {
       if (!user.email) {
-        console.error("No email provided by provider");
         return false;
       }
       
@@ -139,7 +140,6 @@ export const authOptions: NextAuthOptions = {
               image: user.image || null,
             }
           });
-          console.log("Created new user:", newUser.id);
           user.id = newUser.id;
         } else {
           // Update existing user
@@ -156,28 +156,52 @@ export const authOptions: NextAuthOptions = {
           }
         }
         
-        console.log("Sign in successful for:", user.email);
         return true;
-      } catch (error) {
-        console.error("Error creating/updating user:", error);
+      } catch {
         return false;
       }
     },
-    async jwt({ token, user }) {
-      console.log("JWT callback:", { token: !!token, user: !!user });
-      
+    async jwt({ token, user, trigger, session }) {
+      const { prisma } = await import("@/lib/prisma-client");
+
       // If this is the first time the user signs in, user object will be available
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
+        // propagate wallet address from SIWE provider (if present)
+        if ((user as any).address) {
+          token.address = (user as any).address as string;
+        }
       }
-      
+
+      // Handle session updates (e.g. after onboarding)
+      if (trigger === "update" && session?.ensName) {
+        token.ensName = session.ensName;
+      }
+
+      // Always refresh role from DB so role changes take effect on next request
+      if (token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true },
+        });
+        if (dbUser) {
+          token.role = dbUser.role as string;
+        }
+        // ENS name from wallet if not already set
+        if (!token.ensName) {
+          const wallet = await prisma.walletAddress.findFirst({
+            where: { userId: token.id as string, isPrimary: true },
+            select: { ensName: true },
+          });
+          if (wallet?.ensName) token.ensName = wallet.ensName;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
-      console.log("Session callback:", { session: !!session, token: !!token });
-      
       // Send properties to the client
       if (token.id) {
         session.user.id = token.id as string;
@@ -188,11 +212,23 @@ export const authOptions: NextAuthOptions = {
       if (token.name) {
         session.user.name = token.name as string;
       }
+      if (token.role) {
+        session.user.role = token.role as string;
+      }
+      // expose wallet address and ENS name on the session for client usage
+      if (token.address) {
+        session.address = token.address as string;
+        session.user.address = token.address as string;
+      }
+      if (token.ensName) {
+        session.ensName = token.ensName as string;
+        session.user.ensName = token.ensName as string;
+      }
       
       return session;
     },
   },
   pages: { signIn: "/login", error: "/auth/error", verifyRequest: "/verify-request" },
-  debug: env.NODE_ENV === "development",
-  secret: env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
+  secret: process.env.NEXTAUTH_SECRET ?? undefined,
 };

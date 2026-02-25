@@ -37,6 +37,7 @@ interface ModuleItem {
 
 interface LessonItem {
   id: string;
+  lessonNumber?: number;
   title: string;
   content: string;
   duration: string;
@@ -44,6 +45,7 @@ interface LessonItem {
   xpReward: number;
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   keyTakeaways: string[];
+  videoUrl?: string;
   quiz?: {
     questions: Array<{
       id: string;
@@ -135,7 +137,20 @@ export default function CourseModulePage({
   }, [progressPercentage, onProgress]);
 
   const handleLessonComplete = (lessonId: string) => {
-    setCompletedLessons(prev => [...new Set([...prev, lessonId])]);
+    const newCompleted = [...new Set([...completedLessons, lessonId])];
+    setCompletedLessons(newCompleted);
+
+    // Sync progress to backend
+    fetch('/api/user/course/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        courseSlug: courseId,
+        completedCount: newCompleted.length,
+        totalModules: totalLessons,
+        completedModules: newCompleted
+      })
+    }).catch(err => console.error('Failed to sync progress:', err));
   };
 
   const handleNewThread = (thread: Partial<DiscussionThread>) => {
@@ -179,7 +194,7 @@ export default function CourseModulePage({
 
         <EnhancedLessonViewer
             lesson={{
-              id: parseInt(selectedLesson.id.split('-')[2]) || 1,
+              id: selectedLesson.lessonNumber || parseInt(selectedLesson.id.split('-l')[1]) || 1,
               title: selectedLesson.title,
               content: selectedLesson.content,
               duration: parseInt(selectedLesson.duration) || 20,
@@ -187,6 +202,7 @@ export default function CourseModulePage({
               xpReward: selectedLesson.xpReward,
               difficulty: selectedLesson.difficulty === 'Beginner' ? 'Easy' : selectedLesson.difficulty === 'Intermediate' ? 'Medium' : 'Hard',
               keyTakeaways: selectedLesson.keyTakeaways,
+              videoUrl: selectedLesson.videoUrl,
               quiz: selectedLesson.quiz ? {
                 questions: selectedLesson.quiz.questions.map(q => ({
                   id: parseInt(q.id.replace(/\D/g, '')) || 1,
@@ -204,7 +220,7 @@ export default function CourseModulePage({
               totalLessons,
               badge: badge || '📚',
               currentModuleIndex: modules.findIndex(m => m.id === selectedModule.id),
-              completedLessons: completedLessons.map(id => parseInt(id.split('-')[2]) || 0).filter(id => id > 0)
+              completedLessons: completedLessons.map(id => parseInt(id.split('-l')[1]) || 0).filter(id => id > 0)
             }}
             onComplete={() => {
               handleLessonComplete(selectedLesson.id);

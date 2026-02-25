@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
 
 type Props = {
   posterSrc: string;      // "/pause.png" or "/media/poster.png"
-  p1Src: string;          // "/p1.gif" (3s peek/emerge animation)
-  p2Src: string;          // "/p2.gif" (2s retreat/idle animation)
-  p3Src?: string;         // "/p3.gif" (2.2s click animation)
+  p1Src?: string;         // optional "/p1.gif" (peek/emerge animation)
+  p2Src?: string;         // optional "/p2.gif" (retreat/idle animation)
+  p3Src?: string;         // optional "/p3.gif" (click animation)
   pause2Src?: string;     // "/pause 2.png" (clicked state)
   size?: number;          // px 
   offset?: { right: number; bottom: number };
@@ -17,7 +18,7 @@ export default function AgentHover({
   posterSrc,
   p1Src,
   p2Src,
-  p3Src = "/p3.gif",
+  p3Src,
   pause2Src = "/pause 2.png",
   size = 128,
   offset = { right: 16, bottom: 16 },
@@ -101,15 +102,21 @@ export default function AgentHover({
     setIsClicked(true);
     isPlayingP3Ref.current = true;
     clearTimer();
-    
-    // Play p3.gif for 2.2 seconds (22 * 0.1s)
-    playGif(p3Src, 2200, () => {
-      // After p3 completes, ALWAYS show pause2.png and dialog regardless of hover state
+
+    if (p3Src) {
+      // Play p3.gif for 2.2 seconds (22 * 0.1s)
+      playGif(p3Src, 2200, () => {
+        // After p3 completes, ALWAYS show pause2.png and dialog regardless of hover state
+        isPlayingP3Ref.current = false;
+        setSrc(pause2Src);
+        setShowDialog(true);
+      });
+    } else {
+      // No GIF available — immediately show dialog/poster
       isPlayingP3Ref.current = false;
       setSrc(pause2Src);
       setShowDialog(true);
-      // Agent stays visible and dialog remains open until user clicks elsewhere
-    });
+    }
   };
 
   const playGif = (gifSrc: string, duration: number, onComplete?: () => void) => {
@@ -139,13 +146,17 @@ export default function AgentHover({
     setIsVisible(true);
     clearTimer();
     
-    // Start p1.gif briefly, then switch to pause1
-    playGif(p1Src, 1800, () => {
-      // After brief p1 animation, show pause1 image while hovering
-      if (hoveredRef.current) {
-        setSrc(posterSrc); // Show pause1.png (posterSrc)
-      }
-    });
+    // Start p1.gif briefly (if provided), otherwise just show poster
+    if (p1Src) {
+      playGif(p1Src, 1800, () => {
+        // After brief p1 animation, show pause1 image while hovering
+        if (hoveredRef.current) {
+          setSrc(posterSrc); // Show pause1.png (posterSrc)
+        }
+      });
+    } else {
+      setSrc(posterSrc);
+    }
   };
 
   const onLeave = () => {
@@ -168,9 +179,13 @@ export default function AgentHover({
       return;
     }
     
-     playGif(p2Src, 600, () => {
-      setIsVisible(false);
-    });
+     if (p2Src) {
+       playGif(p2Src, 600, () => {
+         setIsVisible(false);
+       });
+     } else {
+       setIsVisible(false);
+     }
   };
 
   const closeDialog = () => {
@@ -201,10 +216,7 @@ export default function AgentHover({
       toast.success("🎯 Genesis NFTs minted successfully!", {
         description: `Minted ${data.totalMinted} NFT${data.totalMinted > 1 ? "s" : ""}`,
       });
-      
-      console.log("Minted NFTs:", data.nfts);
     } catch (error) {
-      console.error("NFT minting error:", error);
       toast.error("Failed to mint NFT", {
         description: error instanceof Error ? error.message : "Please try again later",
       });
@@ -231,10 +243,7 @@ export default function AgentHover({
       toast.info("📚 " + data.title, {
         description: data.description,
       });
-      
-      console.log("Learn about eth.ed:", data);
     } catch (error) {
-      console.error("Learn error:", error);
       toast.error("Failed to load information", {
         description: error instanceof Error ? error.message : "Please try again later",
       });
@@ -261,11 +270,8 @@ export default function AgentHover({
       toast.success("🚀 " + data.message, {
         description: "Your learning path is ready!",
       });
-      
       // Could redirect to onboarding: window.location.href = "/onboarding";
-      console.log("Start journey:", data);
     } catch (error) {
-      console.error("Start journey error:", error);
       toast.error("Failed to start journey", {
         description: error instanceof Error ? error.message : "Please try again later",
       });
@@ -295,10 +301,7 @@ export default function AgentHover({
       toast.info("💬 Agent Response", {
         description: data.reply,
       });
-      
-      console.log("Agent response:", data);
     } catch (error) {
-      console.error("Ask question error:", error);
       toast.error("Failed to contact agent", {
         description: error instanceof Error ? error.message : "Please try again later",
       });
@@ -328,21 +331,20 @@ export default function AgentHover({
         }}
         aria-label="eth.ed Agent"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt="agent"
-          width={size}
-          height={size}
-          style={{ 
-            width: "100%", 
-            height: "100%", 
-            objectFit: "contain", 
-            display: "block",
-            opacity: isVisible ? 1 : 0,
-            transition: "opacity 0.2s ease-in-out" // Smooth fade in/out
-          }}
-        />
+          <Image
+            src={src}
+            alt="agent"
+            fill
+            sizes={`${size}px`}
+            priority
+            unoptimized
+            style={{
+              objectFit: "contain",
+              display: "block",
+              opacity: isVisible ? 1 : 0,
+              transition: "opacity 0.2s ease-in-out",
+            }}
+          />
       </div>
 
       {/* Enhanced Dialog/Chat Bubble */}
