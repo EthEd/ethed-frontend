@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
   // -------------------------------------------------------------------------
   // Role-based route protection (runs before anything else)
   // -------------------------------------------------------------------------
-  if (pathname.startsWith('/admin') || pathname.startsWith('/moderator')) {
+  if (pathname.startsWith('/admin') || pathname.startsWith('/moderator') || pathname.startsWith('/instructor')) {
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
@@ -35,6 +35,14 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/moderator') &&
       role !== 'ADMIN' &&
       role !== 'MODERATOR'
+    ) {
+      return NextResponse.redirect(new URL('/403', request.url));
+    }
+
+    if (
+      pathname.startsWith('/instructor') &&
+      role !== 'ADMIN' &&
+      role !== 'INSTRUCTOR'
     ) {
       return NextResponse.redirect(new URL('/403', request.url));
     }

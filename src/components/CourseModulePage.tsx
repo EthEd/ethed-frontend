@@ -100,31 +100,7 @@ export default function CourseModulePage({
   const [selectedLesson, setSelectedLesson] = useState<LessonItem | null>(null);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'lesson' | 'discussion'>('lesson');
-  const [discussionThreads, setDiscussionThreads] = useState<DiscussionThread[]>([
-    {
-      id: '1',
-      author: { name: 'Alex Chen', avatar: '👨‍💻', level: 5, badge: '🌟' },
-      title: 'What are the differences between ERC-20 and ERC-721?',
-      content: 'I\'m trying to understand the key differences between these two standards. Can someone explain?',
-      createdAt: new Date(Date.now() - 3600000),
-      updatedAt: new Date(Date.now() - 3600000),
-      likes: 24,
-      replies: [
-        {
-          id: 'r1',
-          author: { name: 'Sarah Dev', avatar: '👩‍💻', level: 8, isInstructor: true },
-          content: 'ERC-20 is for fungible tokens (all tokens are identical), while ERC-721 is for NFTs (each token is unique).',
-          createdAt: new Date(Date.now() - 1800000),
-          likes: 45,
-          isAcceptedAnswer: true
-        }
-      ],
-      isAnswered: true,
-      helpfulCount: 35,
-      category: 'question',
-      tags: ['standards', 'smart-contracts']
-    }
-  ]);
+  const [discussionThreads, setDiscussionThreads] = useState<DiscussionThread[]>([]);
 
   const totalModules = modules.length;
   const completedModules = modules.filter(m =>

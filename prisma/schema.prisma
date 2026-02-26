@@ -36,6 +36,7 @@ model User {
   wallets       WalletAddress[]
 
   courses       UserCourse[]
+  createdCourses Course[] @relation("CreatedCourses")
   purchases     Purchase[]
   payments      Payment[]
   nfts          NFT[]
@@ -106,25 +107,80 @@ model Course {
   level       CourseLevel @default(BEGINNER)
   slug        String      @unique
   status      CourseStatus @default(DRAFT)
+  category    String?
+  thumbnail   String?
+  creatorId   String?     // null = admin-created, set = instructor-created
+  rejectionReason String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @default(now())
 
+  creator     User?       @relation("CreatedCourses", fields: [creatorId], references: [id], onDelete: SetNull)
+  sections    Section[]
   lessons     Lesson[]
   users       UserCourse[]
   purchases   Purchase[]
 }
 
-model Lesson {
+model Section {
   id        String   @id @default(uuid())
   courseId  String
   title     String
-  content   String
-  duration  Int?     // minutes
+  order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons   Lesson[]
+
+  @@index([courseId, order])
+}
+
+model Lesson {
+  id        String   @id @default(uuid())
+  courseId  String
+  sectionId String?
+  title     String
+  content   String   @default("")
+  duration  Int?     // minutes
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  section   Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  contentBlocks ContentBlock[]
   lessonProgress LessonProgress[]
+
+  @@index([courseId, order])
+}
+
+model ContentBlock {
+  id        String           @id @default(uuid())
+  lessonId  String
+  type      ContentBlockType
+  order     Int              @default(0)
+  // For TEXT: markdown content; For CODE: the code snippet
+  textContent String?
+  // For VIDEO: upload URL; For YOUTUBE: youtube embed URL
+  videoUrl    String?
+  // For CODE: language identifier (solidity, javascript, etc.)
+  codeLanguage String?
+  // For QUIZ: JSON structure {questions: [{question, options, correct, explanation}], passingScore}
+  quizData    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  lesson    Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId, order])
+}
+
+enum ContentBlockType {
+  TEXT
+  VIDEO
+  YOUTUBE
+  CODE
+  QUIZ
 }
 
 model UserCourse {
@@ -208,6 +264,7 @@ model NFT {
 
 enum Role {
   USER
+  INSTRUCTOR
   MODERATOR
   ADMIN
 }
@@ -239,8 +296,10 @@ enum CourseLevel {
 
 enum CourseStatus {
   DRAFT
+  AWAITING_APPROVAL
   PUBLISHED
   ARCHIVED
+  REJECTED
 }
 
 enum PurchaseStatus {
