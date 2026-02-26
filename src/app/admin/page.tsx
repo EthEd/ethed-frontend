@@ -15,6 +15,8 @@ import {
   Activity,
   ClipboardList,
   Gem,
+  FileCheck,
+  GraduationCap,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,6 +27,8 @@ interface Stats {
   completionRate: number;
   totalEnrollments: number;
   moderatorCount: number;
+  instructorCount?: number;
+  pendingReviews?: number;
 }
 
 export default function AdminDashboard() {
@@ -138,6 +142,34 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="bg-slate-900/40 backdrop-blur-xl border border-white/10">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-emerald-300 text-sm font-medium">Instructors</p>
+                <p className="text-2xl font-bold text-white">{stats?.instructorCount ?? '—'}</p>
+                <p className="text-xs text-slate-500 mt-1">course creators</p>
+              </div>
+              <GraduationCap className="h-8 w-8 text-emerald-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {(stats?.pendingReviews ?? 0) > 0 && (
+          <Card className="bg-slate-900/40 backdrop-blur-xl border border-amber-400/20">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-amber-300 text-sm font-medium">Pending Reviews</p>
+                  <p className="text-2xl font-bold text-white">{stats?.pendingReviews ?? 0}</p>
+                  <p className="text-xs text-slate-500 mt-1">courses awaiting approval</p>
+                </div>
+                <FileCheck className="h-8 w-8 text-amber-400" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Quick Actions */}
@@ -183,6 +215,21 @@ export default function AdminDashboard() {
           <CardContent>
             <Button asChild className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 border-none">
               <Link href="/admin/audit-logs"><ClipboardList className="h-4 w-4 mr-2" />View Audit Logs</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-slate-900/40 backdrop-blur-xl border border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <FileCheck className="h-5 w-5 text-amber-400" />
+              Course Reviews
+            </CardTitle>
+            <CardDescription>Review and approve instructor-submitted courses</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 border-none">
+              <Link href="/admin/reviews"><FileCheck className="h-4 w-4 mr-2" />Review Courses</Link>
             </Button>
           </CardContent>
         </Card>

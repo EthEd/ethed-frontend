@@ -11,7 +11,7 @@ export async function GET() {
   const check = await requireAdmin();
   if (check instanceof Response) return check as any;
 
-  const [totalUsers, activeCourses, nftsMinted, totalEnrollments, completedEnrollments, moderatorCount] =
+  const [totalUsers, activeCourses, nftsMinted, totalEnrollments, completedEnrollments, moderatorCount, instructorCount, pendingReviews] =
     await Promise.all([
       prisma.user.count(),
       prisma.course.count({ where: { status: "PUBLISHED" } }),
@@ -19,6 +19,8 @@ export async function GET() {
       prisma.userCourse.count(),
       prisma.userCourse.count({ where: { completed: true } }),
       prisma.user.count({ where: { role: "MODERATOR" } }),
+      prisma.user.count({ where: { role: "INSTRUCTOR" } }),
+      prisma.course.count({ where: { status: "AWAITING_APPROVAL" } }),
     ]);
 
   const completionRate =
@@ -31,5 +33,7 @@ export async function GET() {
     totalEnrollments,
     completionRate,
     moderatorCount,
+    instructorCount,
+    pendingReviews,
   });
 }

@@ -22,7 +22,9 @@ import {
   BookOpen,
   Menu,
   X,
-  Trophy
+  Trophy,
+  GraduationCap,
+  Shield,
 } from "lucide-react";
 import { useSignOut } from "@/hooks/use-signout";
 import Logo from "@/components/logo";
@@ -95,11 +97,11 @@ export default function Navbar() {
   return (
     <div className="sticky top-0 z-50 w-full shadow-lg h-auto flex flex-col pointer-events-auto">
       {/* Tagline from EthNavbar */}
-      <div className="bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-blue-500/20 text-center font-mono font-semibold text-[10px] md:text-xs tracking-wide text-cyan-200 py-1.5 md:py-2 border-b border-emerald-400/20 backdrop-blur-md">
+      <div className="bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-blue-500/20 dark:from-emerald-500/20 dark:via-cyan-500/20 dark:to-blue-500/20 text-center font-mono font-semibold text-[10px] md:text-xs tracking-wide text-cyan-700 dark:text-cyan-200 py-1.5 md:py-2 border-b border-emerald-400/20 backdrop-blur-md">
         Learn on-chain. Grow your chain of knowledge.
       </div>
       
-      <nav className="w-full border-b border-cyan-400/10 bg-slate-950/60 backdrop-blur-md">
+      <nav className="w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-4">
           <div className="relative flex h-16 items-center">
             
@@ -204,6 +206,30 @@ export default function Navbar() {
                         <Settings className="mr-2 h-4 w-4" />
                         <span>Settings</span>
                       </DropdownMenuItem>
+                      {(session as any).role === 'INSTRUCTOR' && (
+                        <DropdownMenuItem onClick={() => router.push("/instructor")} className="hover:bg-emerald-50/50">
+                          <GraduationCap className="mr-2 h-4 w-4" />
+                          <span>Instructor Panel</span>
+                        </DropdownMenuItem>
+                      )}
+                      {(session as any).role === 'ADMIN' && (
+                        <>
+                          <DropdownMenuItem onClick={() => router.push("/instructor")} className="hover:bg-emerald-50/50">
+                            <GraduationCap className="mr-2 h-4 w-4" />
+                            <span>Instructor Panel</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => router.push("/admin")} className="hover:bg-red-50/50">
+                            <Shield className="mr-2 h-4 w-4" />
+                            <span>Admin Panel</span>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {(session as any).role === 'MODERATOR' && (
+                        <DropdownMenuItem onClick={() => router.push("/moderator")} className="hover:bg-purple-50/50">
+                          <Shield className="mr-2 h-4 w-4" />
+                          <span>Moderator Panel</span>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={signOut}

@@ -1,5 +1,4 @@
 import { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import EmailProvider from "next-auth/providers/email";
@@ -43,64 +42,6 @@ export const authOptions: NextAuthOptions = {
   providers: [
     // Sign In With Ethereum
     SiweProvider(),
-    // Demo/Test credentials provider – ONLY available in development/test
-    ...(process.env.NODE_ENV !== "production"
-      ? [
-          CredentialsProvider({
-            id: "demo",
-            name: "Demo Account",
-            credentials: {
-              email: { label: "Email", type: "email", placeholder: "demo@ethed.app" },
-              name: { label: "Name", type: "text", placeholder: "Demo User" },
-            },
-            async authorize(credentials) {
-              if (!credentials?.email) {
-                return null;
-              }
-
-              try {
-                // Create or find user in database
-                const { prisma } = await import("@/lib/prisma-client");
-
-                // 🔐 TEST ADMIN — remove before production
-                const isTestAdmin = credentials.email === "admin@login";
-
-                let dbUser = await prisma.user.findUnique({
-                  where: { email: credentials.email },
-                });
-
-                if (!dbUser) {
-                  dbUser = await prisma.user.create({
-                    data: {
-                      email: credentials.email,
-                      name: isTestAdmin ? "Test Admin" : (credentials.name || "Demo User"),
-                      image: null,
-                      ...(isTestAdmin && { role: "ADMIN" }),
-                    },
-                  });
-                } else if (isTestAdmin && dbUser.role !== "ADMIN") {
-                  // Ensure the test admin always has ADMIN role
-                  dbUser = await prisma.user.update({
-                    where: { id: dbUser.id },
-                    data: { role: "ADMIN" },
-                  });
-                }
-
-                const user = {
-                  id: dbUser.id,
-                  email: dbUser.email,
-                  name: dbUser.name,
-                  image: dbUser.image,
-                };
-
-                return user;
-              } catch {
-                return null;
-              }
-            },
-          }),
-        ]
-      : []),
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
       GoogleProvider({ 
         clientId: process.env.GOOGLE_CLIENT_ID, 
@@ -134,34 +75,27 @@ export const authOptions: NextAuthOptions = {
       }
       
       try {
-        // Create or update user in database
         const { prisma } = await import("@/lib/prisma-client");
         
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email }
-        });
+        // Retry for Supabase cold-start
+        const findUser = async () => prisma.user.findUnique({ where: { email: user.email! } });
+        let existingUser: Awaited<ReturnType<typeof findUser>> = null;
+        for (let i = 0; i < 3; i++) {
+          try { existingUser = await findUser(); break; }
+          catch { if (i < 2) await new Promise(r => setTimeout(r, 2000)); }
+        }
         
         if (!existingUser) {
-          // Create new user
           const newUser = await prisma.user.create({
-            data: {
-              email: user.email,
-              name: user.name || null,
-              image: user.image || null,
-            }
+            data: { email: user.email, name: user.name || null, image: user.image || null }
           });
           user.id = newUser.id;
         } else {
-          // Update existing user
           user.id = existingUser.id;
-          // Optionally update name/image if changed
           if (existingUser.name !== user.name || existingUser.image !== user.image) {
             await prisma.user.update({
               where: { id: existingUser.id },
-              data: {
-                name: user.name || existingUser.name,
-                image: user.image || existingUser.image,
-              }
+              data: { name: user.name || existingUser.name, image: user.image || existingUser.image }
             });
           }
         }

@@ -4,38 +4,32 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  Users,
   BookOpen,
-  ClipboardList,
   ArrowLeft,
-  Shield,
-  Gem,
-  FileCheck,
+  GraduationCap,
+  PlusCircle,
 } from 'lucide-react';
 
 const navItems = [
-  { href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
-  { href: '/admin/users', label: 'Users', icon: Users },
-  { href: '/admin/courses', label: 'Courses', icon: BookOpen },
-  { href: '/admin/reviews', label: 'Course Reviews', icon: FileCheck },
-  { href: '/admin/nfts', label: 'NFTs', icon: Gem },
-  { href: '/admin/audit-logs', label: 'Audit Logs', icon: ClipboardList },
+  { href: '/instructor', label: 'Overview', icon: LayoutDashboard, exact: true },
+  { href: '/instructor/courses', label: 'My Courses', icon: BookOpen },
+  { href: '/instructor/courses/new', label: 'New Course', icon: PlusCircle },
 ];
 
-export function AdminSidebar() {
+export function InstructorSidebar() {
   const pathname = usePathname();
 
   return (
     <aside className="w-64 shrink-0 bg-slate-900/60 border-r border-white/10 min-h-screen flex flex-col">
-      {/* Header */}
       <div className="px-6 py-5 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-red-400" />
-          <span className="font-bold text-white text-sm tracking-wide uppercase">Admin Panel</span>
+          <GraduationCap className="h-5 w-5 text-emerald-400" />
+          <span className="font-bold text-white text-sm tracking-wide uppercase">
+            Instructor Panel
+          </span>
         </div>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map(({ href, label, icon: Icon, exact }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
@@ -45,7 +39,7 @@ export function AdminSidebar() {
               href={href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active
-                  ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
@@ -56,7 +50,6 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="px-3 py-4 border-t border-white/10">
         <Link
           href="/dashboard"
