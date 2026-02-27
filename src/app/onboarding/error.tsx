@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { logger } from '@/lib/monitoring';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
@@ -14,7 +15,7 @@ export default function OnboardingError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Onboarding error:', error);
+    logger.error('Onboarding error', 'OnboardingError', undefined, error);
   }, [error]);
 
   return (

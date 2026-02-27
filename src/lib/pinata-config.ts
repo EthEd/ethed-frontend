@@ -40,7 +40,7 @@ export async function pinFile(file: File): Promise<string> {
   if (!env.PINATA_JWT) {
     throw new Error("Pinata not configured (PINATA_JWT missing)");
   }
-  const result = (await (pinata as any).upload.file(file)) as PinataUploadResult;
+  const result = (await (pinata as unknown as { upload: { file: (f: File) => Promise<PinataUploadResult> } }).upload.file(file)) as PinataUploadResult;
   return `ipfs://${result.IpfsHash}`;
 }
 
@@ -52,22 +52,6 @@ export async function pinJSON(data: Record<string, unknown>): Promise<string> {
   if (!env.PINATA_JWT) {
     throw new Error("Pinata not configured (PINATA_JWT missing)");
   }
-  const result = (await (pinata as any).upload.json(data)) as PinataUploadResult;
+  const result = (await (pinata as unknown as { upload: { json: (d: Record<string, unknown>) => Promise<PinataUploadResult> } }).upload.json(data)) as PinataUploadResult;
   return `ipfs://${result.IpfsHash}`;
-}
-
-/**
- * Convert an `ipfs://` URI to a Pinata gateway HTTP URL.
- */
-export function ipfsToGatewayUrl(
-  uri: string,
-  gatewayBase?: string
-): string {
-  if (!uri) return uri;
-  const base = gatewayBase || env.PINATA_GATEWAY_URL || "https://gateway.pinata.cloud";
-  if (uri.startsWith("ipfs://")) {
-    const cidAndPath = uri.replace(/^ipfs:\/\//, "");
-    return `${base.replace(/\/$/, "")}/ipfs/${cidAndPath}`;
-  }
-  return uri;
 }

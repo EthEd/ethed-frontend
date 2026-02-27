@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/monitoring';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
@@ -125,7 +126,7 @@ export default function ProfileClient() {
       }
     } catch (err) {
       toast.error('Failed to sync NFTs', { id: toastId });
-      console.error(err);
+      logger.error('Failed to sync NFTs', 'ProfileClient', undefined, err);
     } finally {
       setIsSyncing(false);
     }

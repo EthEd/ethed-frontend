@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma-client";
+import { logger } from "@/lib/monitoring";
 
 export async function GET() {
   try {
@@ -40,7 +41,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, leaderboard: formattedUsers });
   } catch (error) {
-    console.error("Leaderboard API error:", error);
+    logger.error("Leaderboard API error", "LeaderboardAPI", undefined, error);
     return NextResponse.json(
       { success: false, error: "Failed to fetch leaderboard" },
       { status: 500 }

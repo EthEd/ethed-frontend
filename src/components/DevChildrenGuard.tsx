@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { logger } from "@/lib/monitoring";
 
 // Development-only guard that throws when a React child is a plain object
 // (this reproduces / surfaces React error #418 with a useful stack).
@@ -37,7 +36,8 @@ export default function DevChildrenGuard({ children }: { children: React.ReactNo
         const preview = safeStringify(node).slice(0, 1000);
         const err = new Error(`Detected non-primitive React child (object) — rendering this will cause React error #418.\n\nPreview: ${preview}`);
         // Log and throw so React overlay & stacktrace point to the offending component in dev
-        logger.error("Detected invalid React child object", "DevChildrenGuard", { preview }, err);
+        // eslint-disable-next-line no-console
+        console.error(err);
         throw err;
       }
     };

@@ -29,10 +29,8 @@ export async function POST(request: NextRequest) {
     });
 
     if (!userCourse) {
-        // Optional: you might want to allow minting if they are at 100% even if not flagged yet
-        // but for safety we check the flag
         logger.warn(`User ${session.user.id} tried to mint NFT for uncompleted course ${courseSlug}`, "api/nft/mint");
-        // return NextResponse.json({ error: "Course not completed" }, { status: 400 });
+        return NextResponse.json({ error: "Course not completed" }, { status: 400 });
     }
 
     // Check if NFT already exists for this course and user to avoid double minting

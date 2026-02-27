@@ -101,16 +101,10 @@ export const CONTRACTS: Record<number, Record<string, string>> = {
     NFT_CONTRACT: process.env.NFT_CONTRACT_ADDRESS || DEFAULT_NFT_CONTRACT_AMOY,
     ENS_REGISTRAR: process.env.ENS_REGISTRAR_ADDRESS || DEFAULT_ENS_REGISTRAR_AMOY,
   },
-  // Polygon Mainnet
-  137: {
-    NFT_CONTRACT: "0x0000000000000000000000000000000000000000",
-    ENS_REGISTRAR: "0x0000000000000000000000000000000000000000",
-  },
-  // Ethereum Mainnet
-  1: {
-    NFT_CONTRACT: "0x0000000000000000000000000000000000000000",
-    ENS_REGISTRAR: "0x0000000000000000000000000000000000000000",
-  },
+  // Polygon Mainnet — not yet deployed
+  // 137: { ... },
+  // Ethereum Mainnet — not yet deployed
+  // 1: { ... },
 };
 
 export const CHAIN_CONFIG = {

@@ -112,7 +112,7 @@ See `docs/RELEASE_CHECKLIST.md` for the production launch & rollback checklist.
 
 3. **Access the application:**
    - Open http://localhost:3001
-   - Use the demo login with any email/name for testing (disabled in production)
+   - Use SIWE (Sign In With Ethereum) to authenticate with your wallet
 
 ### Vercel / CI troubleshooting
 
@@ -130,12 +130,10 @@ If `pnpm install` or the Vercel build fails with registry errors such as `ERR_IN
 
 ## Authentication
 
-The app includes a demo credentials provider for testing **in development only**. In production:
-1. The demo provider is automatically disabled
-2. Configure SIWE (Sign In With Ethereum) — works out of the box
-3. Optionally configure OAuth providers (Google, GitHub) via env vars
-4. Set up email authentication if needed
-5. Use a strong, unique `NEXTAUTH_SECRET`
+The app uses SIWE (Sign In With Ethereum) for wallet-based authentication. You can also optionally configure:
+1. OAuth providers (Google, GitHub) via environment variables
+2. Email authentication if needed
+3. Use a strong, unique `NEXTAUTH_SECRET` in production
 
 ## Troubleshooting
 

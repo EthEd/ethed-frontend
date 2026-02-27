@@ -30,7 +30,7 @@ export function useENSLookup() {
 
       const data = await response.json();
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       const info = getBlockchainErrorInfo(err);
       setError(info.description || info.title);
       toast.error(info.title, {
@@ -57,7 +57,7 @@ export function useENSLookup() {
 
       const data = await response.json();
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       const info = getBlockchainErrorInfo(err);
       setError(info.description || info.title);
       toast.error(info.title, {

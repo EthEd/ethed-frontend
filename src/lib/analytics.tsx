@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { logger } from '@/lib/monitoring';
 
 /**
  * Analytics event types for tracking
@@ -31,7 +32,7 @@ interface EventProperties {
 export function trackEvent(event: AnalyticsEvent, properties?: EventProperties) {
   // Development logging
   if (process.env.NODE_ENV === 'development') {
-    console.log('[Analytics]', event, properties);
+    logger.info(`${event}`, "Analytics", { properties });
   }
 
   // Send to analytics provider

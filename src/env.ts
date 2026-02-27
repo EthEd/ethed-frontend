@@ -5,15 +5,19 @@ const isProduction = process.env.NODE_ENV === "production";
 
 export const env = createEnv({
   server: {
-    DATABASE_URL: z.string().optional(),
+    DATABASE_URL: isProduction
+      ? z.string().url("DATABASE_URL is required in production")
+      : z.string().optional(),
     MONGODB_URI: z.string().optional(),
     OPENPRS_MONGODB_URI: z.string().optional(),
     OPENPRS_DATABASE: z.string().optional(),
 
     NEXTAUTH_SECRET: isProduction
-      ? z.string().min(1, "NEXTAUTH_SECRET is required in production")
-      : z.string().min(1).optional(),
-    NEXTAUTH_URL: z.string().url().optional(),
+      ? z.string().min(32, "NEXTAUTH_SECRET must be at least 32 chars in production")
+      : z.string().optional(),
+    NEXTAUTH_URL: isProduction
+      ? z.string().url("NEXTAUTH_URL is required in production")
+      : z.string().url().optional(),
 
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 

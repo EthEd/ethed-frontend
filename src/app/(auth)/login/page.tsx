@@ -2,20 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { signIn, getCsrfToken } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { SiweLoginButton } from '@/components/siwe-login-button';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('demo@ethed.app');
-  const [name, setName] = useState('Demo User');
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [csrfToken, setCsrfToken] = useState('');
-  const router = useRouter();
 
   useEffect(() => {
     // Get CSRF token
@@ -24,35 +22,12 @@ export default function LoginPage() {
     });
   }, []);
 
-  // 🔐 TEST ADMIN — quick login for development testing; remove before production
-  const handleAdminTestLogin = async () => {
-    setIsLoading(true);
-    try {
-      const result = await signIn('demo', {
-        email: 'admin@login',
-        name: 'Test Admin',
-        redirect: false,
-        callbackUrl: '/admin',
-      });
-      if (result?.error) {
-        toast.error('Admin login failed: ' + result.error);
-      } else if (result?.ok) {
-        toast.success('Signed in as Test Admin');
-        setTimeout(() => router.push('/admin'), 500);
-      }
-    } catch {
-      toast.error('Admin login failed.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const result = await signIn('demo', {
+      const result = await signIn('email-name', {
         email,
         name,
         redirect: false,
@@ -63,10 +38,9 @@ export default function LoginPage() {
         toast.error('Login failed: ' + result.error);
       } else if (result?.ok) {
         toast.success('Welcome to eth.ed!');
-        // Wait a moment for the session to be established
         setTimeout(() => {
-          router.push('/onboarding');
-        }, 1000);
+          window.location.href = '/onboarding';
+        }, 500);
       } else {
         toast.error('Login failed. Please try again.');
       }
@@ -103,70 +77,50 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Demo Login Form */}
-            <form onSubmit={handleDemoLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-white">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-slate-700/50 border-slate-600 text-white"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-white">Name</Label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="bg-slate-700/50 border-slate-600 text-white"
-                required
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full bg-gradient-to-r from-emerald-500 to-cyan-600 hover:from-emerald-600 hover:to-cyan-700"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Signing in...
-                </div>
-              ) : (
-                'Sign In with Demo Account'
-              )}
-            </Button>
+            {/* Email Login Form */}
+            <form onSubmit={handleEmailLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-white">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-white">Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your Name"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-emerald-500 to-cyan-600 hover:from-emerald-600 hover:to-cyan-700"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Signing in...
+                  </div>
+                ) : (
+                  'Sign In with Email'
+                )}
+              </Button>
             </form>
-
-            {/* 🔐 TEST ADMIN — remove before production */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-600" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-slate-800/40 text-slate-500 text-xs">Dev only</span>
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full border-red-500/40 text-red-400 hover:bg-red-500/10 hover:text-red-300 text-sm"
-              disabled={isLoading}
-              onClick={handleAdminTestLogin}
-            >
-              🔐 Admin Test Login
-            </Button>
           </div>
           
           <div className="mt-6 text-center">
-            <p className="text-xs text-slate-400">
-              This is a demo login for testing. In production, you would use OAuth providers like Google or GitHub.
-            </p>
             {csrfToken && (
               <p className="text-xs text-slate-500 mt-2">
                 CSRF Token: {csrfToken.substring(0, 10)}...

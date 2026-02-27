@@ -63,8 +63,6 @@ export async function POST(request: NextRequest) {
       const suffix = parts.slice(1).join('.');
       if (suffix === 'ayushetty.eth' || suffix.endsWith('.ayushetty.eth')) {
         rootDomain = 'ayushetty.eth';
-      } else if (suffix === 'ayushetty.eth' || suffix.endsWith('.ayushetty.eth')) {
-        rootDomain = 'ayushetty.eth';
       } else {
         // disallow other roots for now
         return NextResponse.json({ error: 'Unsupported ENS root domain' }, { status: 400 });

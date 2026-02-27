@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -36,7 +35,6 @@ model User {
   wallets       WalletAddress[]
 
   courses       UserCourse[]
-  createdCourses Course[] @relation("CreatedCourses")
   purchases     Purchase[]
   payments      Payment[]
   nfts          NFT[]
@@ -107,14 +105,10 @@ model Course {
   level       CourseLevel @default(BEGINNER)
   slug        String      @unique
   status      CourseStatus @default(DRAFT)
-  category    String?
-  thumbnail   String?
-  creatorId   String?     // null = admin-created, set = instructor-created
   rejectionReason String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @default(now())
 
-  creator     User?       @relation("CreatedCourses", fields: [creatorId], references: [id], onDelete: SetNull)
   sections    Section[]
   lessons     Lesson[]
   users       UserCourse[]
@@ -364,7 +358,7 @@ model ProjectMember {
 model Donation {
   id          String         @id @default(uuid())
   userId      String
-  projectId   String
+  projectId   String?
   amount      Int            // in cents
   txHash      String?
   chainId     Int?
@@ -373,8 +367,8 @@ model Donation {
 
   createdAt   DateTime       @default(now())
 
-  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 enum ProjectType {

@@ -5,7 +5,7 @@
 
 import { pinFile, pinJSON } from "./pinata-config";
 import { prisma } from "@/lib/prisma-client";
-import type { Prisma } from "@/generated/prisma";
+import type { Prisma } from "@prisma/client";
 import { GENESIS_PIONEER_IMAGE_URI, GENESIS_PIONEER_METADATA_URI } from "@/lib/genesis-assets";
 import {
   getContractAddress,
@@ -168,19 +168,18 @@ export async function mintNFTAndSave(
     // Upload metadata to IPFS
     const metadataUri = await uploadMetadataToIPFS(metadata);
 
-    // Mint on-chain if user has a wallet address
-    const recipientAddress = userAddress || "0x0000000000000000000000000000000000000000";
+    // Mint on-chain only if the user has a real wallet address
     let tokenId: string;
     let txHash: string | null = null;
     let contractAddr: string | null = null;
 
-    if (recipientAddress !== "0x0000000000000000000000000000000000000000" && isOnChainEnabled()) {
-      const mintResult = await mintOnChain(recipientAddress, metadataUri, "pioneer");
+    if (userAddress && isOnChainEnabled()) {
+      const mintResult = await mintOnChain(userAddress, metadataUri, "pioneer");
       tokenId = mintResult.tokenId;
       txHash = mintResult.txHash;
       contractAddr = mintResult.contractAddress;
     } else {
-      // Off-chain record only
+      // Off-chain record only (no wallet connected or on-chain disabled)
       tokenId = `off-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     }
 
@@ -364,15 +363,20 @@ export async function mintGenesisNFTs(params: MintNFTParams) {
     ? GENESIS_PIONEER_METADATA_URI
     : await uploadMetadataToIPFS(genesisMetadata);
 
-  // Mint on-chain (requires user wallet address)
-  const defaultAddress = userAddress || "0x0000000000000000000000000000000000000000";
-  
-  const genesisResult = await mintOnChain(
-    defaultAddress,
-    genesisMetadataUri,
-    "pioneer"
-  );
-  
+  // Mint on-chain only if the user has a real wallet address
+  let genesisResult: { tokenId: string; txHash: string; contractAddress: string };
+
+  if (userAddress && isOnChainEnabled()) {
+    genesisResult = await mintOnChain(userAddress, genesisMetadataUri, "pioneer");
+  } else {
+    // Off-chain record only (no wallet connected or on-chain disabled)
+    genesisResult = {
+      tokenId: `off-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      txHash: `0x${"0".repeat(64)}`,
+      contractAddress: getContractAddress(AMOY_CHAIN_ID, "NFT_CONTRACT"),
+    };
+  }
+
   // Save to database with on-chain data
   const genesisNFT = await saveNFTToDatabase({
     userId,
@@ -382,7 +386,7 @@ export async function mintGenesisNFTs(params: MintNFTParams) {
     metadata: genesisMetadata,
     contractAddress: genesisResult.contractAddress,
     transactionHash: genesisResult.txHash,
-    ownerAddress: defaultAddress !== "0x0000000000000000000000000000000000000000" ? defaultAddress : undefined,
+    ownerAddress: userAddress || undefined,
     chainId: AMOY_CHAIN_ID,
   });
 
@@ -485,10 +489,20 @@ export async function mintCourseCompletionNFT(params: {
   // Upload metadata to IPFS
   const metadataUri = await uploadMetadataToIPFS(metadata);
 
-  // Mint on-chain
-  const recipientAddress = userAddress || "0x0000000000000000000000000000000000000000";
-  const mintResult = await mintOnChain(recipientAddress, metadataUri, "course-completion");
-  
+  // Mint on-chain only if the user has a real wallet address
+  let mintResult: { tokenId: string; txHash: string; contractAddress: string };
+
+  if (userAddress && isOnChainEnabled()) {
+    mintResult = await mintOnChain(userAddress, metadataUri, "course-completion");
+  } else {
+    // Off-chain record only (no wallet connected or on-chain disabled)
+    mintResult = {
+      tokenId: `off-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      txHash: `0x${"0".repeat(64)}`,
+      contractAddress: getContractAddress(AMOY_CHAIN_ID, "NFT_CONTRACT"),
+    };
+  }
+
   // Save to database with on-chain data
   const nft = await saveNFTToDatabase({
     userId,
@@ -498,7 +512,7 @@ export async function mintCourseCompletionNFT(params: {
     metadata,
     contractAddress: mintResult.contractAddress,
     transactionHash: mintResult.txHash,
-    ownerAddress: recipientAddress !== "0x0000000000000000000000000000000000000000" ? recipientAddress : undefined,
+    ownerAddress: userAddress || undefined,
     chainId: AMOY_CHAIN_ID,
   });
 
@@ -614,7 +628,7 @@ export async function syncUserNFTs(userId: string) {
                 tokenId,
                 name: metadata.name || `EthEd Certificate #${tokenId}`,
                 image: metadata.image || "",
-                metadata: metadata as any,
+                metadata: metadata as unknown as Prisma.InputJsonValue,
                 contractAddress,
                 chainId: AMOY_CHAIN_ID,
                 ownerAddress: address,

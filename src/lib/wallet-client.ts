@@ -24,8 +24,8 @@ export async function switchToChain(targetChainId: number): Promise<void> {
       method: "wallet_switchEthereumChain",
       params: [{ chainId: chainConfig.hexChainId }],
     });
-  } catch (error: any) {
-    if (error?.code === 4902) {
+  } catch (error: unknown) {
+    if ((error as { code?: number })?.code === 4902) {
       await window.ethereum.request({
         method: "wallet_addEthereumChain",
         params: [

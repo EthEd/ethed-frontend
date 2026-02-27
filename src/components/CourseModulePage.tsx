@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '@/lib/monitoring';
 import {
   Card,
   CardContent,
@@ -126,7 +127,7 @@ export default function CourseModulePage({
         totalModules: totalLessons,
         completedModules: newCompleted
       })
-    }).catch(err => console.error('Failed to sync progress:', err));
+    }).catch(err => logger.error('Failed to sync progress', 'CourseModulePage', undefined, err));
   };
 
   const handleNewThread = (thread: Partial<DiscussionThread>) => {

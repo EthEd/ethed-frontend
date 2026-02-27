@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       bonusXp
     });
   } catch (error) {
-    console.error("Course completion Error:", error);
+    logger.error("Course completion Error", "CourseCompleteAPI", undefined, error);
     return NextResponse.json({ error: "Internal server error" }, { status: HttpStatus.INTERNAL_ERROR });
   }
 }

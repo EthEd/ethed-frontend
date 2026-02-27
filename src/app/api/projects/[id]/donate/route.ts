@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
 import { HttpStatus } from "@/lib/api-response";
+import { logger } from "@/lib/monitoring";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +73,7 @@ export async function POST(request: Request, { params }: Params) {
 
     return NextResponse.json({ success: true, donation }, { status: 201 });
   } catch (error) {
-    console.error("Donate Error:", error);
+    logger.error("Donate Error", "ProjectDonateAPI", undefined, error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: HttpStatus.INTERNAL_ERROR }

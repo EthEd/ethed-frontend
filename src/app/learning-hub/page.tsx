@@ -1,14 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'motion/react';
-import GamificationDashboard from '@/components/GamificationDashboard';
-import DiscussionBoard from '@/components/DiscussionBoard';
 import CourseModulePage from '@/components/CourseModulePage';
 import { BookOpen, Flame, Trophy, MessageCircle } from 'lucide-react';
+
+// Lazy-load heavy interactive components
+const GamificationDashboard = dynamic(() => import('@/components/GamificationDashboard'), {
+  loading: () => <div className="h-64 bg-muted/30 rounded-lg animate-pulse" />,
+});
+const DiscussionBoard = dynamic(() => import('@/components/DiscussionBoard'), {
+  loading: () => <div className="h-64 bg-muted/30 rounded-lg animate-pulse" />,
+});
 
 /**
  * DEMO: Learning Hub Dashboard

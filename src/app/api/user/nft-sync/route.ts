@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { syncUserNFTs } from "@/lib/nft-service";
 import arcjet, { shield, slidingWindow } from "@/lib/arcjet";
 import { HttpStatus } from "@/lib/api-response";
+import { logger } from "@/lib/monitoring";
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("NFT Sync Error:", error);
+    logger.error("NFT Sync Error", "NFTSyncAPI", undefined, error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: HttpStatus.INTERNAL_ERROR }

@@ -3,6 +3,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Respect user motion preferences globally */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
@@ -204,6 +216,9 @@ h1, h2, h3 {
 :root:not(.dark) .to-slate-800\/90 { --tw-gradient-to: color-mix(in srgb, var(--muted) 90%, transparent) !important; }
 :root:not(.dark) .from-slate-950 { --tw-gradient-from: var(--background) !important; }
 :root:not(.dark) .to-slate-950 { --tw-gradient-to: var(--background) !important; }
+:root:not(.dark) .via-slate-950 { --tw-gradient-via: var(--background) !important; }
+:root:not(.dark) .via-slate-900 { --tw-gradient-via: var(--card) !important; }
+:root:not(.dark) .via-slate-800 { --tw-gradient-via: var(--muted) !important; }
 
 /* ── Hover states ── */
 :root:not(.dark) .hover\:bg-white\/5:hover { background-color: color-mix(in srgb, var(--muted) 50%, transparent) !important; }

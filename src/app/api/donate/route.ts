@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
 import { HttpStatus } from "@/lib/api-response";
 import arcjet, { slidingWindow } from "@/lib/arcjet";
+import { logger } from "@/lib/monitoring";
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, donation }, { status: 201 });
   } catch (error) {
-    console.error("Donate Error:", error);
+    logger.error("Donate Error", "DonateAPI", undefined, error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: HttpStatus.INTERNAL_ERROR }
@@ -119,7 +120,7 @@ export async function GET(request: Request) {
       totalRaised: totalRaised._sum.amount || 0,
     });
   } catch (error) {
-    console.error("Donate GET Error:", error);
+    logger.error("Donate GET Error", "DonateAPI", undefined, error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: HttpStatus.INTERNAL_ERROR }

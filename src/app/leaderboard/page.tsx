@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/monitoring';
 import { motion } from 'motion/react';
 import { Trophy, Medal, Crown, Flame, Star, Loader2, ArrowRight, User } from 'lucide-react';
 import Footer from '@/app/(public)/_components/footer';
@@ -34,7 +35,7 @@ export default function LeaderboardPage() {
           setLeaderboard(data.leaderboard);
         }
       } catch (err) {
-        console.error("Failed to load leaderboard");
+        logger.error("Failed to load leaderboard", "LeaderboardPage");
       } finally {
         setLoading(false);
       }

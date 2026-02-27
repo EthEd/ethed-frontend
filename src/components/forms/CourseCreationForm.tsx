@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, Plus, ArrowLeft } from "lucide-react";
-import { logger } from "@/lib/monitoring";
 
 interface CourseFormData {
   title: string;
@@ -122,7 +121,7 @@ export default function CourseCreationForm({
       }
     } catch (error) {
       toast.error("An error occurred while saving the course");
-      logger.error("Course save error", "CourseCreationForm", undefined, error);
+      console.error("Course save error:", error);
     } finally {
       setLoading(false);
     }

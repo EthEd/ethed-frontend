@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ShieldOff } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Access Forbidden | EthEd',
+  robots: { index: false, follow: false },
+};
 
 export default function ForbiddenPage() {
   return (
