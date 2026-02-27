@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { logger } from '@/lib/monitoring';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ShieldX, RefreshCw, Home } from 'lucide-react';
@@ -14,7 +15,7 @@ export default function AdminError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Admin panel error:', error);
+    logger.error('Admin panel error', 'AdminError', undefined, error);
   }, [error]);
 
   return (

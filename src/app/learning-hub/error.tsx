@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { logger } from '@/lib/monitoring';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookX, RefreshCw, Home } from 'lucide-react';
@@ -14,7 +15,7 @@ export default function LearningHubError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Learning hub error:', error);
+    logger.error('Learning hub error', 'LearningHubError', undefined, error);
   }, [error]);
 
   return (

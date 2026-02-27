@@ -101,7 +101,7 @@ export default function Navbar() {
         Learn on-chain. Grow your chain of knowledge.
       </div>
       
-      <nav className="w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
+      <nav aria-label="Main navigation" className="w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-4">
           <div className="relative flex h-16 items-center">
             
@@ -194,10 +194,6 @@ export default function Navbar() {
                         </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => router.push("/profile")} className="hover:bg-emerald-50/50">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
-                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => router.push("/dashboard")} className="hover:bg-cyan-50/50">
                         <BookOpen className="mr-2 h-4 w-4" />
                         <span>Dashboard</span>
@@ -248,6 +244,8 @@ export default function Navbar() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+                    aria-expanded={isMobileMenuOpen}
                     className="relative group"
                   >
                     <div className="absolute inset-0 rounded bg-gradient-to-r from-emerald-400/10 to-cyan-400/10 opacity-0 group-hover:opacity-100 transition-all duration-200" />
@@ -260,6 +258,23 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex items-center space-x-2">
+                {/* Mobile Menu Button for unauthenticated users */}
+                <div className="md:hidden">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+                    aria-expanded={isMobileMenuOpen}
+                    className="relative group"
+                  >
+                    <div className="absolute inset-0 rounded bg-gradient-to-r from-emerald-400/10 to-cyan-400/10 opacity-0 group-hover:opacity-100 transition-all duration-200" />
+                    {isMobileMenuOpen ? 
+                      <X className="h-4 w-4 relative z-10 transition-transform duration-200 group-hover:rotate-90" /> : 
+                      <Menu className="h-4 w-4 relative z-10 transition-transform duration-200 group-hover:scale-110" />
+                    }
+                  </Button>
+                </div>
                 <Button 
                   variant="ghost" 
                   onClick={handleSignIn} 
@@ -282,45 +297,47 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Menu with animations */}
-      {isMobileMenuOpen && session && (
+      {isMobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200/20 bg-background/95 backdrop-blur animate-in slide-in-from-top-2 duration-200">
           <div className="container py-4 space-y-4">
-            {/* User Info */}
-            <div className="flex items-center space-x-3 pb-4 border-b border-slate-200/20">
-              <Avatar className="h-10 w-10 ring-2 ring-emerald-400/20">
-                <AvatarImage src={getUserAvatar()} alt={getUserDisplayName()} />
-                <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-400 text-white">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm font-medium">{getUserDisplayName()}</p>
-                {session.address ? (
-                  <div className="flex items-center space-x-1">
-                    <Wallet className="h-3 w-3 text-emerald-600" />
-                    <p className="text-xs text-muted-foreground">Wallet Connected</p>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">{session.user.email}</p>
-                )}
+            {/* User Info - only for authenticated users */}
+            {session && (
+              <div className="flex items-center space-x-3 pb-4 border-b border-slate-200/20">
+                <Avatar className="h-10 w-10 ring-2 ring-emerald-400/20">
+                  <AvatarImage src={getUserAvatar()} alt={getUserDisplayName()} />
+                  <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-cyan-400 text-white">
+                    {getInitials()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium">{getUserDisplayName()}</p>
+                  {session.address ? (
+                    <div className="flex items-center space-x-1">
+                      <Wallet className="h-3 w-3 text-emerald-600" />
+                      <p className="text-xs text-muted-foreground">Wallet Connected</p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Navigation Links */}
+            {/* Navigation Links - always visible */}
             <div className="space-y-2">
               <Link 
-                href="/courses" 
+                href="/learn" 
                 className="block px-3 py-2 text-sm font-medium text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50/50 rounded-lg transition-all duration-200"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Courses
               </Link>
               <Link 
-                href="/learn" 
+                href="/leaderboard" 
                 className="block px-3 py-2 text-sm font-medium text-muted-foreground hover:text-cyan-600 hover:bg-cyan-50/50 rounded-lg transition-all duration-200"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Learn
+                Leaderboard
               </Link>
               <Link 
                 href="/how-it-works" 
@@ -330,16 +347,24 @@ export default function Navbar() {
                 How It Works
               </Link>
               <Link 
-                href="/community" 
+                href="/projects" 
+                className="block px-3 py-2 text-sm font-medium text-muted-foreground hover:text-purple-600 hover:bg-purple-50/50 rounded-lg transition-all duration-200"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Projects
+              </Link>
+              <Link 
+                href="/donate" 
                 className="block px-3 py-2 text-sm font-medium text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50/50 rounded-lg transition-all duration-200"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Community
+                Donate
               </Link>
             </div>
 
-            {/* User Menu Items */}
-            <div className="space-y-2 pt-4 border-t border-slate-200/20">
+            {/* User Menu Items - authenticated only */}
+            {session ? (
+              <div className="space-y-2 pt-4 border-t border-slate-200/20">
               <button
                 onClick={() => {
                   router.push("/profile");
@@ -391,6 +416,16 @@ export default function Navbar() {
                 <span>Sign out</span>
               </button>
             </div>
+            ) : (
+              <div className="pt-4 border-t border-slate-200/20 flex flex-col gap-2">
+                <Button variant="ghost" onClick={handleSignIn} className="w-full justify-center">
+                  Sign In
+                </Button>
+                <Button onClick={handleSignIn} className="w-full bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700">
+                  Get Started
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}

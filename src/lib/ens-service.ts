@@ -177,6 +177,7 @@ export async function registerOnChain(
       args: [subdomain, ownerAddress as `0x${string}`, duration],
       account: getDeployerAddress(),
       chain: undefined,
+      value: BigInt(0), // payable function — explicitly pass 0 for free registrations
     });
 
     logger.info(`ENS register tx sent: ${txHash}`, "ens-service");

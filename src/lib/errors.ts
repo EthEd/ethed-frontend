@@ -1,3 +1,5 @@
+import { logger } from "@/lib/monitoring";
+
 /**
  * Custom error classes for consistent error handling
  */
@@ -135,7 +137,7 @@ export function logError(
   };
 
   // In production, this could send to a logging service
-  console.error('[Error]', JSON.stringify(errorInfo, null, 2));
+  logger.error(errorInfo.message, "ErrorHandler", errorInfo, error);
 }
 
 /**

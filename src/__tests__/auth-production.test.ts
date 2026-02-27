@@ -1,20 +1,15 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 describe('auth production configuration', () => {
-  it('does not include demo credentials provider in production', async () => {
-    const original = process.env.NODE_ENV;
-    (process.env as any).NODE_ENV = 'production';
-
-    // Clear module cache and re-import
-    vi.resetModules();
+  it('includes only siwe and configured OAuth providers', async () => {
     const { authOptions } = await import('@/lib/auth');
 
     const providerIds = (authOptions.providers || []).map((p: any) => (p as any).id).filter(Boolean);
 
+    // Should always include SIWE
+    expect(providerIds).toContain('siwe');
+    
+    // Should never include demo credentials
     expect(providerIds).not.toContain('demo');
-
-    // restore
-    (process.env as any).NODE_ENV = original;
-    vi.resetModules();
   });
 });

@@ -1,8 +1,17 @@
-
+import type { Metadata } from 'next';
 import { Globe, Users, Brain, Target } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+
+export const metadata: Metadata = {
+  title: 'About | EthEd',
+  description: 'EthEd is a Web3 education platform making blockchain learning accessible, interactive, and rewarding.',
+  openGraph: {
+    title: 'About EthEd',
+    description: 'Making blockchain learning accessible, interactive, and rewarding.',
+  },
+};
 
 const AboutPage = () => {
   return (

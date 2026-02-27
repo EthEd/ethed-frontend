@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
 import { HttpStatus } from "@/lib/api-response";
+import { logger } from "@/lib/monitoring";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,7 @@ export async function GET(_request: Request, { params }: Params) {
 
     return NextResponse.json({ success: true, project });
   } catch (error) {
-    console.error("Project GET Error:", error);
+    logger.error("Project GET Error", "ProjectAPI", undefined, error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: HttpStatus.INTERNAL_ERROR }
@@ -107,7 +108,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
     return NextResponse.json({ success: true, project: updated });
   } catch (error) {
-    console.error("Project PATCH Error:", error);
+    logger.error("Project PATCH Error", "ProjectAPI", undefined, error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: HttpStatus.INTERNAL_ERROR }

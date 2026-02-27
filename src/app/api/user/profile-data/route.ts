@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma-client";
 import { getExplorerTxUrl } from "@/lib/contracts";
 import arcjet, { shield, slidingWindow } from "@/lib/arcjet";
 import { HttpStatus } from "@/lib/api-response";
+import { logger } from "@/lib/monitoring";
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +51,19 @@ export async function GET(request: Request) {
         wallets: true,
         courses: {
           include: {
-            course: true
+            course: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                description: true,
+                price: true,
+                level: true,
+                status: true,
+                createdAt: true,
+                updatedAt: true
+              }
+            }
           }
         },
         nfts: {
@@ -170,7 +183,7 @@ export async function GET(request: Request) {
     });
 
   } catch (error) {
-    console.error("Profile Data Error:", error);
+    logger.error("Profile Data Error", "ProfileDataAPI", undefined, error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: HttpStatus.INTERNAL_ERROR }

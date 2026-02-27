@@ -52,8 +52,8 @@ export default async function NFTPublicPage({ params }: NFTPageProps) {
 
   const metadata = nft.metadata && typeof nft.metadata === 'object' ? nft.metadata as Record<string, unknown> : {};
   const description = (metadata.description as string) || `${nft.name} — earned on EthEd`;
-  const txHash = (nft as any).transactionHash as string | null;
-  const chainId = (nft as any).chainId as number | null;
+  const txHash = (nft as unknown as { transactionHash?: string | null }).transactionHash ?? null;
+  const chainId = (nft as unknown as { chainId?: number | null }).chainId ?? null;
   const explorerUrl = txHash && chainId && !txHash.startsWith('0x' + '0'.repeat(64))
     ? getExplorerTxUrl(chainId, txHash)
     : null;

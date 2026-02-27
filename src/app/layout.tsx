@@ -85,7 +85,6 @@ export default function RootLayout({
           <SkipToContent />
           <GlobalGrid enabled={true} adaptiveGlow={true} />
           <Navbar/>
-          {/* Dev-only children guard: throws (with stack) if a non-primitive React child is rendered */}
           <MainContent>
             <DevChildrenGuard>{children}</DevChildrenGuard>
           </MainContent>

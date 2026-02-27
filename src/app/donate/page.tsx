@@ -38,7 +38,7 @@ const TOKENS = [
   { symbol: 'WETH', name: 'Wrapped ETH', desc: 'ERC-20 wrapped Ether' },
 ];
 
-const DONATION_ADDRESS = '0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18';
+const DONATION_ADDRESS = '0x2A505a987cB41A2e2c235D851e3d74Fa24206229';
 
 /* ─── Animated particles ─── */
 function ParticleField() {

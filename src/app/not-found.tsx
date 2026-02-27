@@ -1,14 +1,21 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home, ArrowLeft, Search } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Page Not Found | EthEd',
+};
 
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <Card className="bg-slate-800/40 backdrop-blur-xl border border-white/10 max-w-md w-full text-center">
         <CardHeader className="pb-6">
-          <div className="text-6xl mb-4">🔍</div>
+          <div className="text-6xl mb-4" aria-hidden="true">
+            <Search className="w-14 h-14 mx-auto text-cyan-400" />
+          </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-emerald-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
             Page Not Found
           </CardTitle>

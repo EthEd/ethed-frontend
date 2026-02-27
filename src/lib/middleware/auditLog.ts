@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma-client";
-import { Prisma } from "@/generated/prisma";
+import { Prisma } from "@prisma/client";
 import { logger } from "@/lib/monitoring";
 
 export const AUDIT_ACTIONS = {

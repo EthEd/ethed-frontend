@@ -32,10 +32,10 @@ export default function Footer() {
             <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link>
             <Link href="/donate" className="text-muted-foreground hover:text-emerald-500 transition-colors">Donate</Link>
             <div className="flex space-x-4 pt-2">
-              <Link href="https://github.com/ethed" target="_blank" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="https://github.com/ethed" target="_blank" rel="noopener noreferrer" aria-label="EthEd on GitHub" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Github className="h-5 w-5" />
               </Link>
-              <Link href="https://twitter.com/ethed" target="_blank" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link href="https://twitter.com/ethed" target="_blank" rel="noopener noreferrer" aria-label="EthEd on Twitter" className="text-muted-foreground hover:text-primary transition-colors">
                 <Twitter className="h-5 w-5" />
               </Link>
             </div>

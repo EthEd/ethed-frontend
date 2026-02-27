@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import Confetti from "react-confetti";
+
+// Lazy-load confetti — only shown on completion
+const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
+
 import {
   Sparkles,
   BadgeCheck,
@@ -19,11 +23,13 @@ import {
   Zap,
   CheckCircle,
   AlertTriangle,
+  Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ENS_ROOT_DOMAIN } from "@/lib/contracts";
+import { SiweLoginButton } from "@/components/siwe-login-button";
 
 export default function Onboarding() {
   const { data: session, status, update: updateSession } = useSession();
@@ -148,6 +154,14 @@ export default function Onboarding() {
   const registerENSSubdomain = async () => {
     if (!ensValidation.valid) {
       toast.error(ensValidation.message);
+      return;
+    }
+
+    // Check if user has a wallet connected (only for email-only users)
+    if (!session?.address) {
+      toast.error("Please connect your wallet to register ENS. If you don't have a wallet, install MetaMask or another Web3 wallet.", {
+        duration: 6000,
+      });
       return;
     }
 
@@ -459,11 +473,37 @@ export default function Onboarding() {
                       </div>
                     </div>
 
+                    {!session?.address && (
+                      <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+                        <div className="flex items-start gap-3 mb-4">
+                          <AlertTriangle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-yellow-400 font-semibold mb-1">Wallet Required</p>
+                            <p className="text-sm text-slate-300 mb-3">
+                              ENS registration requires a Web3 wallet. Connect your wallet below to continue.
+                            </p>
+                          </div>
+                        </div>
+                        <SiweLoginButton />
+                        <p className="text-xs text-slate-400 mt-3 text-center">
+                          Don't have a wallet?{' '}
+                          <a 
+                            href="https://metamask.io/download/" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-cyan-400 hover:text-cyan-300 underline"
+                          >
+                            Install MetaMask
+                          </a>
+                        </p>
+                      </div>
+                    )}
+
                     <Button
                       onClick={registerENSSubdomain}
                       size="lg"
                       className="w-full h-14 bg-white hover:bg-slate-200 text-slate-950 font-bold text-lg"
-                      disabled={!ensName.trim() || !ensValidation.valid || isLoading}
+                      disabled={!ensName.trim() || !ensValidation.valid || isLoading || !session?.address}
                     >
                       {isLoading ? (
                         <div className="flex items-center">

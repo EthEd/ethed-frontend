@@ -27,7 +27,7 @@ function parseSiweMessage(message: string) {
   try {
     const maybeJson = JSON.parse(message);
     if (maybeJson && typeof maybeJson === "object") {
-      return new SiweMessage(maybeJson as any);
+      return new SiweMessage(maybeJson as Record<string, unknown>);
     }
   } catch {
     // fallthrough to parse raw SIWE string
@@ -62,7 +62,7 @@ export function SiweProvider() {
           throw new Error("Wrong network: please switch to Polygon Amoy");
         }
 
-        const cookieHeader = (req as any)?.headers?.cookie as string | undefined;
+        const cookieHeader = (req as Record<string, unknown> & { headers?: { cookie?: string } })?.headers?.cookie as string | undefined;
         const nonceCookie = getCookieValue(cookieHeader, "siwe-nonce");
 
         // Development-only diagnostic logs to help reproduce verification/nonce issues
@@ -86,7 +86,7 @@ export function SiweProvider() {
 
         try {
           await siweMessage.verify({ signature: credentials.signature });
-        } catch (verifyErr: any) {
+        } catch (verifyErr: unknown) {
           // Log server-side for debugging and return a clear message to client
           logger.error(
             "SIWE verification failed",
@@ -151,9 +151,9 @@ export function SiweProvider() {
                   isPrimary: walletCount === 0,
                 }
               });
-            } catch (err: any) {
+            } catch (err: unknown) {
               // If another concurrent request created the same wallet, ignore the unique constraint error
-              if (err?.code === 'P2002') {
+              if ((err as { code?: string })?.code === 'P2002') {
                 // wallet already exists — proceed
               } else {
                 throw err;

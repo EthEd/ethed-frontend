@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
 import aj, { slidingWindow } from "@/lib/arcjet";
+import { AMOY_CHAIN_ID } from "@/lib/contracts";
 
 // Rate limiting for wallet connections
 const walletRateLimit = aj.withRule(
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { address: rawAddress, chainId = 1, ensName, ensAvatar } = body;
+    const { address: rawAddress, chainId = AMOY_CHAIN_ID, ensName, ensAvatar } = body;
 
     if (!rawAddress) {
       return NextResponse.json(
@@ -130,9 +131,9 @@ export async function POST(request: NextRequest) {
           message: "Wallet connected successfully",
           wallet
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Handle unique-constraint race: wallet may have been created concurrently
-        if (err?.code === 'P2002') {
+        if ((err as { code?: string })?.code === 'P2002') {
           const existing = await prisma.walletAddress.findFirst({
             where: { address: normalizedAddress, chainId }
           });

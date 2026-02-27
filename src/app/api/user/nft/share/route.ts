@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma-client";
 import { pinJSON } from "@/lib/pinata-config";
 import { ipfsToGatewayUrl } from "@/lib/ipfs";
 import { HttpStatus } from "@/lib/api-response";
+import { logger } from "@/lib/monitoring";
 
 export const dynamic = "force-dynamic";
 
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
       cid = ipfsUri.replace("ipfs://", "");
     } catch (pinError) {
       // Graceful degradation when Pinata isn't configured
-      console.warn("Pinata not configured, returning mock CID", pinError);
+      logger.warn("Pinata not configured, returning mock CID", "NFTShareAPI", { pinError: String(pinError) });
       cid = `QmMock${nftId.replace(/-/g, "").slice(0, 32)}`;
     }
 
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
       shareUrl: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/nft/${nftId}`,
     });
   } catch (error) {
-    console.error("NFT Share Error:", error);
+    logger.error("NFT Share Error", "NFTShareAPI", undefined, error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: HttpStatus.INTERNAL_ERROR }

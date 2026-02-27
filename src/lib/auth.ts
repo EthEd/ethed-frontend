@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
-import EmailProvider from "next-auth/providers/email";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 import { SiweProvider } from "./siwe-provider";
 
@@ -42,6 +42,26 @@ export const authOptions: NextAuthOptions = {
   providers: [
     // Sign In With Ethereum
     SiweProvider(),
+    // Simple email/name login without verification
+    CredentialsProvider({
+      id: "email-name",
+      name: "Email",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        name: { label: "Name", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.name) {
+          return null;
+        }
+        // Return user object - signIn callback will handle DB creation
+        return {
+          id: credentials.email,
+          email: credentials.email,
+          name: credentials.name,
+        };
+      },
+    }),
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
       GoogleProvider({ 
         clientId: process.env.GOOGLE_CLIENT_ID, 
@@ -52,19 +72,6 @@ export const authOptions: NextAuthOptions = {
       GitHubProvider({ 
         clientId: process.env.GITHUB_CLIENT_ID, 
         clientSecret: process.env.GITHUB_CLIENT_SECRET 
-      })
-    ] : []),
-    ...(process.env.EMAIL_HOST && process.env.EMAIL_PORT && process.env.EMAIL_USERNAME && process.env.EMAIL_PASSWORD && process.env.EMAIL_FROM ? [
-      EmailProvider({
-        server: { 
-          host: process.env.EMAIL_HOST, 
-          port: Number(process.env.EMAIL_PORT), 
-          auth: { 
-            user: process.env.EMAIL_USERNAME, 
-            pass: process.env.EMAIL_PASSWORD 
-          } 
-        },
-        from: process.env.EMAIL_FROM,
       })
     ] : []),
   ],

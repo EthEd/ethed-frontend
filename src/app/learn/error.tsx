@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { logger } from '@/lib/monitoring';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
@@ -14,7 +15,7 @@ export default function LearnError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Learn page error:', error);
+    logger.error('Learn page error', 'LearnError', undefined, error);
   }, [error]);
 
   return (

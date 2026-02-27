@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Copy, Check, ExternalLink, Share2, Twitter, Link2 } from 'lucide-react';
 import Image from 'next/image';
 import { ipfsToGatewayUrl } from '@/lib/ipfs';
+import { getExplorerTxUrl } from '@/lib/contracts';
 
 interface NFTShareModalProps {
   nft: {
@@ -16,7 +17,7 @@ interface NFTShareModalProps {
     description?: string | null;
     image: string | null;
     tokenId: string | null;
-    metadata: any;
+    metadata: Record<string, unknown> | string | null;
     contractAddress?: string | null;
     transactionHash?: string | null;
     chainId?: number | null;
@@ -40,8 +41,8 @@ export default function NFTShareModal({ nft, open, onClose }: NFTShareModalProps
 
   // Only show explorer link for real (non-zero) transactions
   const isRealTx = nft.transactionHash && !/^0x0+$/.test(nft.transactionHash);
-  const explorerUrl = isRealTx
-    ? `https://amoy.polygonscan.com/tx/${nft.transactionHash}`
+  const explorerUrl = isRealTx && nft.chainId
+    ? getExplorerTxUrl(nft.chainId, nft.transactionHash!)
     : null;
 
   // Parse "CourseName - RecipientName - Learning Sprout" into parts
@@ -52,7 +53,9 @@ export default function NFTShareModal({ nft, open, onClose }: NFTShareModalProps
   const courseName = nameParts.length >= 2
     ? nameParts.slice(0, nameParts.length >= 3 ? -2 : -1).join(' - ')
     : nft.name;
-  const description = (nft.metadata as any)?.description ?? nft.description ?? null;
+  const description = (nft.metadata && typeof nft.metadata === 'object' && 'description' in nft.metadata
+    ? (nft.metadata as Record<string, unknown>).description as string
+    : nft.description) ?? null;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(shareUrl);

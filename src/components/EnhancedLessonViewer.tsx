@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
+import { logger } from '@/lib/monitoring';
 import { useRouter } from 'next/navigation';
 
 interface Lesson {
@@ -260,7 +261,7 @@ export default function EnhancedLessonViewer({
             }
         );
     } catch (error) {
-        console.error('Finalization error:', error);
+        logger.error('Finalization error', 'EnhancedLessonViewer', undefined, error);
         router.push('/dashboard');
     }
   };

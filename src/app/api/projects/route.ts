@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
 import { HttpStatus } from "@/lib/api-response";
 import arcjet, { shield, slidingWindow } from "@/lib/arcjet";
+import { logger } from "@/lib/monitoring";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Projects GET Error:", error);
+    logger.error("Projects GET Error", "ProjectsAPI", undefined, error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: HttpStatus.INTERNAL_ERROR }
@@ -133,7 +134,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, project }, { status: 201 });
   } catch (error) {
-    console.error("Projects POST Error:", error);
+    logger.error("Projects POST Error", "ProjectsAPI", undefined, error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: HttpStatus.INTERNAL_ERROR }

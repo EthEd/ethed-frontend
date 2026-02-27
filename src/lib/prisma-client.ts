@@ -1,4 +1,5 @@
-import { PrismaClient } from "@/generated/prisma";
+import { PrismaClient } from "@prisma/client";
+import { logger } from "@/lib/monitoring";
 
 function validateDatabaseUrl() {
   const dbUrl = process.env.DATABASE_URL;
@@ -45,13 +46,13 @@ const prismaClientSingleton = () => {
           const duration = end - start;
           
           if (process.env.DEBUG_PRISMA === "true" || process.env.NODE_ENV === "development") {
-            console.log(`[Prisma] ${model}.${operation} took ${duration.toFixed(2)}ms`);
+            logger.debug(`${model}.${operation} took ${duration.toFixed(2)}ms`, "Prisma");
           }
           
           return result;
         } catch (error) {
           const end = performance.now();
-          console.error(`[Prisma Error] ${model}.${operation} failed after ${(end - start).toFixed(2)}ms:`, error);
+          logger.error(`${model}.${operation} failed after ${(end - start).toFixed(2)}ms`, "Prisma", undefined, error);
           throw error;
         }
       },

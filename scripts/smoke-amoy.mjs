@@ -5,8 +5,8 @@ import { privateKeyToAccount } from 'viem/accounts';
 
 const AMOY_RPC_URL = process.env.AMOY_RPC_URL;
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY;
-const ENS_ADDRESS = '0xe248de43bbda470c9ca0262d09865f53270ce76d';
-const NFT_ADDRESS = '0xd9a8c19a04bb1e578c2655b9f58d83d8a39cdb88';
+const ENS_ADDRESS = process.env.ENS_REGISTRAR_ADDRESS || '0xe248de43bbda470c9ca0262d09865f53270ce76d';
+const NFT_ADDRESS = process.env.NFT_CONTRACT_ADDRESS || '0xd9a8c19a04bb1e578c2655b9f58d83d8a39cdb88';
 
 if (!AMOY_RPC_URL || !DEPLOYER_PRIVATE_KEY) {
   throw new Error('Missing AMOY_RPC_URL or DEPLOYER_PRIVATE_KEY');

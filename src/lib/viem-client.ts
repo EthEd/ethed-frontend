@@ -16,8 +16,6 @@ import {
   type PublicClient,
   type WalletClient,
   type Account,
-  decodeEventLog,
-  type Log,
 } from "viem";
 import { polygonAmoy } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
@@ -120,10 +118,3 @@ export function isOnChainEnabled(): boolean {
   
   return isHex;
 }
-
-// ---------------------------------------------------------------------------
-// Utility: decode event log
-// ---------------------------------------------------------------------------
-
-export { decodeEventLog };
-export type { Log };

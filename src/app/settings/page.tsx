@@ -247,11 +247,19 @@ export default function SettingsPage() {
                 <div className="space-y-1">
                   <Label className="text-slate-300 text-sm">Email</Label>
                   <Input
-                    value={session.user.email ?? '—'}
+                    value={
+                      session.user.email?.endsWith('@ethereum.local') 
+                        ? '—' 
+                        : session.user.email ?? '—'
+                    }
                     disabled
                     className="bg-white/5 border-white/10 text-slate-500 cursor-not-allowed"
                   />
-                  <p className="text-xs text-slate-500">Email cannot be changed from here.</p>
+                  <p className="text-xs text-slate-500">
+                    {session.user.email?.endsWith('@ethereum.local') 
+                      ? 'Wallet-based account (no email)' 
+                      : 'Email cannot be changed from here.'}
+                  </p>
                 </div>
 
                 <div className="flex justify-end">

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import Link from 'next/link';
-import { logger } from '@/lib/monitoring';
 
 export default function GlobalError({
   error,
@@ -16,7 +15,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    logger.error('Global error', 'global-error', undefined, error);
+    console.error('Global error:', error);
   }, [error]);
 
   return (

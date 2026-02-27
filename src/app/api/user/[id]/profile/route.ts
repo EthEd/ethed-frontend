@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma-client";
+import { logger } from "@/lib/monitoring";
 
 export async function GET(
   request: NextRequest,
@@ -70,7 +71,7 @@ export async function GET(
     });
 
   } catch (error) {
-    console.error("Public profile fetch error:", error);
+    logger.error("Public profile fetch error", "UserProfileAPI", undefined, error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

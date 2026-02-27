@@ -16,7 +16,7 @@ export default defineConfig({
 
   // Start Next.js dev server automatically when running e2e locally
   webServer: {
-    command: 'PORT=3001 npm run dev',
+    command: 'PORT=3001 pnpm dev',
     port: 3001,
     reuseExistingServer: !process.env.CI,
   },
